@@ -1,10 +1,8 @@
 using UnityEngine;
 
-public class Tool_Axe : MonoBehaviour, ITool
+public class Tool_Axe : ToolBase
 {
     private ToolData data;
-
-    private new Collider collider;
 
     private GameObject rootObject;
 
@@ -29,7 +27,7 @@ public class Tool_Axe : MonoBehaviour, ITool
     }
 
     // ToolData Àû¿ë
-    public void Init(ToolData data)
+    public override void Init(ToolData data)
     {
         if (data == null)
         {

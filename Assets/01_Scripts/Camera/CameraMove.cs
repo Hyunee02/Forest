@@ -29,17 +29,14 @@ public class CameraMove : MonoBehaviour
         cam = GetComponent<CinemachineCamera>();
         follow = GetComponent<CinemachineFollow>();
 
+        cam.Target.TrackingTarget = player.transform.FindChildByName("CamPos");
+
         // Zoom
         {
             InputAction action = actionMap.FindAction("Zoom");
             action.performed += context => scroll = context.ReadValue<Vector2>();
             action.canceled += context => follow.FollowOffset = followInit;
         }
-    }
-
-    private void Reset()
-    {
-        cam.Target.TrackingTarget = player.transform.FindChildByName("CamPos");
     }
 
     private void Update()

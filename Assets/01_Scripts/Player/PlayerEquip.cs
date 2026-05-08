@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PlayerEquip : MonoBehaviour
 {
-    [SerializeField] private ITool[] tools;
+    [SerializeField] private ToolBase tools;
 
     [SerializeField] private Transform toolPos;
 
@@ -14,6 +14,11 @@ public class PlayerEquip : MonoBehaviour
     private void Awake()
     {
         animator = GetComponent<Animator>();
+    }
+
+    private void Awake_BindInput()
+    {
+        
     }
 
     private void Update()

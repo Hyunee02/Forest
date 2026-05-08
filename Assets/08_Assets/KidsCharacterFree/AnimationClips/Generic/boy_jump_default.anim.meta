@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 59a52d2bf0f124f4cae54edb0afca60c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 242192
+  packageName: Kids character Free
+  packageVersion: 1.0
+  assetPath: Assets/KidsCharacterFree/AnimationClips/Generic/boy_jump_default.anim
+  uploadId: 829392

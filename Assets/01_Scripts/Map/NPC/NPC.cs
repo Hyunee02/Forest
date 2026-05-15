@@ -10,6 +10,7 @@ public enum NPCType
     TrainDriver,
     Banker1,
     Banker2,
+    StoreManager,
     PartTimeWorker,
 }
 

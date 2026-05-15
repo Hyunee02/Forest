@@ -5,19 +5,8 @@ using UnityEngine;
 /// 2. 청크 생성
 /// 3. 각 청크가 자기 구역 타일 생성
 /// 4. 각 객체의 타일 위치 관리
-/// 5. Building 관리
-/// 6. Tree 관리
-/// 
-///  *** 건물과 나무 이동 함수 추가하기
+/// 5. Building / Tree 등 MapObject 점유 관리
 /// </summary>
-
-//bool isPlaced;          // 배치됨
-//bool isBuilt;           // 건설 완료됨
-//bool isUnderConstruction; // 건설 중
-//bool isPreviewing;      // 배치 미리보기 중
-//bool canPlace;          // 현재 위치에 배치 가능
-//bool isOccupied;        // 해당 타일이 점유됨
-
 [ExecuteAlways]
 public class MapManager : MonoBehaviour
 {
@@ -28,7 +17,6 @@ public class MapManager : MonoBehaviour
 
     [Header("<< 맵 프리팹 >>")]
     [SerializeField] private GameObject grassPrefab;
-    [SerializeField] private GameObject waterPrefab;
 
     private TileData[,] mapData;
 
@@ -41,6 +29,7 @@ public class MapManager : MonoBehaviour
     }
 
     #region < ContextMenu >
+
     [ContextMenu("Generate Map")]
     private void GenerateMap()
     {
@@ -58,19 +47,16 @@ public class MapManager : MonoBehaviour
             GameObject child = transform.GetChild(i).gameObject;
 
             if (Application.isPlaying)
-            {
                 Destroy(child);
-            }
             else
-            {
                 DestroyImmediate(child);
-            }
         }
     }
+
     #endregion
 
     #region < Map 생성 >
-    
+
     private void GenerateMapData()
     {
         mapData = new TileData[mapWidth, mapHeight];
@@ -87,13 +73,13 @@ public class MapManager : MonoBehaviour
                     tileType = TileType.Grass,
                     buildable = true,
                     occupied = false
-
                 };
             }
         }
     }
 
-    // 청크가 타일 생성
+
+
     private void GenerateChunks()
     {
         int chunkCountX = mapWidth / chunkSize;
@@ -107,16 +93,16 @@ public class MapManager : MonoBehaviour
                 chunkObject.transform.parent = transform;
 
                 Chunk chunk = chunkObject.AddComponent<Chunk>();
-                chunk.Init(ccx, ccz, chunkSize, mapData, grassPrefab, waterPrefab);
+                chunk.Init(ccx, ccz, chunkSize, mapData, grassPrefab);
                 chunk.GenerateChunk();
             }
         }
     }
+
     #endregion
 
     #region < Tile / Bound >
 
-    // 월드 좌표를 타일 배열 좌표로 변경
     public Vector2Int WorldToTile(Vector3 worldPos)
     {
         int tileX = Mathf.RoundToInt(worldPos.x + mapWidth / 2f);
@@ -125,27 +111,34 @@ public class MapManager : MonoBehaviour
         return new Vector2Int(tileX, tileZ);
     }
 
-    // 좌표가 맵 범위 내에 있는지 확인
+    public Vector3 TileToWorld(Vector2Int tilePos)
+    {
+        float worldX = tilePos.x - mapWidth / 2f;
+        float worldZ = tilePos.y - mapHeight / 2f;
+
+        return new Vector3(worldX, 0f, worldZ);
+    }
+
     public bool IsWithinMapBounds(int x, int z)
     {
-        return x >= 0 && x < mapWidth && z >= 0 && z < mapHeight;
+        return x >= 0 && x < mapWidth &&
+               z >= 0 && z < mapHeight;
     }
+
     #endregion
 
     #region < 초기 MapObject 점유상태 >
 
-    // 게임 시작할 때 이미 맵에 배치되어 있는 MapObject들을 mapData에 등록
     private void RegisterInitialMapObjects()
     {
         MapObject[] mapObjects = FindObjectsByType<MapObject>(FindObjectsSortMode.None);
 
         foreach (MapObject mapObject in mapObjects)
         {
-            SetObjectTilesOccupied(mapObject, true); // 이미 점유중인 타일에는 빌딩을 지을 수 없음
+            SetObjectTilesOccupied(mapObject, true);
         }
     }
 
-    // Mapobject들이 차지하는 타일들의 점유 상태를 설정하는 함수
     public void SetObjectTilesOccupied(MapObject mapObject, bool occupied)
     {
         Vector2Int origin = WorldToTile(mapObject.transform.position);
@@ -165,22 +158,11 @@ public class MapManager : MonoBehaviour
             }
         }
     }
-    #endregion
 
+    #endregion
 
     #region < Move >
 
-    // 타일 좌표를 월드 좌표로 변경
-
-    public Vector3 TileToWorld(Vector2Int tilePos)
-    {
-        float worldX = tilePos.x - mapWidth / 2f;
-        float worldZ = tilePos.y - mapHeight / 2f;
-
-        return new Vector3(worldX, 0f, worldZ);
-    }
-
-    // 해당 위치에 MapObject를 놓을 수 있는지 확인
     public bool CanPlaceObject(MapObject mapObject, Vector2Int origin)
     {
         for (int x = 0; x < mapObject.Width; x++)
@@ -191,24 +173,18 @@ public class MapManager : MonoBehaviour
                 int tileZ = origin.y + z;
 
                 if (!IsWithinMapBounds(tileX, tileZ))
-                {
                     return false;
-                }
 
                 TileData tile = mapData[tileX, tileZ];
 
                 if (!tile.buildable || tile.occupied)
-                {
                     return false;
-                }
             }
         }
 
         return true;
     }
 
-
-    // MapObject 이동
     public void MoveObject(MapObject mapObject, Vector2Int newOrigin)
     {
         SetObjectTilesOccupied(mapObject, false);

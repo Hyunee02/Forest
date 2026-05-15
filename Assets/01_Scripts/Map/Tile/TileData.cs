@@ -4,8 +4,7 @@
 public enum TileType
 {
     Grass,
-    Water,
-
+    Sand,
 }
 
 public class TileData 
@@ -16,6 +15,8 @@ public class TileData
     public int height = 1;
 
     public TileType tileType;
+
+    public bool active = true;
 
     public bool buildable;  // 건물을 지을 수 있는가
     public bool occupied;   // 이미 건물이 있는가

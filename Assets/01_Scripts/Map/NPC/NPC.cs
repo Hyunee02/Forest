@@ -12,6 +12,7 @@ public enum NPCType
     Banker2,
     StoreManager,
     PartTimeWorker,
+    Hunter,
 }
 
 public class NPC : Interactable

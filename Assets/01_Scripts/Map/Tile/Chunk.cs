@@ -7,29 +7,25 @@ public class Chunk : MonoBehaviour
     private int chunkSize;
 
     private TileData[,] mapData;
-
-    private GameObject grassPrefab;
-    private GameObject waterPrefab;
+    private GameObject tilePrefab;
 
     public void Init(
-        int chunkX, 
-        int chunkZ, 
-        int chunkSize, 
-        TileData[,] mapData, 
-        GameObject grassPrefab, 
-        GameObject waterPrefab)
+        int chunkX,
+        int chunkZ,
+        int chunkSize,
+        TileData[,] mapData,
+        GameObject tilePrefab)
     {
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
         this.chunkSize = chunkSize;
         this.mapData = mapData;
-        this.grassPrefab = grassPrefab;
-        this.waterPrefab = waterPrefab;
+        this.tilePrefab = tilePrefab;
     }
 
     public void GenerateChunk()
     {
-        if (mapData == null)
+        if (mapData == null || tilePrefab == null)
             return;
 
         int startX = chunkX * chunkSize;
@@ -42,26 +38,16 @@ public class Chunk : MonoBehaviour
         {
             for (int z = startZ; z < startZ + chunkSize; z++)
             {
+                if (x >= mapData.GetLength(0) || z >= mapData.GetLength(1))
+                    continue;
+
                 TileData tileData = mapData[x, z];
 
-                GameObject tilePrefabToSpawn = null;
+                if (!tileData.active)
+                    continue;
 
-                switch (tileData.tileType)
-                {
-                    case TileType.Grass:
-                        tilePrefabToSpawn = grassPrefab;
-                        break;
-
-                    case TileType.Water:
-                        tilePrefabToSpawn = waterPrefab;
-                        break;
-                }
-
-                if (tilePrefabToSpawn != null)
-                {
-                    Vector3 spawnPos = new Vector3(x - offsetX, 0, z - offsetZ);
-                    Instantiate(tilePrefabToSpawn, spawnPos, Quaternion.identity, transform);
-                }
+                Vector3 spawnPos = new Vector3(x - offsetX, 0f, z - offsetZ);
+                Instantiate(tilePrefab, spawnPos, Quaternion.identity, transform);
             }
         }
     }

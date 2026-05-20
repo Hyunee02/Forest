@@ -1,14 +1,18 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-public abstract class ToolBase : MonoBehaviour
+public abstract class ToolBase : MonoBehaviour, IEquipable
 {
     protected new Collider collider;
 
     protected ToolData data;
-    protected int id;
 
-    public int Id => id;
+    public int Id => data.id;
+    public ToolType ToolType => data.toolType;
+    public string Name => data.name;
+    public int Rate => data.rate;
+    public int Durability => data.durability;
+    public int Reduce => data.reduce;
 
     public abstract void Init(ToolData data);
 

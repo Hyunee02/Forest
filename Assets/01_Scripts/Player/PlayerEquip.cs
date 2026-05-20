@@ -1,22 +1,9 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Serializable]
-public struct ToolMapping
-{
-    public int id;
-    public ToolBase prefab;
-}
-
 public class PlayerEquip : MonoBehaviour
 {
-    [SerializeField] private ToolMapping[] toolPrefabs;
-
     [SerializeField] private Transform toolPos;
-
-
-    private Dictionary<int, ToolBase> toolPrefabDict;
 
     private ToolBase curTool;
     private ToolData curToolData;
@@ -24,36 +11,6 @@ public class PlayerEquip : MonoBehaviour
     private void Awake()
     {
         toolPos = transform.FindChildByName("ToolPos");
-
-        InitPrefabDict();
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            EquipTool(3);
-    }
-
-    /// <summary>
-    /// 프리팹 딕셔너리 초기화
-    /// </summary>
-    private void InitPrefabDict()
-    {
-        toolPrefabDict = new Dictionary<int, ToolBase>();
-
-        // Prefab Dict 초기화
-        foreach (ToolMapping toolMap in toolPrefabs)
-        {
-            // 프리팹 널 방지
-            if (toolMap.prefab == null)
-                continue;
-
-            // 중복 방지
-            if (toolPrefabDict.ContainsKey(toolMap.id))
-                continue;
-
-            toolPrefabDict.Add(toolMap.id, toolMap.prefab);
-        }
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ public class PlayerInventory : MonoBehaviour
     [SerializeField] Canvas canvas;
 
     PlayerBindInput input;
+    PlayerEquip equip;
 
     private bool bOpen;
 
@@ -13,6 +14,7 @@ public class PlayerInventory : MonoBehaviour
     private void Awake()
     {
         input = GetComponent<PlayerBindInput>();
+        equip = GetComponent<PlayerEquip>();
     }
 
     private void OnEnable()
@@ -33,6 +35,10 @@ public class PlayerInventory : MonoBehaviour
         // bOpen 값에 맞춰 인벤토리 온/오프
         if (canvas != null)
             canvas.gameObject.SetActive(bOpen);
+    }
 
+    private void GetItem(int toolId)
+    {
+        equip.EquipTool(toolId);
     }
 }

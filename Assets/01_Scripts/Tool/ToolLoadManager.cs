@@ -7,6 +7,8 @@ public class ToolLoadManager : MonoBehaviour
 
     private Dictionary<int, ToolData> toolDict;
 
+    Dictionary<int, ToolData> ToolDict => toolDict;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

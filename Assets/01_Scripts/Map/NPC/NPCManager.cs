@@ -78,6 +78,10 @@ public class NPCManager : MonoBehaviour
             case NPCType.PartTimeWorker:
                 Debug.Log("PartTimeWorker NPC와 상호작용");
                 break;
+
+            case NPCType.Hunter:
+                Debug.Log("Hunter NPC와 상호작용");
+                break; 
         }
     }
 }

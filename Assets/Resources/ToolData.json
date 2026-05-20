@@ -1,146 +1,148 @@
-[
-  {
-    "id": "0001",
-    "toolType": "Axe",
-    "name": "허술한 도끼",
-    "rate": "1",
-    "durability": "40",
-    "reduce": "5"
-  },
-  {
-    "id": "0002",
-    "toolType": "Axe",
-    "name": "돌 도끼",
-    "rate": "2",
-    "durability": "100",
-    "reduce": "5"
-  },
-  {
-    "id": "0003",
-    "toolType": "Axe",
-    "name": "황금 도끼",
-    "rate": "3",
-    "durability": "200",
-    "reduce": "5"
-  },
-  {
-    "id": "0004",
-    "toolType": "Hoe",
-    "name": "허술한 괭이",
-    "rate": "1",
-    "durability": "40",
-    "reduce": "5"
-  },
-  {
-    "id": "0005",
-    "toolType": "Hoe",
-    "name": "돌 괭",
-    "rate": "2",
-    "durability": "100",
-    "reduce": "5"
-  },
-  {
-    "id": "0006",
-    "toolType": "Hoe",
-    "name": "황금 괭이",
-    "rate": "3",
-    "durability": "200",
-    "reduce": "5"
-  },
-  {
-    "id": "0007",
-    "toolType": "Pickaxe",
-    "name": "허술한 곡괭이",
-    "rate": "1",
-    "durability": "40",
-    "reduce": "5"
-  },
-  {
-    "id": "0008",
-    "toolType": "Pickaxe",
-    "name": "돌 곡괭이",
-    "rate": "2",
-    "durability": "100",
-    "reduce": "5"
-  },
-  {
-    "id": "0009",
-    "toolType": "Pickaxe",
-    "name": "황금 곡괭이",
-    "rate": "3",
-    "durability": "200",
-    "reduce": "5"
-  },
-  {
-    "id": "0010",
-    "toolType": "Shovel",
-    "name": "허술한 삽",
-    "rate": "1",
-    "durability": "40",
-    "reduce": "5"
-  },
-  {
-    "id": "0011",
-    "toolType": "Shovel",
-    "name": "돌 삽",
-    "rate": "2",
-    "durability": "100",
-    "reduce": "5"
-  },
-  {
-    "id": "0012",
-    "toolType": "Shovel",
-    "name": "황금 삽",
-    "rate": "3",
-    "durability": "200",
-    "reduce": "5"
-  },
-  {
-    "id": "0013",
-    "toolType": "WateringCan",
-    "name": "허술한 물뿌리개",
-    "rate": "1",
-    "durability": "20",
-    "reduce": "4"
-  },
-  {
-    "id": "0014",
-    "toolType": "WateringCan",
-    "name": "물뿌리개",
-    "rate": "2",
-    "durability": "60",
-    "reduce": "4"
-  },
-  {
-    "id": "0015",
-    "toolType": "WateringCan",
-    "name": "황금 물뿌리개",
-    "rate": "3",
-    "durability": "180",
-    "reduce": "4"
-  },
-  {
-    "id": "0016",
-    "toolType": "FishingRod",
-    "name": "허술한 낚싯대",
-    "rate": "1",
-    "durability": "10",
-    "reduce": "1"
-  },
-  {
-    "id": "0017",
-    "toolType": "FishingRod",
-    "name": "낚싯대",
-    "rate": "2",
-    "durability": "30",
-    "reduce": "1"
-  },
-  {
-    "id": "0018",
-    "toolType": "FishingRod",
-    "name": "황금 낚싯대",
-    "rate": "3",
-    "durability": "80",
-    "reduce": "1"
-  }
-]
+{
+  "tools": [
+    {
+      "id": 1,
+      "toolType": "Axe",
+      "name": "허술한 도끼",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "id": 2,
+      "toolType": "Axe",
+      "name": "돌 도끼",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "id": 3,
+      "toolType": "Axe",
+      "name": "황금 도끼",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "id": 4,
+      "toolType": "Hoe",
+      "name": "허술한 괭이",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "id": 5,
+      "toolType": "Hoe",
+      "name": "돌 괭",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "id": 6,
+      "toolType": "Hoe",
+      "name": "황금 괭이",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "id": 7,
+      "toolType": "Pickaxe",
+      "name": "허술한 곡괭이",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "id": 8,
+      "toolType": "Pickaxe",
+      "name": "돌 곡괭이",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "id": 9,
+      "toolType": "Pickaxe",
+      "name": "황금 곡괭이",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "id": 10,
+      "toolType": "Shovel",
+      "name": "허술한 삽",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "id": 11,
+      "toolType": "Shovel",
+      "name": "돌 삽",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "id": 12,
+      "toolType": "Shovel",
+      "name": "황금 삽",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "id": 13,
+      "toolType": "WateringCan",
+      "name": "허술한 물뿌리개",
+      "rate": 1,
+      "durability": 20,
+      "reduce": 4
+    },
+    {
+      "id": 14,
+      "toolType": "WateringCan",
+      "name": "물뿌리개",
+      "rate": 2,
+      "durability": 60,
+      "reduce": 4
+    },
+    {
+      "id": 15,
+      "toolType": "WateringCan",
+      "name": "황금 물뿌리개",
+      "rate": 3,
+      "durability": 180,
+      "reduce": 4
+    },
+    {
+      "id": 16,
+      "toolType": "FishingRod",
+      "name": "허술한 낚싯대",
+      "rate": 1,
+      "durability": 10,
+      "reduce": 1
+    },
+    {
+      "id": 17,
+      "toolType": "FishingRod",
+      "name": "낚싯대",
+      "rate": 2,
+      "durability": 30,
+      "reduce": 1
+    },
+    {
+      "id": 18,
+      "toolType": "FishingRod",
+      "name": "황금 낚싯대",
+      "rate": 3,
+      "durability": 80,
+      "reduce": 1
+    }
+  ]
+}

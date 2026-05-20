@@ -2,15 +2,12 @@ using UnityEngine;
 
 public class Tool_Axe : ToolBase
 {
-    private ToolData data;
-
     private GameObject rootObject;
 
-    private string toolPosName = "ToolPos";
-    private Transform toolPos;
+    //private string toolPosName = "ToolPos";
+    //private Transform toolPos;
 
     [Header("----- Info -----")]
-    [SerializeField] private int toolId;
     [SerializeField] private int curDurability;
 
     private void Awake()
@@ -20,10 +17,10 @@ public class Tool_Axe : ToolBase
         rootObject = transform.root.gameObject;
         Debug.Assert(rootObject != null, "RootObject is null");
 
-        toolPos = rootObject.transform.FindChildByName(toolPosName);
-        Debug.Assert(toolPosName != null, "ToolPosName is null");
+        //toolPos = rootObject.transform.FindChildByName(toolPosName);
+        //Debug.Assert(toolPosName != null, "ToolPosName is null");
 
-        transform.SetParent(toolPos, false);
+        //transform.SetParent(toolPos, false);
     }
 
     // ToolData Àû¿ë
@@ -37,6 +34,11 @@ public class Tool_Axe : ToolBase
 
         this.data = data;
         Debug.Log($"Apply Completely\nID : {data.id}\nName : {data.name}");
+
+        id = data.id;
+        curDurability = data.durability;
+
+        collider.enabled = false;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -53,5 +55,15 @@ public class Tool_Axe : ToolBase
             if (curDurability < 0)
                 Destroy(gameObject);
         }
+    }
+
+    public override void Begin_Use()
+    {
+        
+    }
+
+    public override void End_Use()
+    {
+        
     }
 }

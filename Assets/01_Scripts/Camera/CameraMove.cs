@@ -59,6 +59,11 @@ public class CameraMove : MonoBehaviour
 
     }
 
+    private void OpenInventory()
+    {
+
+    }
+
     private void OnGUI()
     {
         GUI.color = Color.red;

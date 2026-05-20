@@ -1,18 +1,13 @@
 using UnityEngine;
 
-public class Tool_Axe : MonoBehaviour, ITool
+public class Tool_Axe : ToolBase
 {
-    private ToolData data;
-
-    private new Collider collider;
-
     private GameObject rootObject;
 
-    private string toolPosName = "ToolPos";
-    private Transform toolPos;
+    //private string toolPosName = "ToolPos";
+    //private Transform toolPos;
 
     [Header("----- Info -----")]
-    [SerializeField] private int toolId;
     [SerializeField] private int curDurability;
 
     private void Awake()
@@ -22,14 +17,14 @@ public class Tool_Axe : MonoBehaviour, ITool
         rootObject = transform.root.gameObject;
         Debug.Assert(rootObject != null, "RootObject is null");
 
-        toolPos = rootObject.transform.FindChildByName(toolPosName);
-        Debug.Assert(toolPosName != null, "ToolPosName is null");
+        //toolPos = rootObject.transform.FindChildByName(toolPosName);
+        //Debug.Assert(toolPosName != null, "ToolPosName is null");
 
-        transform.SetParent(toolPos, false);
+        //transform.SetParent(toolPos, false);
     }
 
     // ToolData Àû¿ë
-    public void Init(ToolData data)
+    public override void Init(ToolData data)
     {
         if (data == null)
         {
@@ -39,6 +34,11 @@ public class Tool_Axe : MonoBehaviour, ITool
 
         this.data = data;
         Debug.Log($"Apply Completely\nID : {data.id}\nName : {data.name}");
+
+        id = data.id;
+        curDurability = data.durability;
+
+        collider.enabled = false;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -55,5 +55,15 @@ public class Tool_Axe : MonoBehaviour, ITool
             if (curDurability < 0)
                 Destroy(gameObject);
         }
+    }
+
+    public override void Begin_Use()
+    {
+        
+    }
+
+    public override void End_Use()
+    {
+        
     }
 }

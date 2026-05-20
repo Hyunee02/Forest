@@ -10,7 +10,9 @@ public enum NPCType
     TrainDriver,
     Banker1,
     Banker2,
+    StoreManager,
     PartTimeWorker,
+    Hunter,
 }
 
 public class NPC : Interactable

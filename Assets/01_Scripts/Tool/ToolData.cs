@@ -15,7 +15,7 @@ public enum ToolType
 public class ToolData
 {
     public int id;
-    public string toolType;
+    public ToolType toolType;
     public string name;
     public int rate;
     public int durability;

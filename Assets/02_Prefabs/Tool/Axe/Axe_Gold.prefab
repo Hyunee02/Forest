@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4638747894636694932}
   - component: {fileID: 5453125095246304474}
   - component: {fileID: 1758935417319134469}
+  - component: {fileID: 2136912924405872165}
   m_Layer: 0
   m_Name: Axe_Gold
   m_TagString: Untagged
@@ -28,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 6937318623383115404}
   serializedVersion: 2
   m_LocalRotation: {x: 0.71264625, y: 0.6933161, z: 0.00000065192575, w: 0.10699643}
-  m_LocalPosition: {x: 0.032086678, y: 0.065915376, z: -0.18393466}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -108,3 +109,16 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.22
   m_Center: {x: 0, y: 0, z: 0.2}
+--- !u!114 &2136912924405872165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6937318623383115404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cb5fd366c7e7074abec9cbac6b2e67f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  curDurability: 0

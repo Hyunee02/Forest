@@ -1,15 +1,19 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class PlayerInventory : MonoBehaviour
 {
     [SerializeField] Canvas canvas;
 
+    [SerializeField] DraggableItem itemPrefab;
+
+    ItemData itemData;
+
     PlayerBindInput input;
     PlayerEquip equip;
 
     private bool bOpen;
-
 
     private void Awake()
     {
@@ -37,8 +41,8 @@ public class PlayerInventory : MonoBehaviour
             canvas.gameObject.SetActive(bOpen);
     }
 
-    private void GetItem(int toolId)
+    private void BeginDrag(ItemData data)
     {
-        equip.EquipTool(toolId);
+
     }
 }

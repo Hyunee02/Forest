@@ -33,7 +33,7 @@ public class Tool_Axe : ToolBase
         }
 
         this.data = data;
-        Debug.Log($"Apply Completely\nID : {data.id}\nName : {data.name}");
+        Debug.Log($"Apply Completely\nID : {data.itemId}\nName : {data.name}");
 
         //id = data.id;
         curDurability = data.durability;

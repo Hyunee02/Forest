@@ -7,7 +7,7 @@ public abstract class ToolBase : MonoBehaviour, IEquipable
 
     protected ToolData data;
 
-    public int Id => data.id;
+    public int Id => data.itemId;
     public ToolType ToolType => data.toolType;
     public string Name => data.name;
     public int Rate => data.rate;

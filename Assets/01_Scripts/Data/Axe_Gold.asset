@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04fc8022e00b5b448ae417904a1bd29d, type: 3}
   m_Name: Axe_Gold
   m_EditorClassIdentifier: 
-  id: 0
+  id: 1
   image: {fileID: 0}
-  prefab: {fileID: 0}
+  prefab: {fileID: 6937318623383115404, guid: 81d432261ca89ec4f8ccad6a66fbb8d1, type: 3}

@@ -2,18 +2,27 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    [SerializeField] private ItemInfo infoPrefab;
+
     private Image image;
-    public Transform parentBeforeDrag;
 
     private ItemData itemData;
 
+    public Transform parentBeforeDrag;
+
     public ItemData ItemData => itemData;
+
+    public void Awake()
+    {
+        image = GetComponent<Image>();
+    }
 
     public void Init(ItemData data, Sprite sprite)
     {
         itemData = data;
+        image.sprite = sprite;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -46,5 +55,17 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
         // 이미지 raycast 켜주기
         image.raycastTarget = true;
+    }
+
+    private ItemInfo itemInfo;
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        itemInfo = Instantiate(infoPrefab, transform, false);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        Destroy(itemInfo);
     }
 }

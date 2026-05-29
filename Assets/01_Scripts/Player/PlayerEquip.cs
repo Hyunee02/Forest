@@ -20,7 +20,7 @@ public class PlayerEquip : MonoBehaviour
     public void EquipTool(int toolId)
     {
         // id 받아와서 데이터 저장
-        curToolData = ToolLoadManager.Instance.GetToolData(toolId);
+        curToolData = ItemLoadManager.Instance.GetToolData(toolId);
 
         // data null 방지
         if (curToolData == null)

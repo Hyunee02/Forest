@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 public enum ItemType
 {
@@ -24,24 +25,29 @@ public enum ToolType
 [Serializable]
 public class ItemData
 {
-    public int id;
+    public string id;
     public ItemType itemType;
     public string name;
+    public int price;
+    public string description;
+    public ToolInfo toolInfo;
+
+    public string imagePath;
+    public string prefabPath;
 }
 
 [Serializable]
-public class ToolData
+public class ToolInfo
 {
-    public int id;
+    public string id;
     public ToolType toolType;
-    public string name;
     public int rate;
     public int durability;
     public int reduce;
 }
 
 [Serializable]
-public class ToolDataTable
+public class ItemDataTable
 {
-    public ToolData[] tools;
+    public ItemData[] items;
 }

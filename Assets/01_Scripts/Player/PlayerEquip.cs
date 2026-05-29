@@ -34,16 +34,16 @@ public class PlayerEquip : MonoBehaviour
             UnEquipTool();
 
         // 프리팹 찾기
-        if (!toolPrefabDict.TryGetValue(curToolData.id, out ToolBase curToolPrefab))
-        {
-            Debug.LogError($"ToolPrefab is null\nID : {curToolData.id}");
-            return;
-        }
+        //if (!toolPrefabDict.TryGetValue(curToolData.id, out ToolBase curToolPrefab))
+        //{
+        //    Debug.LogError($"ToolPrefab is null\nID : {curToolData.id}");
+        //    return;
+        //}
 
         // 도구 생성
-        GameObject curToolObj = Instantiate(curToolPrefab.gameObject, toolPos, false);
-        curTool = curToolObj.GetComponent<ToolBase>();
-        curToolObj.name = curToolData.name;
+        //GameObject curToolObj = Instantiate(curToolPrefab.gameObject, toolPos, false);
+        //curTool = curToolObj.GetComponent<ToolBase>();
+        //curToolObj.name = curToolData.name;
 
         // 도구 초기화
         curTool.transform.localPosition = Vector3.zero;

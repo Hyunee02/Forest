@@ -1,5 +1,15 @@
 using System;
 
+public enum ItemType
+{
+    None,
+    Tool,
+    Material,
+    Food,
+    Furniture,
+    Etc,
+}
+
 public enum ToolType
 {
     None,
@@ -9,6 +19,14 @@ public enum ToolType
     Shovel,
     WateringCan,
     FishingRod,
+}
+
+[Serializable]
+public class ItemData
+{
+    public int id;
+    public ItemType itemType;
+    public string name;
 }
 
 [Serializable]

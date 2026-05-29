@@ -35,7 +35,7 @@ public class Tool_Axe : ToolBase
         this.data = data;
         Debug.Log($"Apply Completely\nID : {data.id}\nName : {data.name}");
 
-        id = data.id;
+        //id = data.id;
         curDurability = data.durability;
 
         collider.enabled = false;

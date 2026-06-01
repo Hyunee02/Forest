@@ -6,8 +6,7 @@ public class ItemLoadManager : MonoBehaviour
     public static ItemLoadManager Instance { get; private set; }
 
     private Dictionary<string, ItemData> itemDict;
-
-    Dictionary<string, ItemData> ItemDict => itemDict;
+    private Dictionary<string, ToolData> toolDict;
 
     private void Awake()
     {
@@ -35,7 +34,9 @@ public class ItemLoadManager : MonoBehaviour
 
         // json items 배열을 ItemDataTable의 items 배열로 변환
         ItemDataTable table = JsonUtility.FromJson<ItemDataTable>(jsonFile.text);
+
         itemDict = new Dictionary<string, ItemData>();
+        toolDict = new Dictionary<string, ToolData>();
 
         foreach (ItemData item in table.items)
         {
@@ -44,17 +45,26 @@ public class ItemLoadManager : MonoBehaviour
 
             itemDict.Add(item.id, item);
         }
-    }
 
-    /// <summary>
-    /// Path에 있는 파일 로드
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    public T Load<T>(string path) where T : Object
-    {
-        return Resources.Load<T>(path);
+        foreach (ToolData tool in table.tools)
+        {
+            if (toolDict.ContainsKey(tool.itemId))
+                continue;
+
+            if (!itemDict.TryGetValue(tool.itemId, out ItemData item))
+            {
+                Debug.LogError($"Impossible to match ToolData : {tool.itemId}");
+                continue;
+            }
+
+            if (item.itemType != ItemType.Tool)
+            {
+                Debug.LogError($"ToolData is connected to non-tool item : {tool.itemId}");
+                continue;
+            }
+
+            toolDict.Add(tool.itemId, tool);
+        }
     }
 
     /// <summary>
@@ -65,10 +75,41 @@ public class ItemLoadManager : MonoBehaviour
     public ItemData GetItemData(string id)
     {
         if (itemDict.TryGetValue(id, out ItemData data))
-        {
             return data;
-        }
 
         return null;
+    }
+
+    /// <summary>
+    /// 도구 데이터 사용
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
+    public ToolData GetToolData(string itemId)
+    {
+        if (toolDict.TryGetValue(itemId, out ToolData data))
+            return data;
+
+        return null;
+    }
+
+    public Sprite GetItemSprite(string id)
+    {
+        ItemData data = GetItemData(id);
+
+        if (data == null)
+            return null;
+
+        return ResourceLoader.Load<Sprite>(data.imagePath);
+    }
+
+    public GameObject GetItemPrefab(string id)
+    {
+        ItemData data = GetItemData(id);
+
+        if (data == null)
+            return null;
+
+        return ResourceLoader.Load<GameObject>(data.prefabPath);
     }
 }

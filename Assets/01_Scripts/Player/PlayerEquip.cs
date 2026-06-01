@@ -6,7 +6,7 @@ public class PlayerEquip : MonoBehaviour
     [SerializeField] private Transform toolPos;
 
     private ToolBase curTool;
-    private ToolData curToolData;
+    //private ToolData curToolData;
 
     private void Awake()
     {

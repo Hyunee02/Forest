@@ -7,12 +7,9 @@ public class Tool_Axe : ToolBase
     //private string toolPosName = "ToolPos";
     //private Transform toolPos;
 
-    [Header("----- Info -----")]
-    [SerializeField] private int curDurability;
-
-    private void Awake()
+    protected override void Awake()
     {
-        collider = GetComponent<Collider>();
+        base.Awake();
 
         rootObject = transform.root.gameObject;
         Debug.Assert(rootObject != null, "RootObject is null");
@@ -24,19 +21,10 @@ public class Tool_Axe : ToolBase
     }
 
     // ToolData 적용
-    public override void Init(ToolData data)
+    public override void Init(ItemData itemData, ToolData toolData)
     {
-        if (data == null)
-        {
-            Debug.LogError("ToolData is null");
-            return;
-        }
-
-        this.data = data;
-        Debug.Log($"Apply Completely\nID : {data.itemId}\nName : {data.name}");
-
-        //id = data.id;
-        curDurability = data.durability;
+        base.Init(itemData, toolData);
+        Debug.Log($"Apply Completely\nID : {itemData.id}\nName : {itemData.name}");
 
         collider.enabled = false;
     }
@@ -50,7 +38,7 @@ public class Tool_Axe : ToolBase
         // 나무에만 충돌 가능
         if (other.CompareTag("Tree"))
         {
-            curDurability -= data.reduce;
+            curDurability -= toolData.reduce;
 
             if (curDurability < 0)
                 Destroy(gameObject);

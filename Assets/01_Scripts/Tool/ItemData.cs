@@ -30,16 +30,15 @@ public class ItemData
     public string name;
     public int price;
     public string description;
-    public ToolInfo toolInfo;
 
     public string imagePath;
     public string prefabPath;
 }
 
 [Serializable]
-public class ToolInfo
+public class ToolData
 {
-    public string id;
+    public string itemId;
     public ToolType toolType;
     public int rate;
     public int durability;
@@ -50,4 +49,5 @@ public class ToolInfo
 public class ItemDataTable
 {
     public ItemData[] items;
+    public ToolData[] tools;
 }

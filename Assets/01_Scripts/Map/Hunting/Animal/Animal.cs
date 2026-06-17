@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Animal : MonoBehaviour
+public class Animal : MonoBehaviour, IHitTarget
 {
     [Header("<< HP >>")]
     [SerializeField] protected int maxHp = 100;
@@ -24,6 +24,9 @@ public class Animal : MonoBehaviour
 
     [Header("<< 범위 >>")]
     [SerializeField] protected float maxRoamDistance = 5f;
+
+    [Header("<< 드랍 설정 >>")]
+    [SerializeField] protected string dropItemName = "고기";
 
     protected Vector3 spawnPosition;
     protected Vector3 moveDirection;
@@ -79,6 +82,13 @@ public class Animal : MonoBehaviour
         }
     }
 
+    public virtual void Hit(int damage)
+    {
+        TakeDamage(damage);
+
+        Debug.Log($"{gameObject.name}을(를) 공격했습니다.");
+    }
+
     public virtual void TakeDamage(int damage)
     {
         if (isDead)
@@ -103,6 +113,8 @@ public class Animal : MonoBehaviour
 
         if (animator != null)
             animator.SetBool(walkParameterName, false);
+
+        Debug.Log($"{dropItemName}을(를) 획득했습니다.");
 
         Vector3 respawnPosition = spawnPosition;
 

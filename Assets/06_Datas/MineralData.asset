@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8134d5bb65338c649b578af9d1aa0fc9, type: 3}
+  m_Name: MineralData
+  m_EditorClassIdentifier: 
+  resourceName: 
+  useHp: 0
+  maxHp: 0
+  destroyWhenHpZero: 0
+  dropEveryHit: 1
+  noDropWeight: 0
+  drops:
+  - itemName: "\uB3CC"
+    dropWeight: 50
+  - itemName: "\uCCA0\uAD11\uC11D"
+    dropWeight: 49
+  - itemName: "\uAE08"
+    dropWeight: 1

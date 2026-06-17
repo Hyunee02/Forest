@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: RockData
   m_EditorClassIdentifier: 
   resourceName: "\uB3CC"
+  useHp: 1
   maxHp: 5
-  damagePerHit: 1
-  dropChance: 0.25
-  dropItemName: "\uB3CC"
+  destroyWhenHpZero: 1
+  dropEveryHit: 1
+  noDropWeight: 75
+  drops:
+  - itemName: "\uB3CC"
+    dropWeight: 25

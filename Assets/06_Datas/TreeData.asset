@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: TreeData
   m_EditorClassIdentifier: 
   resourceName: "\uB098\uBB34"
+  useHp: 1
   maxHp: 10
-  damagePerHit: 1
-  dropChance: 0.25
-  dropItemName: "\uBAA9\uC7AC"
+  destroyWhenHpZero: 1
+  dropEveryHit: 1
+  noDropWeight: 75
+  drops:
+  - itemName: "\uB098\uBB34"
+    dropWeight: 25

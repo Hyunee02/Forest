@@ -141,9 +141,9 @@ public class PlayerInventory : MonoBehaviour
                 UpdateSlot(i);
                 return true;
             }
-
-            return false;
         }
+
+        return false;
     }
 
     public string GetItemId(int index)
@@ -169,7 +169,7 @@ public class PlayerInventory : MonoBehaviour
 
         if (dragIcon != null)
         {
-            dragIcon.sprite = slot.GetICon();
+            dragIcon.sprite = slot.GetIcon();
             dragIcon.gameObject.SetActive(true);
             MoveDragIcon(eventData);
         }

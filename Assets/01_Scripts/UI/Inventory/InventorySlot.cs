@@ -24,6 +24,10 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             itemIcon.raycastTarget = false;
     }
 
+    /// <summary>
+    /// 슬롯 아이콘 바꾸기
+    /// </summary>
+    /// <param name="sprite"></param>
     public void SetIcon(Sprite sprite)
     {
         if (itemIcon == null)
@@ -34,7 +38,11 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         itemIcon.enabled = sprite != null;
     }
 
-    public Sprite GetICon()
+    /// <summary>
+    /// 슬롯에 있는 아이콘 Sprite 반환
+    /// </summary>
+    /// <returns></returns>
+    public Sprite GetIcon()
     {
         if (itemIcon == null)
             return null;

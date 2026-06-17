@@ -27,6 +27,7 @@ public class ItemData
 {
     public string id;
     public ItemType itemType;
+
     public string name;
     public int price;
     public string description;
@@ -40,6 +41,7 @@ public class ToolData
 {
     public string itemId;
     public ToolType toolType;
+
     public int rate;
     public int durability;
     public int reduce;

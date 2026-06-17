@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerBindInput))]
 public class PlayerMove : MonoBehaviour
@@ -19,6 +18,7 @@ public class PlayerMove : MonoBehaviour
 
     private Vector2 moveInput = Vector2.zero;
     private bool bRun;
+    private bool bMove = true;
 
     private PlayerBindInput input;
     private Animator animator;
@@ -41,6 +41,9 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
+        if (!bMove)
+            return;
+
         // BindInput에서 값 가져오기
         moveInput = input.MoveInput;
         bRun = input.BRun;
@@ -74,29 +77,52 @@ public class PlayerMove : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 1f / sensitivity);
         }
 
+        bool bMoving = moveInput.magnitude > deadZone;
+        bool bRunning = bRun && bMoving;
+
         // 뛸 때만 footStep 효과 생성
-        if (bRun)
+        if (bRunning)
         {
             if (footStepRoutine == null)
                 footStepRoutine = StartCoroutine(FootStepRoutine());
         }
         else
-        {
-            if (footStepRoutine != null)
-            {
-                StopCoroutine(footStepRoutine);
-                footStepRoutine = null;
-            }
-        }
+            StopFootStep();
 
         // 애니메이션
         animator.SetFloat("SpeedZ", dir.magnitude);
     }
 
+    public void SetMoveEnabled(bool enabled)
+    {
+        bMove = enabled;
+
+        if (bMove)
+            return;
+
+        moveInput = Vector2.zero;
+        curMoveInput = Vector2.zero;
+        velocity = Vector2.zero;
+        bRun = false;
+
+        StopFootStep();
+
+        animator.SetFloat("SpeedZ", 0f);
+    }
+
+    private void StopFootStep()
+    {
+        if (footStepRoutine == null)
+            return;
+
+        StopCoroutine(footStepRoutine);
+        footStepRoutine = null;
+    }
+
     // 뛸 때 footStep 생성 처리
     private IEnumerator FootStepRoutine()
     {
-        while (bRun == true)
+        while (true)
         {
             GameObject footStep = Instantiate(footStepPrefab, footPos.position, Quaternion.identity, footPos);
             Destroy(footStep, 0.5f);

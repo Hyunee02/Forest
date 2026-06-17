@@ -4,49 +4,61 @@ using UnityEngine.UI;
 
 public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
-    [SerializeField] private ItemInfo infoPrefab;
-    [SerializeField] private GameObject itemPrefab;
+    [SerializeField] private Image itemIcon;
 
-    private GameObject item;
+    private PlayerInventory inventory;
 
-    ItemData itemData;
+    public int Index {  get; private set; }
 
-    public ItemData ItemData => itemData;
-
-    public void Init(ItemData data)
+    /// <summary>
+    /// 슬롯 초기화
+    /// </summary>
+    /// <param name="inventory"></param>
+    /// <param name="index"></param>
+    public void Init(PlayerInventory inventory, int index)
     {
-        itemData = data;
+        this.inventory = inventory;
+        Index = index;
+
+        if (itemIcon != null)
+            itemIcon.raycastTarget = false;
+    }
+
+    public void SetIcon(Sprite sprite)
+    {
+        if (itemIcon == null)
+            return;
+
+        itemIcon.sprite = sprite;
+        // Sprite가 null이 아니면 켜기, null이면 끄기
+        itemIcon.enabled = sprite != null;
+    }
+
+    public Sprite GetICon()
+    {
+        if (itemIcon == null)
+            return null;
+
+        return itemIcon.sprite;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        item = Instantiate(itemPrefab, transform, false);
-        Image itemImage = item.GetComponent<Image>();
-        Sprite sprite = ItemLoadManager.Instance.Load<Sprite>($"Prefab/{itemData.imagePath}");
-        itemImage.sprite = sprite;
+        inventory.BeginDrag(this, eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        item.transform.position = Input.mousePosition;
-    }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        
+        inventory.Drag(eventData);
     }
 
     public void OnDrop(PointerEventData eventData)
     {
-        // 1개의 슬롯에는 1개의 아이템만
-        if (transform.childCount > 0)
-            return;
+        inventory.Drop(this);
+    }
 
-        // 드랍된 아이템
-        GameObject dropped = eventData.pointerDrag;
-        DraggableItem draggableItem = dropped.GetComponent<DraggableItem>();
-
-        if (draggableItem != null)
-            draggableItem.parentBeforeDrag = transform;
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        inventory.EndDrag();
     }
 }

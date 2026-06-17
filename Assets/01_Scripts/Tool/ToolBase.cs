@@ -3,10 +3,14 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public abstract class ToolBase : MonoBehaviour
 {
-    protected new Collider collider;
+    protected Collider toolCollider;
 
     protected ItemData itemData;
     protected ToolData toolData;
+
+    protected Transform rootObject;
+
+    protected int curDurability;
 
     public string Id => itemData.id;
     public string Name => itemData.name;
@@ -15,14 +19,14 @@ public abstract class ToolBase : MonoBehaviour
     public int Durability => toolData.durability;
     public int Reduce => toolData.reduce;
 
-    protected int curDurability;
-
     protected virtual void Awake()
     {
-        collider = GetComponent<Collider>();
+        toolCollider = GetComponent<Collider>();
+        toolCollider.isTrigger = true;
+        toolCollider.enabled = false;
     }
 
-    public virtual void Init(ItemData itemData, ToolData toolData)
+    public virtual void Init(ItemData itemData, ToolData toolData, Transform root)
     {
 
         if (itemData == null)
@@ -39,27 +43,27 @@ public abstract class ToolBase : MonoBehaviour
 
         this.itemData = itemData;
         this.toolData = toolData;
+        this.rootObject = root;
 
         curDurability = toolData.durability;
+        End_Collision();
     }
 
-    public virtual void Begin_Use()
+    protected void ReduceDurability()
     {
+        curDurability -= Reduce;
 
+        if (curDurability <= 0)
+            Destroy(gameObject);
     }
 
-    public virtual void End_Use()
+    public void Begin_Collision()
     {
-
-    }
-
-    public virtual void Begin_Collision()
-    {
-        collider.enabled = true;
+        toolCollider.enabled = true;
     }
     
-    public virtual void End_Collision()
+    public void End_Collision()
     {
-        collider.enabled = false;
+        toolCollider.enabled = false;
     }
 }

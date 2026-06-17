@@ -14,7 +14,8 @@ public class PlayerBindInput : MonoBehaviour
     public bool BRun => bRun;
 
     public event Action OnInventoryInput;
-    //public event Action OnAttack;
+    public event Action OnAttackInput;
+    public event Action OnInteractInput;
 
     private void Awake()
     {
@@ -44,7 +45,13 @@ public class PlayerBindInput : MonoBehaviour
         // Attack
         {
             InputAction action = actionMap.FindAction("Attack");
-            //action.performed += context => OnAttack.Invoke();
+            action.performed += context => OnAttackInput?.Invoke();
+        }
+
+        // Interact
+        {
+            InputAction action = actionMap.FindAction("Interact");
+            action.performed += context => OnInteractInput?.Invoke();
         }
     }
 }

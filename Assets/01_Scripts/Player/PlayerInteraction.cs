@@ -96,6 +96,9 @@ public class PlayerInteraction : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (rayPos == null)
+            return;
+
         Ray ray = new Ray(rayPos.position, rayPos.forward);
 
         Gizmos.color = Color.green;

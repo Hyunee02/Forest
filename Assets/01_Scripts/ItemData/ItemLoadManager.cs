@@ -10,12 +10,6 @@ public class ItemLoadManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
         Instance = this;
         LoadItemData();
     }
@@ -81,7 +75,7 @@ public class ItemLoadManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 도구 데이터 사용
+    /// 도구 데이터 로드
     /// </summary>
     /// <param name="itemId"></param>
     /// <returns></returns>
@@ -93,6 +87,11 @@ public class ItemLoadManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// 아이템 이미지 로드
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public Sprite GetItemSprite(string id)
     {
         ItemData data = GetItemData(id);
@@ -103,6 +102,11 @@ public class ItemLoadManager : MonoBehaviour
         return ResourceLoader.Load<Sprite>(data.imagePath);
     }
 
+    /// <summary>
+    /// 아이템 프리팹 로드
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public GameObject GetItemPrefab(string id)
     {
         ItemData data = GetItemData(id);

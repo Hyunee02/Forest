@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -5,6 +6,8 @@ using UnityEngine.UI;
 public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     [SerializeField] private Image itemIcon;
+    [SerializeField] private TMP_Text countText;
+    [SerializeField] private Slider durabilitySlider;
 
     private PlayerInventory inventory;
 
@@ -20,22 +23,51 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         this.inventory = inventory;
         Index = index;
 
-        if (itemIcon != null)
-            itemIcon.raycastTarget = false;
+        itemIcon.raycastTarget = false;
+        countText.raycastTarget = false;
+        durabilitySlider.interactable = false;
+
+        Clear();
     }
 
     /// <summary>
-    /// 슬롯 아이콘 바꾸기
+    /// 아이템 세팅
     /// </summary>
     /// <param name="sprite"></param>
-    public void SetIcon(Sprite sprite)
+    /// <param name="count"></param>
+    /// <param name="toolData"></param>
+    /// <param name="currentDurability"></param>
+    public void SetItem(Sprite sprite, int count, ToolData toolData, int currentDurability)
     {
-        if (itemIcon == null)
-            return;
-
         itemIcon.sprite = sprite;
-        // Sprite가 null이 아니면 켜기, null이면 끄기
-        itemIcon.enabled = sprite != null;
+        itemIcon.gameObject.SetActive(sprite != null);
+
+        countText.text = count > 1 ? count.ToString() : "";
+        countText.gameObject.SetActive(count > 1);
+
+        bool bTool = toolData != null;
+        durabilitySlider.gameObject.SetActive(bTool);
+
+        if (bTool)
+        {
+            durabilitySlider.maxValue = toolData.durability;
+            durabilitySlider.value = currentDurability;
+        }
+    }
+
+    /// <summary>
+    /// 아이템 초기화
+    /// </summary>
+    public void Clear()
+    {
+        itemIcon.sprite = null;
+        itemIcon.gameObject.SetActive(false);
+
+        countText.text = "";
+        countText.gameObject.SetActive(false);
+
+        durabilitySlider.value = 0f;
+        durabilitySlider.gameObject.SetActive(false);
     }
 
     /// <summary>

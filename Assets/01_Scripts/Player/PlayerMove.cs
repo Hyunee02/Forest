@@ -70,11 +70,12 @@ public class PlayerMove : MonoBehaviour
         // 이동
         transform.position += dir * Time.deltaTime;
 
-        // 움직임 회전
+        // 보는 방향
         if (lookDir.magnitude > deadZone)
         {
             Quaternion targetRot = Quaternion.LookRotation(lookDir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 1f / sensitivity);
+            transform.rotation = targetRot;
+            //transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 1f / sensitivity);
         }
 
         bool bMoving = moveInput.magnitude > deadZone;
@@ -93,6 +94,10 @@ public class PlayerMove : MonoBehaviour
         animator.SetFloat("SpeedZ", dir.magnitude);
     }
 
+    /// <summary>
+    /// 움직임 비활성화
+    /// </summary>
+    /// <param name="enabled"></param>
     public void SetMoveEnabled(bool enabled)
     {
         bMove = enabled;
@@ -110,6 +115,9 @@ public class PlayerMove : MonoBehaviour
         animator.SetFloat("SpeedZ", 0f);
     }
 
+    /// <summary>
+    /// 이동 효과 멈추기
+    /// </summary>
     private void StopFootStep()
     {
         if (footStepRoutine == null)
@@ -119,7 +127,10 @@ public class PlayerMove : MonoBehaviour
         footStepRoutine = null;
     }
 
-    // 뛸 때 footStep 생성 처리
+    /// <summary>
+    /// 이동 효과 코루틴
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator FootStepRoutine()
     {
         while (true)

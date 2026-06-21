@@ -7,17 +7,12 @@ public abstract class ToolBase : MonoBehaviour
 
     protected ItemData itemData;
     protected ToolData toolData;
+    protected PlayerEquip equip;
 
     protected Transform rootObject;
 
-    protected int curDurability;
-
-    public string Id => itemData.id;
-    public string Name => itemData.name;
     public ToolType ToolType => toolData.toolType;
     public int Rate => toolData.rate;
-    public int Durability => toolData.durability;
-    public int Reduce => toolData.reduce;
 
     protected virtual void Awake()
     {
@@ -26,9 +21,15 @@ public abstract class ToolBase : MonoBehaviour
         toolCollider.enabled = false;
     }
 
-    public virtual void Init(ItemData itemData, ToolData toolData, Transform root)
+    /// <summary>
+    /// 도구 정보 설정
+    /// </summary>
+    /// <param name="itemData"></param>
+    /// <param name="toolData"></param>
+    /// <param name="equip"></param>
+    /// <param name="root"></param>
+    public virtual void Init(ItemData itemData, ToolData toolData, PlayerEquip equip, Transform root)
     {
-
         if (itemData == null)
         {
             Debug.LogError("itemData is null");
@@ -43,26 +44,16 @@ public abstract class ToolBase : MonoBehaviour
 
         this.itemData = itemData;
         this.toolData = toolData;
+        this.equip = equip;
         this.rootObject = root;
-
-        curDurability = toolData.durability;
-        End_Collision();
     }
 
-    protected void ReduceDurability()
-    {
-        curDurability -= Reduce;
-
-        if (curDurability <= 0)
-            Destroy(gameObject);
-    }
-
-    public void Begin_Collision()
+    public void BeginUse()
     {
         toolCollider.enabled = true;
     }
     
-    public void End_Collision()
+    public void EndUse()
     {
         toolCollider.enabled = false;
     }

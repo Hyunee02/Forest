@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 public enum ItemType
 {
@@ -34,6 +33,8 @@ public class ItemData
 
     public string imagePath;
     public string prefabPath;
+
+    public int maxStack = 1;
 }
 
 [Serializable]

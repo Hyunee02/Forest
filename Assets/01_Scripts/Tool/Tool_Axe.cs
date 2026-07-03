@@ -2,12 +2,11 @@ using UnityEngine;
 
 public class Tool_Axe : ToolBase
 {
-    private void OnTriggerEnter(Collider other)
+    protected override void OnTriggerEnter(Collider other)
     {
-        // 플레이어 충돌 방지
-        if (other.transform.root == rootObject)
-            return;
+        base.OnTriggerEnter(other);
 
+        // Tree가 아닐 시 충돌 X
         if (!other.CompareTag("Tree"))
             return;
 

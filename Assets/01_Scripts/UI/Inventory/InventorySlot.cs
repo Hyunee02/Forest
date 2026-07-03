@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerClickHandler
 {
     [SerializeField] private Image itemIcon;
     [SerializeField] private TMP_Text countText;
@@ -99,6 +99,11 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        inventory.EndDrag();
+        inventory.EndDrag(eventData);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        inventory.SelectSlot(this, eventData.position);
     }
 }

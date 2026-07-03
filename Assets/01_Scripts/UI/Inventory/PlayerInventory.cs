@@ -5,21 +5,29 @@ using UnityEngine.UI;
 
 public class PlayerInventory : MonoBehaviour
 {
+    [SerializeField] private Transform dropPoint;
+
     [Header("----- UI -----")]
-    [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private RectTransform inventoryPanel;
+    [SerializeField] private GameObject optionPanel;
     [SerializeField] private Transform slotParent;
     [SerializeField] private Image dragIcon;
 
     [Header("----- Option -----")]
-    [SerializeField] private int maxItemCount = 24;
+    [SerializeField] private Button equipButton;
+    [SerializeField] private Button dropButton;
 
     private List<InventorySlot> slots;
-    private List<InventoryItem> items;
+    private InventoryItem[] items; 
 
     private PlayerBindInput input;
     private PlayerEquip equip;
 
     private InventorySlot dragStartSlot;
+    private bool droppedOnSlot;
+
+    private int selectedIndex = -1;
+    private Vector2 selectedMousePosition;
 
     private void Awake()
     {
@@ -27,32 +35,33 @@ public class PlayerInventory : MonoBehaviour
         equip = GetComponent<PlayerEquip>();
 
         InitSlots();
-        InitItems();
 
+        inventoryPanel.gameObject.SetActive(false);
+        optionPanel.gameObject.SetActive(false);
         dragIcon.gameObject.SetActive(false);
+        
         dragIcon.raycastTarget = false;
 
-        inventoryPanel.SetActive(false);
+        equipButton.onClick.AddListener(EquipSelectedItem);
+        dropButton.onClick.AddListener(DropSelectedItem);
     }
 
     private void OnEnable()
     {
         input.OnInventoryInput += ToggleInventory;
+        input.OnUseInput += UseSelectedSlot;
     }
 
     private void OnDisable()
     {
         input.OnInventoryInput -= ToggleInventory;
+        input.OnUseInput -= UseSelectedSlot;
     }
 
-    // 인벤토리 패널 온 / 오프
-    private void ToggleInventory()
+    private void Update()
     {
-        bool active = !inventoryPanel.activeSelf;
-        inventoryPanel.SetActive(active);
-
-        if (!active)
-            EndDrag();
+        if (Input.GetKey(KeyCode.Alpha1))
+            AddItem("0001", 1);
     }
 
     /// <summary>
@@ -76,29 +85,32 @@ public class PlayerInventory : MonoBehaviour
     }
 
     /// <summary>
-    /// 아이템 초기화
-    /// </summary>
-    private void InitItems()
-    {
-        items = new List<InventoryItem>();
-        items.Clear();
-
-        // 아이템 추가
-        for (int i = 0; i < slots.Count; i++)
-            items.Add(new InventoryItem());
-    }
-
-    /// <summary>
-    /// 아이템 인덱스 가져오기
+    /// 인벤토리 아이템 가져오기
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>
     public InventoryItem GetItem(int index)
     {
-        if (index < 0 || index >= items.Count)
+        if (index < 0 || index >= items.Length)
             return null;
 
         return items[index];
+    }
+
+    /// <summary>
+    /// 인벤토리 아이템 슬롯 번호 찾기
+    /// </summary>
+    /// <param name="targetItem"></param>
+    /// <returns></returns>
+    private int GetItemIndex(InventoryItem targetItem)
+    {
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == targetItem)
+                return i;
+        }
+
+        return -1;
     }
 
     /// <summary>
@@ -118,76 +130,124 @@ public class PlayerInventory : MonoBehaviour
         // 도구이면 1개, 아이템이면 maxStack
         int maxStack = toolData != null ? 1 : Mathf.Max(1, itemData.maxStack);
 
-        // 인벤토리 빈 공간 검사
-        if (GetEmptySpace(itemId, maxStack) < amount)
-        {
-            Debug.Log("인벤토리 공간이 부족합니다.");
-            return false;
-        }
-
-        int remain = amount;
-
         // 아이템일 때, 기존 스택에 먼저 추가
         if (maxStack > 1)
         {
-            for (int i = 0; i < items.Count; i++)
+
+            for (int i = 0; i < items.Length; i++)
             {
-                if (items[i].itemId != itemId)
-                    continue;
+                bool bItem = items[i] != null
+                    && items[i].itemId == itemId
+                    && items[i].count < maxStack;
 
-                int space = maxStack - items[i].count;
-                int addCount = Mathf.Min(space, remain);
-
-                items[i].count += addCount;
-                remain -= addCount;
-
-                if (remain <= 0)
-                    break;
+                if (bItem)
+                {
+                    items[i].count++;
+                    RefreshSlot(i);
+                    return true;
+                }
             }
         }
 
         // 빈 슬롯에 새로 추가
-        for (int i = 0; i < items.Count && remain > 0; i++)
+        for (int i = 0; i < items.Length; i++)
         {
-            if (!items[i].BEmpty)
-                continue;
+            if (items[i] == null)
+            {
+                int durability = toolData != null ? toolData.durability : 0;
 
-            int addCount = Mathf.Min(maxStack, remain);
-            int durability = toolData == null ? 0 : toolData.durability;
+                items[i] = new InventoryItem(itemId, 1, durability);
 
-            items[i].Set(itemId, addCount, durability);
-            remain -= addCount;
+                RefreshSlot(i);
+
+                return true;
+            }
         }
 
-        RefreshAllSlots();
-
+        Debug.Log("인벤토리가 가득 찼습니다.");
         return true;
     }
 
     /// <summary>
-    /// 인벤토리 빈 공간 검사
+    /// 드래그 및 아이템 합치기
     /// </summary>
-    /// <param name="itemId"></param>
-    /// <param name="maxStack">최대 아이템 갯수</param>
-    /// <returns></returns>
-    private int GetEmptySpace (string itemId, int maxStack)
+    /// <param name="startIndex"></param>
+    /// <param name="dropIndex"></param>
+    private void MoveOrMerge(int startIndex, int dropIndex)
     {
-        int space = 0;
+        // 같은 슬롯이면 리턴
+        if (startIndex == dropIndex)
+            return;
 
-        for (int i = 0; i < items.Count; i++)
+        if (items[startIndex] == null)
+            return;
+
+        bool sameItem = items[dropIndex].itemId == items[startIndex].itemId;
+
+        // 같은 아이템이고 maxStack 안 넘으면 합치기
+        if (sameItem)
         {
-            // 아이템이 없으면
-            if (items[i].BEmpty)
-                space += maxStack;
+            ItemData itemData = ItemLoadManager.Instance.GetItemData(items[startIndex].itemId);
+            ToolData toolData = ItemLoadManager.Instance.GetToolData(items[startIndex].itemId);
 
-            // 아이템 아이디가 같으면
-            else if (items[i].itemId == itemId && maxStack > 1)
-                space += Mathf.Max(maxStack - items[i].count);
+            int maxStack = toolData != null ? 1 : Mathf.Max(1, itemData.maxStack);
+
+            if (maxStack > 1 && items[dropIndex].count < maxStack)
+            {
+                items[dropIndex].count++;
+                items[startIndex].count--;
+
+                if (items[startIndex].count <= 0)
+                    items[startIndex] = null;
+
+                RefreshSlot(startIndex);
+                RefreshSlot(dropIndex);
+
+                return;
+            }
         }
 
-        return space;
+        // 자리 스왑
+        InventoryItem temp = items[startIndex];
+        items[startIndex] = items[dropIndex];
+        items[dropIndex] = temp;
+
+        // UI 갱신
+        RefreshSlot(startIndex);
+        RefreshSlot(dropIndex);
     }
 
+    /// <summary>
+    /// 내구도 줄이기
+    /// </summary>
+    /// <param name="targetItem"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public bool ReduceDurability(InventoryItem targetItem, int amount)
+    {
+        if (targetItem == null)
+            return false;
+
+        int index = GetItemIndex(targetItem);
+
+        if (index < 0)
+            return false;
+
+        targetItem.currentDurability -= amount;
+
+        if (targetItem.currentDurability <= 0)
+        {
+            items[index] = null;
+            RefreshSlot(index);
+            return false;
+        }
+
+        RefreshSlot(index);
+
+        return true;
+    }
+
+    #region 인벤토리 슬롯 이동
     /// <summary>
     /// 드래그 시작
     /// </summary>
@@ -195,15 +255,16 @@ public class PlayerInventory : MonoBehaviour
     /// <param name="eventData"></param>
     public void BeginDrag(InventorySlot slot, PointerEventData eventData)
     {
-        // 드래그 슬롯의 아이템 가져오기
-        InventoryItem item = GetItem(slot.Index);
-
-        // 빈 슬롯 드래그 방지
-        if (item == null || item.BEmpty)
+        if (items[slot.Index] == null)
             return;
+
+        CloseOptionMenu();
 
         // 시작 슬롯
         dragStartSlot = slot;
+
+        // 드래그가 슬롯 위에 드롭됐는지
+        droppedOnSlot = false;
 
         // 드래그 아이콘 표시
         dragIcon.sprite = slot.GetIcon();
@@ -232,121 +293,68 @@ public class PlayerInventory : MonoBehaviour
         if (dragStartSlot == null)
             return;
 
+        droppedOnSlot = true;
+
         MoveOrMerge(dragStartSlot.Index, dropSlot.Index);
     }
 
     /// <summary>
     /// 드래그 종료
     /// </summary>
-    public void EndDrag()
+    public void EndDrag(PointerEventData eventData)
     {
+        if (dragStartSlot == null)
+            return;
+
+        bool insideInventory = RectTransformUtility.RectangleContainsScreenPoint
+            (inventoryPanel, eventData.position, eventData.pressEventCamera);
+
+        // 인벤토리 안에 아이템이 드래그 되지 않았을 때, 아이템 제거 및 드롭
+        if (droppedOnSlot == false && insideInventory == false)
+            DropItem(dragStartSlot.Index);
+
         dragStartSlot = null;
+        droppedOnSlot = false;
+
+        dragIcon.sprite = null;
         dragIcon.gameObject.SetActive(false);
     }
-    
-    /// <summary>
-    /// 드래그 및 아이템 합치기
-    /// </summary>
-    /// <param name="startIndex"></param>
-    /// <param name="dropIndex"></param>
-    private void MoveOrMerge(int startIndex, int dropIndex)
+    #endregion
+
+    #region 패널 온/오프
+    // 인벤토리 패널 온 / 오프
+    private void ToggleInventory()
     {
-        // 같은 슬롯이면 반응 X
-        if (startIndex == dropIndex)
-            return;
-        
-        InventoryItem startItem = items[startIndex];
-        InventoryItem dropItem = items[dropIndex];
+        bool active = inventoryPanel.gameObject.activeSelf;
+        inventoryPanel.gameObject.SetActive(!active);
 
-        ItemData itemData = ItemLoadManager.Instance.GetItemData(startItem.itemId);
-        ToolData toolData = ItemLoadManager.Instance.GetToolData(startItem.itemId);
-
-        int maxStack = toolData != null ? 1 : Mathf.Max(1, itemData.maxStack);
-
-        bool sameItem = !dropItem.BEmpty && startItem.itemId == dropItem.itemId;
-
-        // 같은 아이템이고 스택 비어있으면 합치기
-        if (sameItem && maxStack > 1)
+        if (active)
         {
-            int space = maxStack - dropItem.count;
-            int moveCount = Mathf.Min(space, startItem.count);
-
-            dropItem.count += moveCount;
-            startItem.count -= moveCount;
-
-            if (startItem.count <= 0)
-                startItem.Clear();
+            CloseOptionMenu();
+            dragIcon.gameObject.SetActive(false);
         }
-
-        // 못 합치면 자리 교체
-        else
-        {
-            items[startIndex] = dropItem;
-            items[dropIndex] = startItem;
-        }
-
-        // UI 갱신
-        RefreshSlot(startIndex);
-        RefreshSlot(dropIndex);
     }
 
     /// <summary>
-    /// 아이템 사용
+    /// 옵션 패널 켜기
     /// </summary>
-    /// <param name="index"></param>
-    public void UseItem(int index)
+    private void OpenOptionMenu()
     {
-        InventoryItem item = GetItem(index);
+        ToolData toolData = ItemLoadManager.Instance.GetToolData(items[selectedIndex].itemId);
 
-        // 아이템 null 방지
-        if (item == null || item.BEmpty)
-            return;
-
-        ToolData toolData = ItemLoadManager.Instance.GetToolData(item.itemId);
-
-        // 도구면 장착 실행
-        if (toolData != null)
-            equip.EquipTool(index);
+        optionPanel.gameObject.SetActive(true);
+        equipButton.gameObject.SetActive(toolData != null);
     }
 
     /// <summary>
-    /// 내구도 감소
+    /// 옵션 패널 끄기
     /// </summary>
-    /// <param name="targetItem"></param>
-    /// <param name="amount"></param>
-    /// <returns></returns>
-    public bool ReduceDurability(InventoryItem targetItem, int amount)
+    private void CloseOptionMenu()
     {
-        // 아이템이 몇 번째에 있는지 찾기
-        int index = items.IndexOf(targetItem);
-
-        if (index < 0 || targetItem.BEmpty)
-            return false;
-
-        targetItem.currentDurability -= amount;
-
-        // 내구도 0 이하면 아이템 파괴
-        if (targetItem.currentDurability <= 0)
-        {
-            targetItem.Clear();
-            RefreshSlot(index);
-
-            return false;
-        }
-
-        RefreshSlot(index);
-
-        return true; 
+        selectedIndex = -1;
+        optionPanel.gameObject.SetActive(false);
     }
-
-    /// <summary>
-    /// 전체 슬롯 갱신
-    /// </summary>
-    private void RefreshAllSlots()
-    {
-        for (int i = 0; i < slots.Count; i++)
-            RefreshSlot(i);
-    }
+    #endregion
 
     /// <summary>
     /// 슬롯 갱신
@@ -357,7 +365,7 @@ public class PlayerInventory : MonoBehaviour
         InventoryItem item = items[index];
 
         // 아이템 비어있으면 슬롯 비우기
-        if (item.BEmpty)
+        if (item == null)
         {
             slots[index].Clear();
             return;
@@ -369,5 +377,97 @@ public class PlayerInventory : MonoBehaviour
 
         // 슬롯 UI 갱신
         slots[index].SetItem(sprite, item.count, toolData, item.currentDurability);
+    }
+
+    /// <summary>
+    /// 슬롯 선택
+    /// </summary>
+    /// <param name="slot"></param>
+    /// <param name="mousePosition"></param>
+    public void SelectSlot(InventorySlot slot, Vector2 mousePosition)
+    {
+        if (items[slot.Index] == null)
+            return;
+
+        selectedIndex = slot.Index;
+        selectedMousePosition = mousePosition;
+    }
+
+    /// <summary>
+    /// 선택된 슬롯 아이템 사용
+    /// </summary>
+    private void UseSelectedSlot()
+    {
+        if (inventoryPanel.gameObject.activeSelf == false)
+            return;
+
+        if (selectedIndex < 0)
+            return;
+
+        if (items[selectedIndex] == null)
+            return;
+
+        OpenOptionMenu();
+    }
+
+    /// <summary>
+    /// 선택된 아이템 장착
+    /// </summary>
+    private void EquipSelectedItem()
+    {
+        if (selectedIndex < 0)
+            return;
+
+        if (items[selectedIndex] == null)
+            return;
+
+        ToolData toolData = ItemLoadManager.Instance.GetToolData(items[selectedIndex].itemId);
+
+        if (toolData == null)
+            return;
+
+        equip.EquipTool(selectedIndex);
+        CloseOptionMenu();
+    }
+
+    /// <summary>
+    /// 아이템 드롭하기
+    /// </summary>
+    /// <param name="index"></param>
+    private void DropItem(int index)
+    {
+        // index 범위 초과하면 리턴
+        if (index < 0 || index >= items.Length)
+            return;
+
+        InventoryItem item = items[index];
+
+        if (item == null)
+            return;
+
+        GameObject itemPrefab = ItemLoadManager.Instance.GetItemPrefab(item.itemId);
+
+        if (itemPrefab == null)
+        {
+            Debug.Log($"프리팹이 없습니다.\n{item.itemId}");
+            return;
+        }
+
+        Instantiate(itemPrefab, dropPoint.position, Quaternion.identity);
+
+        items[index] = null;
+        RefreshSlot(index);
+    }
+
+    /// <summary>
+    /// (버튼) 아이템 드롭하기
+    /// </summary>
+    private void DropSelectedItem()
+    {
+        if (selectedIndex < 0)
+            return;
+
+        DropItem(selectedIndex);
+        CloseOptionMenu();
     }
 } 

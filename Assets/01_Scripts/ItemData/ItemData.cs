@@ -2,7 +2,7 @@ using System;
 
 public enum ItemType
 {
-    None,
+    None = 0,
     Tool,
     Material,
     Food,
@@ -12,7 +12,7 @@ public enum ItemType
 
 public enum ToolType
 {
-    None,
+    None = 0,
     Axe,
     Hoe,
     Pickaxe,

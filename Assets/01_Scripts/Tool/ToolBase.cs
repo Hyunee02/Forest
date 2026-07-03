@@ -7,6 +7,7 @@ public abstract class ToolBase : MonoBehaviour
 
     protected ItemData itemData;
     protected ToolData toolData;
+
     protected PlayerEquip equip;
 
     protected Transform rootObject;
@@ -56,5 +57,12 @@ public abstract class ToolBase : MonoBehaviour
     public void EndUse()
     {
         toolCollider.enabled = false;
+    }
+
+    protected virtual void OnTriggerEnter(Collider other)
+    {
+        // 플레이어 충돌 방지
+        if (other.transform.root == rootObject)
+            return;
     }
 }

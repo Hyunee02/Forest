@@ -29,12 +29,12 @@ public class PlayerEquip : MonoBehaviour
 
     private void OnEnable()
     {
-        input.OnAttackInput += UseTool;
+        input.OnUseInput += UseTool;
     }
 
     private void OnDisable()
     {
-        input.OnAttackInput -= UseTool;
+        input.OnUseInput -= UseTool;
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public class PlayerEquip : MonoBehaviour
         InventoryItem inventoryItem = inventory.GetItem(slotIndex);
 
         // 인벤토리 아이템 null 방지
-        if (inventoryItem == null || inventoryItem.BEmpty)
+        if (inventoryItem == null)
             return false;
 
         ItemData itemData = ItemLoadManager.Instance.GetItemData(inventoryItem.itemId);
@@ -115,6 +115,9 @@ public class PlayerEquip : MonoBehaviour
     {
         // 현재 인벤토리 아이템 null 방지
         if (currentInventoryItem == null)
+            return;
+
+        if (currentToolData == null)
             return;
 
         // 사용 가능한지

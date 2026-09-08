@@ -5,13 +5,13 @@ public abstract class ToolBase : MonoBehaviour
 {
     protected Collider toolCollider;
 
-    protected ItemData itemData;
-    protected ToolData toolData;
+    protected ItemData_SO itemData;
+    protected ToolData_SO toolData;
     protected PlayerEquip equip;
 
     protected Transform rootObject;
 
-    public ToolType ToolType => toolData.toolType;
+    public ToolTypeSO ToolType => toolData.toolType;
     public int Rate => toolData.rate;
 
     protected virtual void Awake()
@@ -28,7 +28,11 @@ public abstract class ToolBase : MonoBehaviour
     /// <param name="toolData"></param>
     /// <param name="equip"></param>
     /// <param name="root"></param>
-    public virtual void Init(ItemData itemData, ToolData toolData, PlayerEquip equip, Transform root)
+    public virtual void Init(
+        ItemData_SO itemData,
+        ToolData_SO toolData,
+        PlayerEquip equip,
+        Transform root)
     {
         if (itemData == null)
         {
@@ -52,7 +56,7 @@ public abstract class ToolBase : MonoBehaviour
     {
         toolCollider.enabled = true;
     }
-    
+
     public void EndUse()
     {
         toolCollider.enabled = false;

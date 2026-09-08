@@ -7,15 +7,12 @@ public class InventoryItem
     public int count;
     public int currentDurability;
 
-    // null 방지
-    public bool BEmpty => string.IsNullOrEmpty(itemId) || count <= 0;
+    public bool BEmpty =>
+        string.IsNullOrEmpty(itemId) || count <= 0;
 
     /// <summary>
     /// 인벤토리 아이템 정보 설정
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="amount"></param>
-    /// <param name="durability"></param>
     public void Set(string id, int amount, int durability)
     {
         itemId = id;

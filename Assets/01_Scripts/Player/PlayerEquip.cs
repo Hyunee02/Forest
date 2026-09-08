@@ -10,7 +10,9 @@ public class PlayerEquip : MonoBehaviour
 
     private GameObject currentToolObject;
     private ToolBase currentTool;
-    private ToolData currentToolData;
+
+    private ItemData_SO currentItemData;
+    private ToolData_SO currentToolData;
     private InventoryItem currentInventoryItem;
 
 #if UNITY_EDITOR
@@ -40,39 +42,40 @@ public class PlayerEquip : MonoBehaviour
     /// <summary>
     /// 도구 장착
     /// </summary>
-    /// <param name="slotIndex"></param>
-    /// <returns></returns>
     public bool EquipTool(int slotIndex)
     {
-        // 인벤토리 아이템 가져오기
-        InventoryItem inventoryItem = inventory.GetItem(slotIndex);
+        InventoryItem inventoryItem =
+            inventory.GetItem(slotIndex);
 
-        // 인벤토리 아이템 null 방지
         if (inventoryItem == null || inventoryItem.BEmpty)
             return false;
 
-        ItemData itemData = ItemLoadManager.Instance.GetItemData(inventoryItem.itemId);
-        ToolData toolData = ItemLoadManager.Instance.GetToolData(inventoryItem.itemId);
-        GameObject prefab = ItemLoadManager.Instance.GetItemPrefab(inventoryItem.itemId);
+        ItemData_SO itemData =
+            inventory.GetItemData(inventoryItem.itemId);
 
-        // null 방지
-        bool bNull = itemData == null
-            || toolData == null
-            || prefab == null;
+        ToolData_SO toolData =
+            inventory.GetToolData(inventoryItem.itemId);
 
-        if (bNull)
+        if (itemData == null ||
+            toolData == null ||
+            itemData.prefab == null)
+        {
             return false;
+        }
 
-        // 장착 도구 해제
         UnEquipTool();
 
-        // 도구 생성
-        currentToolObject = Instantiate(prefab, toolPos, false);
+        currentToolObject =
+            Instantiate(
+                itemData.prefab,
+                toolPos,
+                false
+            );
 
-        // ToolBase 안의 함수 실행하기 위해 가져옴
-        currentTool = currentToolObject.GetComponentInChildren<ToolBase>();
+        currentTool =
+            currentToolObject
+                .GetComponentInChildren<ToolBase>();
 
-        // 현재 생성 도구 null 방지
         if (currentTool == null)
         {
             Destroy(currentToolObject);
@@ -80,10 +83,15 @@ public class PlayerEquip : MonoBehaviour
         }
 
         currentInventoryItem = inventoryItem;
+        currentItemData = itemData;
         currentToolData = toolData;
 
-        // ToolBase 초기화
-        currentTool.Init(itemData, toolData, this, transform);
+        currentTool.Init(
+            itemData,
+            toolData,
+            this,
+            transform
+        );
 
         return true;
     }
@@ -113,14 +121,18 @@ public class PlayerEquip : MonoBehaviour
     /// </summary>
     public void ReduceCurrentToolDurability()
     {
-        // 현재 인벤토리 아이템 null 방지
         if (currentInventoryItem == null)
             return;
 
-        // 사용 가능한지
-        bool usable = inventory.ReduceDurability(currentInventoryItem, currentToolData.reduce);
+        if (currentToolData == null)
+            return;
 
-        // 사용 불가능하면, 도구 장착 해제
+        bool usable =
+            inventory.ReduceDurability(
+                currentInventoryItem,
+                currentToolData.reduce
+            );
+
         if (!usable)
             UnEquipTool();
     }
@@ -135,6 +147,7 @@ public class PlayerEquip : MonoBehaviour
 
         currentToolObject = null;
         currentTool = null;
+        currentItemData = null;
         currentToolData = null;
         currentInventoryItem = null;
     }

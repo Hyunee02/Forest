@@ -1,104 +1,35 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
-public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+public class InventorySlot :
+    MonoBehaviour,
+    IDropHandler
 {
-    [SerializeField] private Image itemIcon;
-    [SerializeField] private TMP_Text countText;
-    [SerializeField] private Slider durabilitySlider;
+    [SerializeField] private int slotIndex;
 
-    private PlayerInventory inventory;
-
-    public int Index {  get; private set; }
-
-    /// <summary>
-    /// 슬롯 초기화
-    /// </summary>
-    /// <param name="inventory"></param>
-    /// <param name="index"></param>
-    public void Init(PlayerInventory inventory, int index)
-    {
-        this.inventory = inventory;
-        Index = index;
-
-        itemIcon.raycastTarget = false;
-        countText.raycastTarget = false;
-        durabilitySlider.interactable = false;
-
-        Clear();
-    }
-
-    /// <summary>
-    /// 아이템 세팅
-    /// </summary>
-    /// <param name="sprite"></param>
-    /// <param name="count"></param>
-    /// <param name="toolData"></param>
-    /// <param name="currentDurability"></param>
-    public void SetItem(Sprite sprite, int count, ToolData toolData, int currentDurability)
-    {
-        itemIcon.sprite = sprite;
-        itemIcon.gameObject.SetActive(sprite != null);
-
-        countText.text = count > 1 ? count.ToString() : "";
-        countText.gameObject.SetActive(count > 1);
-
-        bool bTool = toolData != null;
-        durabilitySlider.gameObject.SetActive(bTool);
-
-        if (bTool)
-        {
-            durabilitySlider.maxValue = toolData.durability;
-            durabilitySlider.value = currentDurability;
-        }
-    }
-
-    /// <summary>
-    /// 아이템 초기화
-    /// </summary>
-    public void Clear()
-    {
-        itemIcon.sprite = null;
-        itemIcon.gameObject.SetActive(false);
-
-        countText.text = "";
-        countText.gameObject.SetActive(false);
-
-        durabilitySlider.value = 0f;
-        durabilitySlider.gameObject.SetActive(false);
-    }
-
-    /// <summary>
-    /// 슬롯에 있는 아이콘 Sprite 반환
-    /// </summary>
-    /// <returns></returns>
-    public Sprite GetIcon()
-    {
-        if (itemIcon == null)
-            return null;
-
-        return itemIcon.sprite;
-    }
-
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        inventory.BeginDrag(this, eventData);
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        inventory.Drag(eventData);
-    }
+    public int SlotIndex => slotIndex;
 
     public void OnDrop(PointerEventData eventData)
     {
-        inventory.Drop(this);
-    }
+        if (eventData.pointerDrag == null)
+            return;
 
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        inventory.EndDrag();
+        DraggableItem draggableItem =
+            eventData.pointerDrag
+                .GetComponent<DraggableItem>();
+
+        if (draggableItem == null)
+            return;
+
+        PlayerInventory inventory =
+            FindFirstObjectByType<PlayerInventory>();
+
+        if (inventory == null)
+            return;
+
+        inventory.MoveItem(
+            draggableItem.SlotIndex,
+            slotIndex
+        );
     }
 }

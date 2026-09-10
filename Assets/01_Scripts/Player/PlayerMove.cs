@@ -5,10 +5,10 @@ using UnityEngine;
 public class PlayerMove : MonoBehaviour
 {
     [Header("----- Move -----")]
-    [SerializeField] private float walkSpeed = 2f;
-    [SerializeField] private float runSpeed = 4f;
-    [SerializeField] private float sensitivity = 10f;
-    [SerializeField] private float deadZone = 0.1f;
+    [SerializeField] private float walkSpeed;
+    [SerializeField] private float runSpeed;
+    [SerializeField] private float sensitivity;
+    [SerializeField] private float deadZone;
 
     [Header("----- FootStep -----")]
     [SerializeField] private GameObject footStepPrefab;
@@ -27,12 +27,20 @@ public class PlayerMove : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         animator = GetComponentInChildren<Animator>();
+
+        footPos = Helper.FindChildByName(this.transform, "FootPos");
     }
 
     private void Reset()
     {
-        //footPos = this.transform.Find("Player_FootStep");
-        //Debug.Assert(footPos != null, "FootPos is null");
+        // Move
+        walkSpeed = 2f;
+        runSpeed = 4f;
+        sensitivity = 10f;
+        deadZone = 0.1f;
+
+        // FootStep
+        footStepSpan = 1f;
     }
 
     private Vector2 velocity;

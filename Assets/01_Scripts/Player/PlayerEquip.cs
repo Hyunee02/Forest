@@ -1,30 +1,48 @@
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerInventory))]
+[RequireComponent(typeof(PlayerBindInput))]
 public class PlayerEquip : MonoBehaviour
 {
-    [SerializeField] private Transform toolPos;
+    [Header("Equip")]
+    [SerializeField] private Transform handSocket;
+    [SerializeField] private Transform rootObject;
 
-    private PlayerInventory inventory;
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+    [SerializeField] private string equipTriggerName;
+
+    [Header("Test")]
+    [SerializeField] private ToolData axeData;
+
     private PlayerBindInput input;
 
-    private GameObject currentToolObject;
-    private ToolBase currentTool;
-    private ToolData currentToolData;
-    private InventoryItem currentInventoryItem;
+    private GameObject curToolObject;
+    private ToolBase curTool;
+    private ToolData curToolData;
 
-#if UNITY_EDITOR
-    private void Reset()
-    {
-        if (toolPos == null)
-            toolPos = transform.FindChildByName("ToolPos");
-    }
-#endif
+    public ToolBase CurTool => curTool;
+    public ToolData CurToolData => curToolData;
+
+    public bool bTool => curTool != null;
 
     private void Awake()
     {
-        inventory = GetComponent<PlayerInventory>();
         input = GetComponent<PlayerBindInput>();
+
+        if (rootObject == null)
+            rootObject = transform.root;
+
+        if (handSocket == null)
+            handSocket = Helper.FindChildByName(this.transform, "HandSocket");
+
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.Alpha1))
+            EquipTool(axeData);
     }
 
     private void OnEnable()
@@ -42,90 +60,39 @@ public class PlayerEquip : MonoBehaviour
     /// </summary>
     /// <param name="slotIndex"></param>
     /// <returns></returns>
-    public bool EquipTool(int slotIndex)
+    public bool EquipTool(ToolData toolData)
     {
-        // 인벤토리 아이템 가져오기
-        InventoryItem inventoryItem = inventory.GetItem(slotIndex);
+        bool bEquip = toolData == null
+            || toolData.Prefab == null
+            || handSocket == null;
 
-        // 인벤토리 아이템 null 방지
-        if (inventoryItem == null)
+        if (bEquip)
             return false;
 
-        ItemData itemData = ItemLoadManager.Instance.GetItemData(inventoryItem.itemId);
-        ToolData toolData = ItemLoadManager.Instance.GetToolData(inventoryItem.itemId);
-        GameObject prefab = ItemLoadManager.Instance.GetItemPrefab(inventoryItem.itemId);
-
-        // null 방지
-        bool bNull = itemData == null
-            || toolData == null
-            || prefab == null;
-
-        if (bNull)
-            return false;
-
-        // 장착 도구 해제
+        // 도구 해제
         UnEquipTool();
 
-        // 도구 생성
-        currentToolObject = Instantiate(prefab, toolPos, false);
+        // 도구 프리팹 생성 및 위치 조정
+        curToolObject = Instantiate(toolData.Prefab, handSocket, false);
+        //curTool.transform.localPosition = Vector3.zero;
+        //curTool.transform.localRotation = Quaternion.identity;
+        curTool = curToolObject.GetComponent<ToolBase>();
 
-        // ToolBase 안의 함수 실행하기 위해 가져옴
-        currentTool = currentToolObject.GetComponentInChildren<ToolBase>();
-
-        // 현재 생성 도구 null 방지
-        if (currentTool == null)
+        // 현재 도구 null 방지
+        if (curTool == null)
         {
-            Destroy(currentToolObject);
+            Destroy(curToolObject);
+            ClearCurrentTool();
             return false;
         }
 
-        currentInventoryItem = inventoryItem;
-        currentToolData = toolData;
+        curToolData = toolData;
+        curTool.Init(this, rootObject, curToolData);
 
-        // ToolBase 초기화
-        currentTool.Init(itemData, toolData, this, transform);
+        if (animator != null)
+            animator.SetInteger("ToolType", (int)curTool.ToolType);
 
         return true;
-    }
-
-    /// <summary>
-    /// 도구 사용
-    /// </summary>
-    public void UseTool()
-    {
-        if (currentTool == null)
-            return;
-
-        currentTool.BeginUse();
-    }
-
-    /// <summary>
-    /// 도구 사용 끝
-    /// </summary>
-    private void EndUseTool()
-    {
-        if (currentTool != null)
-            currentTool.EndUse();
-    }
-
-    /// <summary>
-    /// 도구 내구도 감소
-    /// </summary>
-    public void ReduceCurrentToolDurability()
-    {
-        // 현재 인벤토리 아이템 null 방지
-        if (currentInventoryItem == null)
-            return;
-
-        if (currentToolData == null)
-            return;
-
-        // 사용 가능한지
-        bool usable = inventory.ReduceDurability(currentInventoryItem, currentToolData.reduce);
-
-        // 사용 불가능하면, 도구 장착 해제
-        if (!usable)
-            UnEquipTool();
     }
 
     /// <summary>
@@ -133,12 +100,40 @@ public class PlayerEquip : MonoBehaviour
     /// </summary>
     public void UnEquipTool()
     {
-        if (currentToolObject != null)
-            Destroy(currentToolObject);
+        // 도구 파괴
+        if (curToolObject != null)
+            Destroy(curToolObject);
 
-        currentToolObject = null;
-        currentTool = null;
-        currentToolData = null;
-        currentInventoryItem = null;
+        // 현재 도구 정보 초기화
+        ClearCurrentTool();
+    }
+
+    /// <summary>
+    /// 도구 사용
+    /// </summary>
+    public void UseTool()
+    {
+        if (curTool == null || curToolData == null)
+            return;
+
+        // 사용 가능 여부 검사
+        if (!curTool.TryUse())
+            return;
+
+        animator.SetInteger("ToolType", (int)curTool.ToolType);
+
+        animator.SetTrigger(equipTriggerName);
+    }
+
+    /// <summary>
+    /// 현재 아이템 초기화
+    /// </summary>
+    private void ClearCurrentTool()
+    {
+        curToolObject = null;
+        curTool = null;
+        curToolData = null;
+
+        animator.SetInteger("ToolType", 0);
     }
 }

@@ -310,4 +310,12 @@ public class DungeonEnemy : MonoBehaviour, IHitTarget
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
+
+    public bool CanHit(ToolType toolType)
+    {
+        if (isDead)
+            return false;
+
+        return toolType == ToolType.Knife;
+    }
 }

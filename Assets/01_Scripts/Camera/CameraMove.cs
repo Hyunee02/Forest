@@ -2,22 +2,41 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent (typeof(CinemachineCamera), typeof(CinemachineFollow))]
 public class CameraMove : MonoBehaviour
 {
     [Header("---- Components -----")]
     [SerializeField] PlayerInput playerInput;
 
-    [Header("----- Camera Mode -----")]
-    [SerializeField] private Vector3 followZoom = new Vector3(0, 3, -3);
-    [SerializeField] private Vector3 followInit = new Vector3(0, 5.5f, -4.1f);
-    [SerializeField] float sensitivity = 100f;
+    [Header("----- Zoom -----")]
+    [SerializeField] private Vector3 followZoom;
+    [SerializeField] private Vector3 followInit;
+    [SerializeField, Min(0.01f)] private float zoomSmoothTime;
+
+    [SerializeField] private float deadZone;
 
     private GameObject player;
-
-    private CinemachineCamera cam;
     private CinemachineFollow follow;
+    private InputAction zoomAction;
 
-    private Vector2 scroll = Vector2.zero;
+    private Vector2 scroll;
+    private Vector3 targetOffset;
+    private Vector3 velocity;
+
+#if UNITY_EDITOR
+    private void Reset()
+    {
+        followZoom = new Vector3(0, 3, -3);
+        followInit = new Vector3(0, 5.5f, -4.1f);
+        zoomSmoothTime = 0.2f;
+
+        deadZone = 0.3f;
+
+        scroll = Vector2.zero;
+        targetOffset = followInit;
+        velocity = Vector3.zero;
+    }
+#endif
 
     private void Awake()
     {
@@ -26,47 +45,46 @@ public class CameraMove : MonoBehaviour
 
         InputActionMap actionMap = playerInput.actions.FindActionMap("Player");
 
-        cam = GetComponent<CinemachineCamera>();
+        CinemachineCamera cam = GetComponent<CinemachineCamera>();
         follow = GetComponent<CinemachineFollow>();
 
         cam.Target.TrackingTarget = player.transform.FindChildByName("CamPos");
 
-        // Zoom
-        {
-            InputAction action = actionMap.FindAction("Zoom");
-            action.performed += context => scroll = context.ReadValue<Vector2>();
-            action.canceled += context => follow.FollowOffset = followInit;
-        }
+        targetOffset = followInit;
+
+        zoomAction = actionMap.FindAction("Zoom", true);
+    }
+
+    private void OnEnable()
+    {
+        zoomAction.performed += Zoom;
+    }
+
+    private void OnDisable()
+    {
+        zoomAction.performed -= Zoom;
     }
 
     private void Update()
     {
-        Zoom();
+        follow.FollowOffset = Vector3.SmoothDamp(follow.FollowOffset, targetOffset, ref velocity, zoomSmoothTime);
     }
 
-    private Vector3 velocity;
-
-    private void Zoom()
+    private void Zoom(InputAction.CallbackContext context)
     {
-        // 스크롤 값 보간 필요
-        float scrollY = scroll.y;
+        scroll = context.ReadValue<Vector2>();
 
-        if (scrollY > 0.1f)
-            follow.FollowOffset = Vector3.SmoothDamp(follow.FollowOffset, followZoom, ref velocity, 1 / sensitivity);
-
-        else
-            follow.FollowOffset = Vector3.SmoothDamp(follow.FollowOffset, followInit, ref velocity, 1 / sensitivity);
+        if (scroll.y > deadZone)
+            targetOffset = followZoom;
+        else if (scroll.y < deadZone)
+            targetOffset = followInit;
 
     }
 
-    private void OpenInventory()
-    {
-
-    }
+    // 인벤토리 오픈 시 카메라 이동 멈춤
 
     private void OnGUI()
     {
-        GUI.color = Color.red;
-        GUILayout.Label(scroll.ToString());
+
     }
 }

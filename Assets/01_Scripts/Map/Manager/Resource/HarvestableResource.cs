@@ -80,4 +80,9 @@ public class HarvestableResource : MonoBehaviour, IHitTarget
 
         gameObject.SetActive(false);
     }
+
+    public bool CanHit(ToolType toolType)
+    {
+        return toolType == ToolType.Hoe;
+    }
 }

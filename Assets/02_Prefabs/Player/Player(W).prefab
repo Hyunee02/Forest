@@ -313,6 +313,37 @@ Transform:
   - {fileID: 8303676146469506970}
   m_Father: {fileID: 7602144475836246713}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1256914514161037340
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7099717524685998173}
+  m_Layer: 0
+  m_Name: DropPos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7099717524685998173
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1256914514161037340}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5536071562113107153}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1280674019544046037
 GameObject:
   m_ObjectHideFlags: 0
@@ -911,8 +942,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Press E Key
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f1affea878a3e594db85efffcd62850b, type: 2}
+  m_sharedMaterial: {fileID: 6614755462196487349, guid: f1affea878a3e594db85efffcd62850b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1178,10 +1209,6 @@ MonoBehaviour:
     m_ActionName: UI/TrackedDeviceOrientation
   - m_PersistentCalls:
       m_Calls: []
-    m_ActionId: ad62cf1e-eda4-4e26-b5e3-7bddb5ca8fe8
-    m_ActionName: 'Player/Use[/Mouse/leftButton]'
-  - m_PersistentCalls:
-      m_Calls: []
     m_ActionId: b94be6a4-f70b-4164-a41a-6e6d6eb83e73
     m_ActionName: 'Player/Inventory[/Keyboard/tab]'
   - m_PersistentCalls:
@@ -1279,10 +1306,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 640c638176614c24db667463cf048751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dropPoint: {fileID: 7099717524685998173}
   inventoryPanel: {fileID: 0}
+  optionPanel: {fileID: 0}
   slotParent: {fileID: 0}
   dragIcon: {fileID: 0}
-  maxItemCount: 24
+  equipButton: {fileID: 0}
+  dropButton: {fileID: 0}
 --- !u!1 &5788983623630929599
 GameObject:
   m_ObjectHideFlags: 0
@@ -1409,6 +1439,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1082814524592779631}
+  - {fileID: 7099717524685998173}
   m_Father: {fileID: 1863554118585883814}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6129339529760383916

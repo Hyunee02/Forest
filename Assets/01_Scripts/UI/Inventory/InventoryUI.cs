@@ -11,6 +11,9 @@ public class InventoryUI : MonoBehaviour
     [Header("<< Item UI >>")]
     [SerializeField] private GameObject inventoryItemPrefab;
 
+    [Header("<< Gold >>")]
+    [SerializeField] private GameObject goldText;
+
     private void Start()
     {
         Refresh(inventory);
@@ -25,14 +28,12 @@ public class InventoryUI : MonoBehaviour
         {
             ClearSlot(slots[i]);
 
-            InventoryItem item =
-                playerInventory.GetItem(i);
+            InventoryItem item = playerInventory.GetItem(i);
 
             if (item == null || item.BEmpty)
                 continue;
 
-            ItemData_SO itemData =
-                playerInventory.GetItemData(item.itemId);
+            ItemData_SO itemData = playerInventory.GetItemData(item.itemId);
 
             if (itemData == null)
                 continue;
@@ -43,16 +44,11 @@ public class InventoryUI : MonoBehaviour
                     slots[i].transform
                 );
 
-            InventoryItemUI itemUI =
-                itemObject.GetComponent<InventoryItemUI>();
+            InventoryItemUI itemUI = itemObject.GetComponent<InventoryItemUI>();
 
-            itemUI.SetItem(
-                itemData,
-                item.count
-            );
+            itemUI.SetItem(itemData, item.count);
 
-            DraggableItem draggable =
-                itemObject.GetComponent<DraggableItem>();
+            DraggableItem draggable = itemObject.GetComponent<DraggableItem>();
 
             draggable.SetSlotIndex(i);
         }
@@ -62,9 +58,7 @@ public class InventoryUI : MonoBehaviour
     {
         for (int i = slot.transform.childCount - 1; i >= 0; i--)
         {
-            Destroy(
-                slot.transform.GetChild(i).gameObject
-            );
+            Destroy(slot.transform.GetChild(i).gameObject);
         }
     }
 }

@@ -242,4 +242,9 @@ public class Animal : MonoBehaviour, IHitTarget
         Vector3 center = Application.isPlaying ? spawnPosition : transform.position;
         Gizmos.DrawWireSphere(center, maxRoamDistance);
     }
+
+    public bool CanHit(ToolType toolType)
+    {
+        throw new System.NotImplementedException();
+    }
 }

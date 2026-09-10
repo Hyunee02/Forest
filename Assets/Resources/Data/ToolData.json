@@ -1,0 +1,130 @@
+{
+  "tools": [
+    {
+      "itemId": "0001",
+      "toolType": "Axe",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "itemId": "0002",
+      "toolType": "Axe",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "itemId": "0003",
+      "toolType": "Axe",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "itemId": "0004",
+      "toolType": "Hoe",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "itemId": "0005",
+      "toolType": "Hoe",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "itemId": "0006",
+      "toolType": "Hoe",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "itemId": "0007",
+      "toolType": "Pickaxe",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "itemId": "0008",
+      "toolType": "Pickaxe",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "itemId": "0009",
+      "toolType": "Pickaxe",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "itemId": "0010",
+      "toolType": "Shovel",
+      "rate": 1,
+      "durability": 40,
+      "reduce": 5
+    },
+    {
+      "itemId": "0011",
+      "toolType": "Shovel",
+      "rate": 2,
+      "durability": 100,
+      "reduce": 5
+    },
+    {
+      "itemId": "0012",
+      "toolType": "Shovel",
+      "rate": 3,
+      "durability": 200,
+      "reduce": 5
+    },
+    {
+      "itemId": "0013",
+      "toolType": "WateringCan",
+      "rate": 1,
+      "durability": 20,
+      "reduce": 4
+    },
+    {
+      "itemId": "0014",
+      "toolType": "WateringCan",
+      "rate": 2,
+      "durability": 60,
+      "reduce": 4
+    },
+    {
+      "itemId": "0015",
+      "toolType": "WateringCan",
+      "rate": 3,
+      "durability": 180,
+      "reduce": 4
+    },
+    {
+      "itemId": "0016",
+      "toolType": "FishingRod",
+      "rate": 1,
+      "durability": 10,
+      "reduce": 2
+    },
+    {
+      "itemId": "0017",
+      "toolType": "FishingRod",
+      "rate": 2,
+      "durability": 30,
+      "reduce": 2
+    },
+    {
+      "itemId": "0018",
+      "toolType": "FishingRod",
+      "rate": 3,
+      "durability": 90,
+      "reduce": 2
+    }
+  ]
+}

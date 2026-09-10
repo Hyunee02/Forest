@@ -28,7 +28,7 @@ public enum Season
 /// 2. Planted Day와 isWatered에 따른 Tree State
 /// 
 /// </summary>
-public class Tree : MapObject
+public class Tree : MapObject, IHitTarget
 {
     [Header("<< 나무 정보 >>")]
     [SerializeField] private TreeType treeType = TreeType.Normal;
@@ -59,6 +59,11 @@ public class Tree : MapObject
     [SerializeField] private int plantedDay;
     [SerializeField] private bool isWateredToday;
 
+    [Header("<< 나무 체력 >>")]
+    [SerializeField] private int maxHp;
+
+    private int curHp;
+
     private Vector2Int tilePosition;
 
     public TreeType TreeType => treeType;
@@ -67,6 +72,11 @@ public class Tree : MapObject
 
     public bool IsGrown => treeState == TreeState.Grown;
 
+    public void Start()
+    {
+        curHp = maxHp;
+    }
+
     public void Initialize(TreeType type, TreeState state, Vector2Int tilePos, int currentDay)
     {
         treeType = type;
@@ -74,6 +84,8 @@ public class Tree : MapObject
         tilePosition = tilePos;
         plantedDay = currentDay;
         isWateredToday = false;
+
+        curHp = maxHp;
 
         ApplyScaleByState();
     }
@@ -149,5 +161,23 @@ public class Tree : MapObject
                     break;
             }
         }
+    }
+
+    public bool CanHit(ToolType toolType)
+    {
+        return toolType == ToolType.Axe && IsGrown;
+    }
+
+    public void Hit(int damage)
+    {
+        curHp -= damage;
+
+        if (curHp <= 0)
+            DestroyTree();
+    }
+
+    private void DestroyTree()
+    {
+        Destroy(gameObject);
     }
 }

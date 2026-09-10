@@ -3,10 +3,23 @@ using UnityEngine.SceneManagement;
 
 public class EnterinBuilding : Interactable
 {
+    private enum BuildingType
+    {
+        Convenience,
+        Bank,
+        PlayerHouse,
+        NPC1House,
+        NPC2House
+    }
+
+    [Header("<< 건물 타입 >>")]
+    [SerializeField] private BuildingType buildingType;
+
     [Header("<< 이동할 씬 이름 >>")]
     [SerializeField] private string convenienceSceneName = "Convenience";
     [SerializeField] private string bankSceneName = "Bank";
     [SerializeField] private string tentSceneName = "Tent";
+    [SerializeField] private string playerHouseSceneName = "PlayerHouse";
     [SerializeField] private string npc1HouseSceneName = "NPC1House";
     [SerializeField] private string npc2HouseSceneName = "NPC2House";
 
@@ -17,29 +30,41 @@ public class EnterinBuilding : Interactable
 
     private void EnterBuilding()
     {
-        if (CompareTag("EnterinConvenience"))
+        switch (buildingType)
         {
-            SceneManager.LoadScene(convenienceSceneName);
+            case BuildingType.Convenience:
+                SceneManager.LoadScene(convenienceSceneName);
+                break;
+
+            case BuildingType.Bank:
+                SceneManager.LoadScene(bankSceneName);
+                break;
+
+            case BuildingType.PlayerHouse:
+                EnterPlayerHouse();
+                break;
+
+            case BuildingType.NPC1House:
+                SceneManager.LoadScene(npc1HouseSceneName);
+                break;
+
+            case BuildingType.NPC2House:
+                SceneManager.LoadScene(npc2HouseSceneName);
+                break;
         }
-        else if (CompareTag("EnterinBank"))
-        {
-            SceneManager.LoadScene(bankSceneName);
-        }
-        else if (CompareTag("EnterinTent"))
+    }
+
+    private void EnterPlayerHouse()
+    {
+        int houseLevel = HouseUpgradeManager.Instance.HouseLevel;
+
+        if (houseLevel == 0)
         {
             SceneManager.LoadScene(tentSceneName);
         }
-        else if (CompareTag("EnterinNPC1House"))
-        {
-            SceneManager.LoadScene(npc1HouseSceneName);
-        }
-        else if (CompareTag("EnterinNPC2House"))
-        {
-            SceneManager.LoadScene(npc2HouseSceneName);
-        }
         else
         {
-            Debug.LogWarning($"{gameObject.name}에 입장 태그가 설정되어 있지 않습니다.");
+            SceneManager.LoadScene(playerHouseSceneName);
         }
     }
 }

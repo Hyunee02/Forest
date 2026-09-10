@@ -1,8 +1,9 @@
+
 using System;
 
 public enum ItemType
 {
-    None,
+    None = 0,
     Tool,
     Material,
     Food,
@@ -10,16 +11,16 @@ public enum ItemType
     Etc,
 }
 
-public enum ToolType
-{
-    None,
-    Axe,
-    Hoe,
-    Pickaxe,
-    Shovel,
-    WateringCan,
-    FishingRod,
-}
+//public enum ToolType
+//{
+//    None = 0,
+//    Axe,
+//    Hoe,
+//    Pickaxe,
+//    Shovel,
+//    WateringCan,
+//    FishingRod,
+//}
 
 [Serializable]
 public class ItemData
@@ -37,16 +38,16 @@ public class ItemData
     public int maxStack = 1;
 }
 
-[Serializable]
-public class ToolData
-{
-    public string itemId;
-    public ToolType toolType;
+//[Serializable]
+//public class ToolData
+//{
+//    public string itemId;
+//    public ToolType toolType;
 
-    public int rate;
-    public int durability;
-    public int reduce;
-}
+//    public int rate;
+//    public int durability;
+//    public int reduce;
+//}
 
 [Serializable]
 public class ItemDataTable

@@ -1152,7 +1152,7 @@ MonoBehaviour:
   dropRadius: 0.5
   minDropRadius: 0
   maxDropradius: 0
-  dropHeight: 0.2
+  dropHeight: 0
   maxHitCount: 3
 --- !u!1001 &4286578659434003123
 PrefabInstance:

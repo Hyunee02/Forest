@@ -914,7 +914,7 @@ Transform:
   m_GameObject: {fileID: 1650402244}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.074, y: 0, z: -0.068560064}
+  m_LocalPosition: {x: 2.6, y: 0, z: -0.068560064}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1148,7 +1148,12 @@ MonoBehaviour:
   fruitGrownScale: {x: 0.6, y: 0.6, z: 0.6}
   plantedDay: 0
   isWateredToday: 0
-  maxHp: 10
+  dropItemPrefab: {fileID: -3652997925959027460, guid: 1472bd0cf859f5a44a3b9bd093e48d9f, type: 3}
+  dropRadius: 0.5
+  minDropRadius: 0
+  maxDropradius: 0
+  dropHeight: 0.2
+  maxHitCount: 3
 --- !u!1001 &4286578659434003123
 PrefabInstance:
   m_ObjectHideFlags: 0

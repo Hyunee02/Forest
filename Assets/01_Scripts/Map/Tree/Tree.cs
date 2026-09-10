@@ -59,10 +59,18 @@ public class Tree : MapObject, IHitTarget
     [SerializeField] private int plantedDay;
     [SerializeField] private bool isWateredToday;
 
-    [Header("<< 나무 체력 >>")]
-    [SerializeField] private int maxHp;
+    [Header("Drop Item")]
+    [SerializeField] private WorldItem dropItemPrefab;
+    [SerializeField, Min(0f)] private float dropRadius;
+    [SerializeField] private float minDropRadius;
+    [SerializeField] private float maxDropradius;
+    [SerializeField] private float dropHeight;
 
-    private int curHp;
+    [Header("Hit")]
+    [SerializeField, Min(1)] private int maxHitCount;
+
+    private int hitCount;
+    private bool bDestoryed;
 
     private Vector2Int tilePosition;
 
@@ -72,10 +80,19 @@ public class Tree : MapObject, IHitTarget
 
     public bool IsGrown => treeState == TreeState.Grown;
 
-    public void Start()
+#if UNITY_EDITOR
+
+    public void Reset()
     {
-        curHp = maxHp;
+        dropRadius = 0.5f;
+        minDropRadius = 1f;
+        maxDropradius = 2f;
+        dropHeight = 0f;
+
+        maxHitCount = 3;
     }
+
+#endif
 
     public void Initialize(TreeType type, TreeState state, Vector2Int tilePos, int currentDay)
     {
@@ -85,7 +102,8 @@ public class Tree : MapObject, IHitTarget
         plantedDay = currentDay;
         isWateredToday = false;
 
-        curHp = maxHp;
+        hitCount = 0;
+        bDestoryed = false;
 
         ApplyScaleByState();
     }
@@ -165,19 +183,52 @@ public class Tree : MapObject, IHitTarget
 
     public bool CanHit(ToolType toolType)
     {
-        return toolType == ToolType.Axe && IsGrown;
+        return !bDestoryed
+            && toolType == ToolType.Axe
+            & IsGrown;
     }
 
+    // damage 사용 X
     public void Hit(int damage)
     {
-        curHp -= damage;
+        if (bDestoryed || !IsGrown)
+            return;
 
-        if (curHp <= 0)
+        hitCount++;
+
+        DropItem();
+
+        if (hitCount >= maxHitCount)
             DestroyTree();
     }
 
+    /// <summary>
+    /// 반경 이내 아이템 드롭
+    /// </summary>
+    private void DropItem()
+    {
+        if (dropItemPrefab == null)
+            return;
+
+        // 반지름 dropRadius인 원 안에서 무작위 좌표 선택
+        Vector2 randOffset = Random.insideUnitCircle * dropRadius;
+
+        // 좌표 실제 월드로 반환
+        Vector3 dropPos = transform.position +
+            new Vector3(randOffset.x, dropHeight, randOffset.y);
+
+        Instantiate(dropItemPrefab, dropPos, Quaternion.identity);
+    }
+
+    /// <summary>
+    /// 나무 오브젝트 파괴
+    /// </summary>
     private void DestroyTree()
     {
+        if (bDestoryed)
+            return;
+
+        bDestoryed = true;
         Destroy(gameObject);
     }
 }

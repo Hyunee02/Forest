@@ -64,6 +64,44 @@ public class PlayerInventory : MonoBehaviour
     }
 
     /// <summary>
+    /// 아이템 획득 가능 여부 검사
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public bool CanAddItem(string itemId, int amount)
+    {
+        if (items == null || amount <= 0)
+            return false;
+
+        ItemData_SO data = GetItemData(itemId);
+
+        if (data == null)
+            return false;
+
+        bool isTool = data.itemType == ItemTypeSO.Tool;
+        int maxStack = Mathf.Max(1, data.maxStack);
+        // 인벤에 들어갈 수 있는 누적 수량
+        int possible = 0;
+
+        foreach (InventoryItem item in items)
+        {
+            // 도구면 maxStack 1개
+            if (item.BEmpty)
+                possible += isTool ? 1 : maxStack;
+
+            // 도구가 아니면
+            else if (!isTool && item.itemId == itemId)
+                possible += Mathf.Max(0, maxStack - item.count);
+
+            if (possible >= amount)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// 아이템 추가
     /// </summary>
     public bool AddItem(

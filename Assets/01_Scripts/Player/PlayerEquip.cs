@@ -25,6 +25,15 @@ public class PlayerEquip : MonoBehaviour
 
     public bool bTool => curTool != null;
 
+#if UNITY_EDITOR
+
+    private void Reset()
+    {
+        equipTriggerName = "UseTool";
+    }
+
+#endif
+
     private void Awake()
     {
         input = GetComponent<PlayerBindInput>();

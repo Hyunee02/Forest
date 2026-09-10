@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 3971333299417053182}
   - component: {fileID: 1692828549023701714}
   - component: {fileID: 8458961654993292443}
+  - component: {fileID: 7616646715402948745}
+  - component: {fileID: 2619499097399136444}
   m_Layer: 0
   m_Name: Player(M)
   m_TagString: Player
@@ -264,6 +266,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cda849d535f34c347bab0f134cc5a4d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7616646715402948745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558264168821378337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e922c804a373f4c4c8686a3b3ebbb5b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemDatabase: {fileID: 11400000, guid: 2d8833db14d147649b357eb7c825ad9f, type: 2}
+  slotCount: 20
+--- !u!114 &2619499097399136444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558264168821378337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 817694c9020a05246a30afe8f590565e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pickupRadius: 2
 --- !u!1 &2457968422582990911
 GameObject:
   m_ObjectHideFlags: 0

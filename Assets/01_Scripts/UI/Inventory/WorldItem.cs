@@ -39,10 +39,10 @@ public class WorldItem : MonoBehaviour
         // 도구라면 기본 내구도 가져오기
         if (itemData.itemType == ItemTypeSO.Tool)
         {
-            ToolData_SO toolData = inventory.GetToolData(itemData.id);
+            ToolData toolData = inventory.GetToolData(itemData.id);
 
             if (toolData != null)
-                durability = toolData.durability;
+                durability = toolData.Durability;
         }
 
         // 인벤토리에 추가

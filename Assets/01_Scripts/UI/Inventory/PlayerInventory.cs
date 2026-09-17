@@ -66,6 +66,75 @@ public class PlayerInventory : MonoBehaviour
         return itemDatabase.GetToolData(itemId);
     }
 
+    public bool CanAddItem(string itemId, int amount = 1)
+    {
+        if (string.IsNullOrEmpty(itemId))
+            return false;
+
+        if (amount <= 0)
+            return false;
+
+        ItemData_SO itemData = GetItemData(itemId);
+
+        if (itemData == null)
+            return false;
+
+        int maxStack = Mathf.Max(1, itemData.maxStack);
+        bool isTool = itemData.itemType == ItemTypeSO.Tool;
+
+        int remainingAmount = amount;
+
+        // Tool은 하나씩 별도 슬롯 사용
+        if (isTool)
+        {
+            int emptySlotCount = 0;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i].BEmpty)
+                    emptySlotCount++;
+            }
+
+            return emptySlotCount >= remainingAmount;
+        }
+
+        // 기존 스택에서 넣을 수 있는 공간 확인
+        for (int i = 0; i < items.Length; i++)
+        {
+            InventoryItem item = items[i];
+
+            if (item.BEmpty)
+                continue;
+
+            if (item.itemId != itemId)
+                continue;
+
+            if (item.count >= maxStack)
+                continue;
+
+            int space = maxStack - item.count;
+            remainingAmount -= space;
+
+            if (remainingAmount <= 0)
+                return true;
+        }
+
+        // 빈 슬롯으로 추가 가능한지 확인
+        int emptySlots = 0;
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i].BEmpty)
+                emptySlots++;
+        }
+
+        int requiredSlots = Mathf.CeilToInt(
+            (float)remainingAmount / maxStack
+        );
+
+        return emptySlots >= requiredSlots;
+    }
+
     /// <summary>
     /// 인벤토리에 들어있는 아이템인지 확인
     /// </summary>

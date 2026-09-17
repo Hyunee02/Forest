@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerBindInput))]
 public class PlayerRest : MonoBehaviour
 {
-    private PlayerMove playerMove;
+    private PlayerMove move;
     private PlayerBindInput input;
     private Animator animator;
 
@@ -17,7 +17,7 @@ public class PlayerRest : MonoBehaviour
 
     private void Awake()
     {
-        playerMove = GetComponent<PlayerMove>();
+        move = GetComponent<PlayerMove>();
         input = GetComponent<PlayerBindInput>();
         animator = GetComponentInChildren<Animator>();
     }
@@ -42,7 +42,7 @@ public class PlayerRest : MonoBehaviour
 
         transform.SetPositionAndRotation(restPoint.position, restPoint.rotation);
 
-        playerMove.SetMoveEnabled(false);
+        move.SetMoveEnabled(false);
 
         animator.SetFloat("SpeedZ", 0f);
         animator.SetInteger("RestPose", (int)restPose);
@@ -63,7 +63,7 @@ public class PlayerRest : MonoBehaviour
 
         animator.SetBool("bRest", false);
 
-        playerMove.SetMoveEnabled(true);
+        move.SetMoveEnabled(true);
 
         if (currentFurniture != null)
             currentFurniture.Release(this);

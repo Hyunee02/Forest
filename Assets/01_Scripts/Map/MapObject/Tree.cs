@@ -59,19 +59,6 @@ public class Tree : MapObject, IHitTarget
     [SerializeField] private int plantedDay;
     [SerializeField] private bool isWateredToday;
 
-    [Header("Drop Item")]
-    [SerializeField] private WorldItem dropItemPrefab;
-    [SerializeField, Min(0f)] private float dropRadius;
-    [SerializeField] private float minDropRadius;
-    [SerializeField] private float maxDropradius;
-    [SerializeField] private float dropHeight;
-
-    [Header("Hit")]
-    [SerializeField, Min(1)] private int maxHitCount;
-
-    private int hitCount;
-    private bool bDestoryed;
-
     private Vector2Int tilePosition;
 
     public TreeType TreeType => treeType;
@@ -84,15 +71,21 @@ public class Tree : MapObject, IHitTarget
 
     public void Reset()
     {
-        dropRadius = 0.5f;
-        minDropRadius = 1f;
+        minDropRadius = 1.2f;
         maxDropradius = 2f;
-        dropHeight = 0f;
+        dropHeight = 0.15f;
 
-        maxHitCount = 3;
+        jumpHeight = 0.8f;
+        dropDuration = 0.4f;
     }
 
 #endif
+
+    private void Start()
+    {
+        hitCount = 0;
+        bDestoryed = false;
+    }
 
     public void Initialize(TreeType type, TreeState state, Vector2Int tilePos, int currentDay)
     {
@@ -102,8 +95,8 @@ public class Tree : MapObject, IHitTarget
         plantedDay = currentDay;
         isWateredToday = false;
 
-        hitCount = 0;
-        bDestoryed = false;
+        //hitCount = 0;
+        //bDestoryed = false;
 
         ApplyScaleByState();
     }
@@ -199,36 +192,6 @@ public class Tree : MapObject, IHitTarget
         DropItem();
 
         if (hitCount >= maxHitCount)
-            DestroyTree();
-    }
-
-    /// <summary>
-    /// 반경 이내 아이템 드롭
-    /// </summary>
-    private void DropItem()
-    {
-        if (dropItemPrefab == null)
-            return;
-
-        // 반지름 dropRadius인 원 안에서 무작위 좌표 선택
-        Vector2 randOffset = Random.insideUnitCircle * dropRadius;
-
-        // 좌표 실제 월드로 반환
-        Vector3 dropPos = transform.position +
-            new Vector3(randOffset.x, dropHeight, randOffset.y);
-
-        Instantiate(dropItemPrefab, dropPos, Quaternion.identity);
-    }
-
-    /// <summary>
-    /// 나무 오브젝트 파괴
-    /// </summary>
-    private void DestroyTree()
-    {
-        if (bDestoryed)
-            return;
-
-        bDestoryed = true;
-        Destroy(gameObject);
+            base.DestroyObject();
     }
 }

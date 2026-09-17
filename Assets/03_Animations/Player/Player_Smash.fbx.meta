@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 79956e4fd2dff1848b6f487c9bd4a1ed
+guid: 244b8fca1dc182c4ba86a3322818cca0
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -31,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Player_Axe
+      name: Player_Smash
       takeName: mixamo.com
       internalID: -203655887218126122
       firstFrame: 0
-      lastFrame: 72
+      lastFrame: 38
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -54,35 +54,7 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events:
-      - time: 0.021551725
-        functionName: BeginUseTool
-        data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.37068966
-        functionName: BeginToolCollsion
-        data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.44396552
-        functionName: EndToolCollision
-        data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.959435
-        functionName: EndUseTool
-        data: 
-        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
+      events: []
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

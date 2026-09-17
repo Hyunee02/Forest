@@ -9,6 +9,7 @@ public class InventorySlot :
 
     public int SlotIndex => slotIndex;
 
+
     public void OnDrop(PointerEventData eventData)
     {
         if (eventData.pointerDrag == null)

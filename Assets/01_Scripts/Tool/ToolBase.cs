@@ -11,9 +11,6 @@ public abstract class ToolBase : MonoBehaviour
     protected Collider toolCollider;
     protected Transform rootObject;
 
-    private int curDurability;
-    private float nextUseTime;
-
     private bool bUse;
     private bool bHit;
 
@@ -21,8 +18,17 @@ public abstract class ToolBase : MonoBehaviour
 
     public ToolData ToolData => toolData;
     public int Power => toolData.Power;
-    public int CurDurability => curDurability;
     public bool BUse => bUse;
+    public int CurDurability
+    {
+        get
+        {
+            if (equip == null || equip.CurInventoryItem == null)
+                return 0;
+
+            return equip.CurInventoryItem.currentDurability;
+        }
+    }
 
     protected virtual void Awake()
     {
@@ -38,9 +44,6 @@ public abstract class ToolBase : MonoBehaviour
         rootObject = root;
         toolData = data;
 
-        curDurability = toolData.Durability;
-        nextUseTime = 0f;
-
         EndUse();
     }
 
@@ -54,18 +57,12 @@ public abstract class ToolBase : MonoBehaviour
         if (equip == null || toolData == null)
             return false;
 
-        // 내구도 0이면 false
-        if (curDurability <= 0)
-            return false;
-
-        // 도구 사용 시간 제한
-        if (Time.time < nextUseTime)
+        // 애니메이션 중복 재생 방지
+        if (bUse)
             return false;
 
         bUse = true;
         bHit = false;
-
-        nextUseTime = Time.time + toolData.Cooldown;
 
         return true;
     }
@@ -125,23 +122,22 @@ public abstract class ToolBase : MonoBehaviour
         bHit = true;
 
         target.Hit(Power);
-
-        // 내구도 감소
-        ReduceDurability();
+        equip.ReduceEquippedDurability(toolData.DurabilityReduce);
     }
 
-    /// <summary>
-    /// 도구 내구도 감소
-    /// </summary>
-    private void ReduceDurability()
-    {
-        curDurability--;
-        curDurability = Mathf.Max(0, curDurability);
+    ///// <summary>
+    ///// 도구 내구도 감소
+    ///// </summary>
+    //private void ReduceDurability()
+    //{
+    //    int reduce = Mathf.Max(0, toolData.DurabilityReduce);
 
-        Debug.Log($"{toolData.ToolName}의 내구도\n" +
-            $"{curDurability}/{toolData.Durability}");
+    //    curDurability = Mathf.Max(0, curDurability - reduce);
 
-        if (curDurability <= 0)
-            equip.UnEquipTool();
-    }
+    //    Debug.Log($"{toolData.ToolName}의 내구도\n" +
+    //        $"{curDurability}/{toolData.Durability}");
+
+    //    if (curDurability <= 0)
+    //        equip.UnEquipTool();
+    //}
 }

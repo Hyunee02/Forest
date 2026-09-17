@@ -7,7 +7,7 @@ public class ItemDatabase : ScriptableObject
     [SerializeField] private ItemData_SO[] items;
 
     [Header("<< Tool >>")]
-    [SerializeField] private ToolData_SO[] tools;
+    [SerializeField] private ToolData[] tools;
 
     /// <summary>
     /// ID로 아이템 데이터 가져오기
@@ -32,20 +32,17 @@ public class ItemDatabase : ScriptableObject
     /// <summary>
     /// ID로 도구 데이터 가져오기
     /// </summary>
-    public ToolData_SO GetToolData(string itemId)
+    public ToolData GetToolData(string itemId)
     {
         if (string.IsNullOrEmpty(itemId))
             return null;
 
-        foreach (ToolData_SO tool in tools)
+        foreach (ToolData tool in tools)
         {
             if (tool == null)
                 continue;
 
-            if (tool.itemData == null)
-                continue;
-
-            if (tool.itemData.id == itemId)
+            if (tool.ID == itemId)
                 return tool;
         }
 

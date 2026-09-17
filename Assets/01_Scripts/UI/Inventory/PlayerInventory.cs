@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
@@ -9,6 +10,8 @@ public class PlayerInventory : MonoBehaviour
     [SerializeField] private int slotCount = 20;
 
     private InventoryItem[] items;
+
+    public event Action OnChanged;
 
     public int SlotCount => slotCount;
 
@@ -55,12 +58,31 @@ public class PlayerInventory : MonoBehaviour
     /// <summary>
     /// 도구 데이터 가져오기
     /// </summary>
-    public ToolData_SO GetToolData(string itemId)
+    public ToolData GetToolData(string itemId)
     {
         if (itemDatabase == null)
             return null;
 
         return itemDatabase.GetToolData(itemId);
+    }
+
+    /// <summary>
+    /// 인벤토리에 들어있는 아이템인지 확인
+    /// </summary>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    public bool Contains(InventoryItem target)
+    {
+        if (items == null || target == null || target.BEmpty)
+            return false;
+
+        foreach (InventoryItem item in items)
+        {
+            if (ReferenceEquals(item, target))
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -109,10 +131,7 @@ public class PlayerInventory : MonoBehaviour
         int amount = 1,
         int durability = 0)
     {
-        if (string.IsNullOrEmpty(itemId))
-            return false;
-
-        if (amount <= 0)
+        if (!CanAddItem(itemId, amount))
             return false;
 
         ItemData_SO itemData = GetItemData(itemId);

@@ -37,11 +37,11 @@ public class WorldItem : MonoBehaviour
 
         if (itemData.itemType == ItemTypeSO.Tool)
         {
-            ToolData_SO toolData =
+            ToolData toolData =
                 inventory.GetToolData(itemData.id);
 
             if (toolData != null)
-                durability = toolData.durability;
+                durability = toolData.Durability;
         }
 
         bool success = inventory.AddItem(

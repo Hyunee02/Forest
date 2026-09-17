@@ -2,26 +2,34 @@ using UnityEngine;
 
 public class PlayerAnimationEvent : MonoBehaviour
 {
+    private PlayerMove move;
     private PlayerEquip equip;
 
     private void Awake()
     {
+        move = GetComponentInParent<PlayerMove>();
         equip = GetComponentInParent<PlayerEquip>();
     }
 
     #region ----- 도구 충돌 애니메이션
 
     /// <summary>
+    /// 애니메이션 도구 사용 시작
+    /// </summary>
+    public void BeginUseTool()
+    {
+        move.SetMoveEnabled(false);
+    }
+
+    /// <summary>
     /// 애니메이션 타격 시작
     /// </summary>
     public void BeginToolCollsion()
     {
-        ToolBase tool = equip.CurTool;
-
-        if (tool == null)
+        if (equip == null || equip.CurTool == null)
             return;
 
-        tool.BeginCollision();
+        equip.CurTool.BeginCollision();
     }
 
     /// <summary>
@@ -29,12 +37,10 @@ public class PlayerAnimationEvent : MonoBehaviour
     /// </summary>
     public void EndToolCollision()
     {
-        ToolBase tool = equip.CurTool;
-
-        if (tool == null)
+        if (equip == null || equip.CurTool == null)
             return;
 
-        tool.EndCollision();
+        equip.CurTool.EndCollision();
     }
 
     /// <summary>
@@ -42,12 +48,12 @@ public class PlayerAnimationEvent : MonoBehaviour
     /// </summary>
     public void EndUseTool()
     {
-        ToolBase tool = equip.CurTool;
-
-        if (tool == null)
+        if (equip == null)
             return;
 
-        tool.EndUse();
+        equip.EndUseTool();
+
+        move.SetMoveEnabled(true);
     }
     #endregion
 }

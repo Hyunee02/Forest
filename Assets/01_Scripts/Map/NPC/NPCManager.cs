@@ -53,6 +53,14 @@ public class NPCManager : MonoBehaviour
 
             case NPCType.Fisherman:
                 Debug.Log("Fisherman NPC와 상호작용");
+
+                FishermanController fisherman = currentNPC.GetComponent<FishermanController>();
+
+                if (fisherman != null)
+                {
+                    fisherman.StartInteraction();
+                }
+
                 break;
 
             case NPCType.Pirate:

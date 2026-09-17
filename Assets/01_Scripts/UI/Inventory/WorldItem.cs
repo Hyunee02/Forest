@@ -18,21 +18,32 @@ public class WorldItem : MonoBehaviour
 
         if (itemData == null)
         {
-            Debug.LogWarning("WorldItem의 ItemData가 없습니다.");
+            Debug.LogWarning("WorldItem의 ItemData가 없습니다.", this);
             return false;
         }
 
+<<<<<<< Updated upstream
+=======
+        // 인벤토리에 넣을 수 있는지 먼저 확인
+        if (!inventory.CanAddItem(itemData.id, amount))
+        {
+            Debug.Log("인벤토리에 공간이 없습니다.", this);
+            return false;
+        }
+
+>>>>>>> Stashed changes
         int durability = 0;
 
+        // 도구라면 기본 내구도 가져오기
         if (itemData.itemType == ItemTypeSO.Tool)
         {
-            ToolData_SO toolData =
-                inventory.GetToolData(itemData.id);
+            ToolData_SO toolData = inventory.GetToolData(itemData.id);
 
             if (toolData != null)
                 durability = toolData.durability;
         }
 
+        // 인벤토리에 추가
         bool success = inventory.AddItem(
             itemData.id,
             amount,
@@ -40,8 +51,20 @@ public class WorldItem : MonoBehaviour
         );
 
         if (!success)
+<<<<<<< Updated upstream
             return false;
 
+=======
+        {
+            Debug.Log("아이템 추가 실패", this);
+            return false;
+        }
+
+        // 중복 획득 방지
+        pickedUp = true;
+
+        // 월드 아이템 제거
+>>>>>>> Stashed changes
         Destroy(gameObject);
 
         return true;

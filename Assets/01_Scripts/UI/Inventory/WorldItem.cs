@@ -8,11 +8,16 @@ public class WorldItem : MonoBehaviour
     [Header("<< Amount >>")]
     [SerializeField] private int amount = 1;
 
+    private bool pickedUp;
+
     public ItemData_SO ItemData => itemData;
     public int Amount => amount;
 
     public bool Pickup(PlayerInventory inventory)
     {
+        if (pickedUp)
+            return false;
+
         if (inventory == null)
             return false;
 
@@ -22,16 +27,13 @@ public class WorldItem : MonoBehaviour
             return false;
         }
 
-<<<<<<< Updated upstream
-=======
-        // 인벤토리에 넣을 수 있는지 먼저 확인
-        if (!inventory.CanAddItem(itemData.id, amount))
-        {
-            Debug.Log("인벤토리에 공간이 없습니다.", this);
-            return false;
-        }
+        //// 인벤토리에 넣을 수 있는지 먼저 확인
+        //if (!inventory.CanAddItem(itemData.id, amount))
+        //{
+        //    Debug.Log("인벤토리에 공간이 없습니다.", this);
+        //    return false;
+        //}
 
->>>>>>> Stashed changes
         int durability = 0;
 
         // 도구라면 기본 내구도 가져오기
@@ -51,10 +53,6 @@ public class WorldItem : MonoBehaviour
         );
 
         if (!success)
-<<<<<<< Updated upstream
-            return false;
-
-=======
         {
             Debug.Log("아이템 추가 실패", this);
             return false;
@@ -64,7 +62,6 @@ public class WorldItem : MonoBehaviour
         pickedUp = true;
 
         // 월드 아이템 제거
->>>>>>> Stashed changes
         Destroy(gameObject);
 
         return true;

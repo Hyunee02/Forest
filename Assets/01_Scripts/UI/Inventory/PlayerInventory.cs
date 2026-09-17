@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
@@ -9,6 +10,8 @@ public class PlayerInventory : MonoBehaviour
     [SerializeField] private int slotCount = 20;
 
     private InventoryItem[] items;
+
+    public event Action OnChanged;
 
     public int SlotCount => slotCount;
 
@@ -55,7 +58,7 @@ public class PlayerInventory : MonoBehaviour
     /// <summary>
     /// 도구 데이터 가져오기
     /// </summary>
-    public ToolData_SO GetToolData(string itemId)
+    public ToolData GetToolData(string itemId)
     {
         if (itemDatabase == null)
             return null;
@@ -63,43 +66,131 @@ public class PlayerInventory : MonoBehaviour
         return itemDatabase.GetToolData(itemId);
     }
 
-    /// <summary>
-    /// 아이템 획득 가능 여부 검사
-    /// </summary>
-    /// <param name="itemId"></param>
-    /// <param name="amount"></param>
-    /// <returns></returns>
-    public bool CanAddItem(string itemId, int amount)
+    public bool CanAddItem(string itemId, int amount = 1)
     {
-        if (items == null || amount <= 0)
+        if (string.IsNullOrEmpty(itemId))
             return false;
 
-        ItemData_SO data = GetItemData(itemId);
-
-        if (data == null)
+        if (amount <= 0)
             return false;
 
-        bool isTool = data.itemType == ItemTypeSO.Tool;
-        int maxStack = Mathf.Max(1, data.maxStack);
-        // 인벤에 들어갈 수 있는 누적 수량
-        int possible = 0;
+        ItemData_SO itemData = GetItemData(itemId);
+
+        if (itemData == null)
+            return false;
+
+        int maxStack = Mathf.Max(1, itemData.maxStack);
+        bool isTool = itemData.itemType == ItemTypeSO.Tool;
+
+        int remainingAmount = amount;
+
+        // Tool은 하나씩 별도 슬롯 사용
+        if (isTool)
+        {
+            int emptySlotCount = 0;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i].BEmpty)
+                    emptySlotCount++;
+            }
+
+            return emptySlotCount >= remainingAmount;
+        }
+
+        // 기존 스택에서 넣을 수 있는 공간 확인
+        for (int i = 0; i < items.Length; i++)
+        {
+            InventoryItem item = items[i];
+
+            if (item.BEmpty)
+                continue;
+
+            if (item.itemId != itemId)
+                continue;
+
+            if (item.count >= maxStack)
+                continue;
+
+            int space = maxStack - item.count;
+            remainingAmount -= space;
+
+            if (remainingAmount <= 0)
+                return true;
+        }
+
+        // 빈 슬롯으로 추가 가능한지 확인
+        int emptySlots = 0;
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i].BEmpty)
+                emptySlots++;
+        }
+
+        int requiredSlots = Mathf.CeilToInt(
+            (float)remainingAmount / maxStack
+        );
+
+        return emptySlots >= requiredSlots;
+    }
+
+    /// <summary>
+    /// 인벤토리에 들어있는 아이템인지 확인
+    /// </summary>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    public bool Contains(InventoryItem target)
+    {
+        if (items == null || target == null || target.BEmpty)
+            return false;
 
         foreach (InventoryItem item in items)
         {
-            // 도구면 maxStack 1개
-            if (item.BEmpty)
-                possible += isTool ? 1 : maxStack;
-
-            // 도구가 아니면
-            else if (!isTool && item.itemId == itemId)
-                possible += Mathf.Max(0, maxStack - item.count);
-
-            if (possible >= amount)
+            if (ReferenceEquals(item, target))
                 return true;
         }
 
         return false;
     }
+
+    ///// <summary>
+    ///// 아이템 획득 가능 여부 검사
+    ///// </summary>
+    ///// <param name="itemId"></param>
+    ///// <param name="amount"></param>
+    ///// <returns></returns>
+    //public bool CanAddItem(string itemId, int amount)
+    //{
+    //    if (items == null || amount <= 0)
+    //        return false;
+
+    //    ItemData_SO data = GetItemData(itemId);
+
+    //    if (data == null)
+    //        return false;
+
+    //    bool isTool = data.itemType == ItemTypeSO.Tool;
+    //    int maxStack = Mathf.Max(1, data.maxStack);
+    //    // 인벤에 들어갈 수 있는 누적 수량
+    //    int possible = 0;
+
+    //    foreach (InventoryItem item in items)
+    //    {
+    //        // 도구면 maxStack 1개
+    //        if (item.BEmpty)
+    //            possible += isTool ? 1 : maxStack;
+
+    //        // 도구가 아니면
+    //        else if (!isTool && item.itemId == itemId)
+    //            possible += Mathf.Max(0, maxStack - item.count);
+
+    //        if (possible >= amount)
+    //            return true;
+    //    }
+
+    //    return false;
+    //}
 
     /// <summary>
     /// 아이템 추가
@@ -109,10 +200,7 @@ public class PlayerInventory : MonoBehaviour
         int amount = 1,
         int durability = 0)
     {
-        if (string.IsNullOrEmpty(itemId))
-            return false;
-
-        if (amount <= 0)
+        if (!CanAddItem(itemId, amount))
             return false;
 
         ItemData_SO itemData = GetItemData(itemId);

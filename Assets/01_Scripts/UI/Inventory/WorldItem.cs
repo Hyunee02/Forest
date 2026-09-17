@@ -18,32 +18,34 @@ public class WorldItem : MonoBehaviour
         if (pickedUp)
             return false;
 
-        if (inventory == null || itemData == null || amount <= 0)
+        if (inventory == null)
+            return false;
+
+        if (itemData == null)
         {
-            Debug.LogWarning("WorldItem의 ItemData가 없습니다.");
+            Debug.LogWarning("WorldItem의 ItemData가 없습니다.", this);
             return false;
         }
 
-        // 아이템 인벤에 추가할 수 있는지 검사
-        if (!inventory.CanAddItem(ItemData.id, amount))
-        {
-            Debug.Log($"CanAddItem 실패 / ID : {itemData.id}, 수량 : {amount}", this);
-
-            return false;
-        }
-            //return false;
+        //// 인벤토리에 넣을 수 있는지 먼저 확인
+        //if (!inventory.CanAddItem(itemData.id, amount))
+        //{
+        //    Debug.Log("인벤토리에 공간이 없습니다.", this);
+        //    return false;
+        //}
 
         int durability = 0;
 
+        // 도구라면 기본 내구도 가져오기
         if (itemData.itemType == ItemTypeSO.Tool)
         {
-            ToolData_SO toolData =
-                inventory.GetToolData(itemData.id);
+            ToolData toolData = inventory.GetToolData(itemData.id);
 
             if (toolData != null)
-                durability = toolData.durability;
+                durability = toolData.Durability;
         }
 
+        // 인벤토리에 추가
         bool success = inventory.AddItem(
             itemData.id,
             amount,
@@ -52,13 +54,14 @@ public class WorldItem : MonoBehaviour
 
         if (!success)
         {
-            Debug.Log("AddItem 실패");
+            Debug.Log("아이템 추가 실패", this);
+            return false;
         }
-            //return false;
 
-        // 중복 줍기 방지
+        // 중복 획득 방지
         pickedUp = true;
-        gameObject.SetActive(false);
+
+        // 월드 아이템 제거
         Destroy(gameObject);
 
         return true;

@@ -11,9 +11,10 @@ public enum ToolType
     Knife,
 }
 
-[CreateAssetMenu(fileName = "ToolData", menuName = "Data/ToolData")]
+[CreateAssetMenu(fileName = "ToolData", menuName = "Game/Tool Data")]
 public class ToolData : ScriptableObject
 {
+    [SerializeField] private string id;
     [SerializeField] private string toolName;
     [SerializeField] private string description;
     [SerializeField] private Sprite icon;
@@ -25,8 +26,10 @@ public class ToolData : ScriptableObject
 
     [SerializeField] private int power;
     [SerializeField] private int durability;
+    [SerializeField] private int durabilityReduce;
     [SerializeField] private float cooldown;
 
+    public string ID => id;
     public string ToolName => toolName;
     public string Description => description;
     public Sprite Icon => icon;
@@ -37,5 +40,6 @@ public class ToolData : ScriptableObject
 
     public int Power => power;
     public int Durability => durability;
+    public int DurabilityReduce => durabilityReduce;
     public float Cooldown => cooldown;
 }

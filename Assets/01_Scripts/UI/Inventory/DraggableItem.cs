@@ -8,11 +8,18 @@ public class DraggableItem :
     IDragHandler,
     IEndDragHandler
 {
-    [SerializeField] private Image image;
-
+    private CanvasGroup canvasGroup;
     private Transform parentAfterDrag;
 
     public int SlotIndex { get; private set; }
+
+    private void Awake()
+    {
+        canvasGroup = GetComponent<CanvasGroup>();
+
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+    }
 
     public void SetSlotIndex(int index)
     {
@@ -25,10 +32,14 @@ public class DraggableItem :
 
         parentAfterDrag = transform.parent;
 
-        transform.SetParent(transform.root);
+        Canvas canvas = GetComponentInParent<Canvas>();
+
+        if (canvas == null)
+            transform.SetParent(canvas.rootCanvas.transform, true);
+
         transform.SetAsLastSibling();
 
-        image.raycastTarget = false;
+        canvasGroup.blocksRaycasts = false;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -40,14 +51,21 @@ public class DraggableItem :
     {
         Debug.Log("드래그 끝!!!!");
 
-        transform.SetParent(parentAfterDrag);
+        ReturnToSlot();
 
-        RectTransform rectTransform =
-            transform as RectTransform;
+        canvasGroup.blocksRaycasts = true;
+    }
 
-        if (rectTransform != null)
-            rectTransform.anchoredPosition = Vector2.zero;
+    public void ReturnToSlot()
+    {
+        if (parentAfterDrag == null)
+            return;
 
-        image.raycastTarget = true;
+        transform.SetParent(parentAfterDrag, false);
+
+        RectTransform rect = transform as RectTransform;
+
+        if (rect != null)
+            rect.anchoredPosition = Vector2.zero;
     }
 }

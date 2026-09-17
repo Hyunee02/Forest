@@ -55,24 +55,31 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
+      - time: 0.021551725
+        functionName: BeginUseTool
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       - time: 0.37068966
         functionName: BeginToolCollsion
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
       - time: 0.44396552
         functionName: EndToolCollision
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.9612069
+      - time: 0.959435
         functionName: EndUseTool
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 70462de0ec285c14097b9894d62d377a, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0

@@ -8,11 +8,13 @@ public class FishermanController : MonoBehaviour
     [Header("<< Fishing Layer >>")]
     [SerializeField] private int fishingLayerIndex = 1;
 
+    [Header("<< Fishing Rod >>")]
+    [SerializeField] private GameObject fishingRod;
+
     private void Start()
     {
         StartFishing();
     }
-
 
     public void StartFishing()
     {
@@ -20,8 +22,13 @@ public class FishermanController : MonoBehaviour
             return;
 
         animator.SetLayerWeight(fishingLayerIndex, 1f);
+
+        if (fishingRod != null)
+        {
+            fishingRod.SetActive(true);
+        }
     }
-   
+
     public void StartInteraction()
     {
         if (animator == null)
@@ -29,31 +36,22 @@ public class FishermanController : MonoBehaviour
 
         animator.SetLayerWeight(fishingLayerIndex, 0f);
 
-        LookAtPlayer();
+        if (fishingRod != null)
+        {
+            fishingRod.SetActive(false);
+        }
     }
 
-    
     public void EndInteraction()
     {
         if (animator == null)
             return;
 
         animator.SetLayerWeight(fishingLayerIndex, 1f);
-    }
 
-    private void LookAtPlayer()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-
-        if (player == null)
-            return;
-
-        Vector3 direction = player.transform.position - transform.position;
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude <= 0.001f)
-            return;
-
-        transform.rotation = Quaternion.LookRotation(direction);
+        if (fishingRod != null)
+        {
+            fishingRod.SetActive(true);
+        }
     }
 }

@@ -4,13 +4,13 @@ public class NPCManager : MonoBehaviour
 {
     public static NPCManager Instance { get; private set; }
 
-    private NPC currentNPC;  // 현재 상호작용 할 수 있는 NPC 
+    private NPC currentNPC;
 
-    public NPC CurrentNPC => currentNPC; 
+    public NPC CurrentNPC => currentNPC;
 
     private void Awake()
     {
-        if(Instance != null && Instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -26,7 +26,7 @@ public class NPCManager : MonoBehaviour
 
     public void ClearCurrentNPC(NPC npc)
     {
-        if(currentNPC == npc)
+        if (currentNPC == npc)
         {
             currentNPC = null;
         }
@@ -36,6 +36,13 @@ public class NPCManager : MonoBehaviour
     {
         if (currentNPC == null)
             return;
+
+        LookAtPlayer(currentNPC.transform);
+
+        if (DialogueUI.Instance != null)
+        {
+            DialogueUI.Instance.OpenDialogue();
+        }
 
         switch (currentNPC.NPCType)
         {
@@ -54,7 +61,8 @@ public class NPCManager : MonoBehaviour
             case NPCType.Fisherman:
                 Debug.Log("Fisherman NPC와 상호작용");
 
-                FishermanController fisherman = currentNPC.GetComponent<FishermanController>();
+                FishermanController fisherman =
+                    currentNPC.GetComponent<FishermanController>();
 
                 if (fisherman != null)
                 {
@@ -89,7 +97,23 @@ public class NPCManager : MonoBehaviour
 
             case NPCType.Hunter:
                 Debug.Log("Hunter NPC와 상호작용");
-                break; 
+                break;
         }
+    }
+
+    private void LookAtPlayer(Transform npcTransform)
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (player == null)
+            return;
+
+        Vector3 direction = player.transform.position - npcTransform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <= 0.001f)
+            return;
+
+        npcTransform.rotation = Quaternion.LookRotation(direction);
     }
 }

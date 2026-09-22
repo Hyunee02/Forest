@@ -50,12 +50,20 @@ public class PlayerInteraction : MonoBehaviour
 
         currentTarget = FindInteractable();
 
-        if (currentTarget != null && currentTarget.CanInteract(gameObject))
+        if (currentTarget == null && NPCManager.Instance != null)
+        {
+            currentTarget = NPCManager.Instance.CurrentNPC;
+        }
+
+        if (currentTarget != null &&
+            currentTarget.CanInteract(gameObject))
+        {
             messageUI.ShowText(currentTarget.InteractionText);
-
+        }
         else
+        {
             messageUI.HideText();
-
+        }
     }
 
     private void TryInteract()
@@ -67,6 +75,11 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         IInteractable target = FindInteractable();
+      
+        if (target == null && NPCManager.Instance != null)
+        {
+            target = NPCManager.Instance.CurrentNPC;
+        }
 
         if (target == null)
         {
@@ -74,7 +87,6 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        // 상호작용 가능한지
         if (!target.CanInteract(gameObject))
             return;
 

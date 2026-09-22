@@ -1,8 +1,20 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NPCManager : MonoBehaviour
 {
     public static NPCManager Instance { get; private set; }
+
+    [Header("<< Dialogue >>")]
+    [SerializeField] private DialogueUI dialogueUI;
+
+    [Header("<< 이동할 씬 이름 >>")]
+    [SerializeField] private string huntingGroundSceneName = "HuntingGround";
+    [SerializeField] private string dungeonSceneName = "Dungeon";
+
+    [Header("<< 이동 딜레이 >>")]
+    [SerializeField] private float sceneMoveDelay = 2f;
 
     private NPC currentNPC;
 
@@ -37,11 +49,20 @@ public class NPCManager : MonoBehaviour
         if (currentNPC == null)
             return;
 
+        // NPC가  바라봄
         LookAtPlayer(currentNPC.transform);
 
-        if (DialogueUI.Instance != null)
+        if (currentNPC.DialogueData != null &&
+         dialogueUI != null)
         {
-            DialogueUI.Instance.OpenDialogue();
+            string dialogue =
+                currentNPC.DialogueData.GetRandomGreeting();
+
+            dialogueUI.OpenDialogue(
+                dialogue,
+                currentNPC.DialogueData.yesDialogue,
+                currentNPC.DialogueData.noDialogue
+            );
         }
 
         switch (currentNPC.NPCType)
@@ -103,17 +124,46 @@ public class NPCManager : MonoBehaviour
 
     private void LookAtPlayer(Transform npcTransform)
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObj =
+            GameObject.FindGameObjectWithTag("Player");
 
-        if (player == null)
+        if (playerObj == null)
             return;
 
-        Vector3 direction = player.transform.position - npcTransform.position;
+        Vector3 direction =
+            playerObj.transform.position - npcTransform.position;
+
+        // 위아래로 고개를 돌리지 않도록
         direction.y = 0f;
 
         if (direction.sqrMagnitude <= 0.001f)
             return;
 
-        npcTransform.rotation = Quaternion.LookRotation(direction);
+        npcTransform.rotation =
+            Quaternion.LookRotation(direction);
+    }
+
+    public void OnDialogueYes()
+    {
+        if (currentNPC == null)
+            return;
+
+        switch (currentNPC.NPCType)
+        {
+            case NPCType.Pirate:
+                StartCoroutine(MoveToScene(huntingGroundSceneName));
+                break;
+
+            case NPCType.TrainDriver:
+                StartCoroutine(MoveToScene(dungeonSceneName));
+                break;
+        }
+    }   
+
+    private IEnumerator MoveToScene(string sceneName)
+    {
+        yield return new WaitForSeconds(sceneMoveDelay);
+
+        SceneManager.LoadScene(sceneName);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerBindInput))]
@@ -15,10 +16,6 @@ public class PlayerEquip : MonoBehaviour
     [Header("UI")]
     [SerializeField] private InventoryUI inventoryUI;
 
-    [Header("Test")]
-    [SerializeField] private ToolData axeData;
-    [SerializeField] private ToolData pickaxeData;
-
     private PlayerBindInput input;
     private PlayerInventory inventory;
 
@@ -29,6 +26,8 @@ public class PlayerEquip : MonoBehaviour
 
     private bool bUse;
     private float nextUseTime;
+
+    public event Action OnEquipChanged;
 
     public ToolBase CurTool => curTool;
     public ToolData CurToolData => curToolData;
@@ -77,15 +76,43 @@ public class PlayerEquip : MonoBehaviour
         EndUseTool();
     }
 
-    private void Update()
+    public void BindInventoryUI(InventoryUI ui)
     {
-        if (Input.GetKey(KeyCode.Alpha1))
-            Test_EquipTool(axeData);
-
-        if (Input.GetKey(KeyCode.Alpha2))
-            Test_EquipTool(pickaxeData);
+        inventoryUI = ui;
     }
 
+    /// <summary>
+    /// item 아이템 장착중인지 확인
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
+    public bool IsEquipped(InventoryItem item)
+    {
+        return item != null
+            && item.BEmpty
+            && ReferenceEquals(item, curInventoryItem);
+    }
+
+    /// <summary>
+    /// 장착 아이템 검사
+    /// </summary>
+    private void CheckEquippedItem()
+    {
+        if (curInventoryItem == null)
+            return;
+
+        if (!inventory.Contains(curInventoryItem) || curInventoryItem.currentDurability <= 0)
+        {
+            ClearCurrentTool();
+
+            OnEquipChanged?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// 아이템 장착하기 버튼
+    /// </summary>
+    /// <param name="slotIndex"></param>
     public void ToggleEquip(int slotIndex)
     {
         if (bUse)
@@ -103,46 +130,7 @@ public class PlayerEquip : MonoBehaviour
             EquipTool(slotIndex);
     }
 
-    /// <summary>
-    /// (테스트용) 도구 장착
-    /// </summary>
-    /// <param name="slotIndex"></param>
-    /// <returns></returns>
-    public bool Test_EquipTool(ToolData toolData)
-    {
-        bool bEquip = toolData == null
-            || toolData.Prefab == null
-            || handSocket == null;
-
-        if (bEquip)
-            return false;
-
-        // 도구 해제
-        UnEquipTool();
-
-        // 도구 프리팹 생성 및 위치 조정
-        curToolObject = Instantiate(toolData.Prefab, handSocket, false);
-        //curTool.transform.localPosition = Vector3.zero;
-        //curTool.transform.localRotation = Quaternion.identity;
-        curTool = curToolObject.GetComponent<ToolBase>();
-
-        // 현재 도구 null 방지
-        if (curTool == null)
-        {
-            Destroy(curToolObject);
-            ClearCurrentTool();
-            return false;
-        }
-
-        curToolData = toolData;
-        curTool.Init(this, rootObject, curToolData);
-
-        if (animator != null)
-            animator.SetInteger("ToolType", (int)curTool.ToolType);
-
-        return true;
-    }
-
+    #region > 도구 장착 및 사용
     /// <summary>
     /// 도구 장착
     /// </summary>
@@ -158,8 +146,7 @@ public class PlayerEquip : MonoBehaviour
         if (item == null || item.BEmpty)
             return false;
 
-        // 현재 아이템과 curInventoryItem이 같은 객체인지 확인
-        if (ReferenceEquals(item, curInventoryItem))
+        if (IsEquipped(item))
             return true;
 
         ItemData_SO itemData = inventory.GetItemData(item.itemId);
@@ -179,6 +166,9 @@ public class PlayerEquip : MonoBehaviour
         if (bEquip)
             return false;
 
+        if (data.Prefab.GetComponent<ToolBase>() == null)
+            return false;
+
         // 장착 상태 초기화
         ClearCurrentTool();
 
@@ -189,6 +179,8 @@ public class PlayerEquip : MonoBehaviour
         curToolObject = Instantiate(data.Prefab, handSocket, false);
         curTool = curToolObject.GetComponent<ToolBase>();
         animator.SetInteger("ToolType", (int)curTool.ToolType);
+
+        OnEquipChanged?.Invoke();
 
         return true;
     }
@@ -203,6 +195,8 @@ public class PlayerEquip : MonoBehaviour
 
         // 현재 도구 정보 초기화
         ClearCurrentTool();
+
+        OnEquipChanged?.Invoke();
     }
 
     /// <summary>
@@ -213,11 +207,20 @@ public class PlayerEquip : MonoBehaviour
         if (bUse)
             return;
 
-        // 인벤토리 사용할 때 제한
+        if (inventoryUI != null && inventoryUI.BOpen)
+            return;
 
         CheckEquippedItem();
 
-        if (curTool == null || curToolData == null)
+        bool bNull = curTool == null
+            || curToolData == null
+            || curInventoryItem == null
+            || animator == null;
+
+        if (bNull)
+            return;
+
+        if (curInventoryItem.currentDurability <= 0)
             return;
 
         if (Time.time < nextUseTime)
@@ -228,6 +231,7 @@ public class PlayerEquip : MonoBehaviour
             return;
 
         bUse = true;
+
         nextUseTime = Time.time + Mathf.Max(0f, curToolData.Cooldown);
 
         animator.SetInteger("ToolType", (int)curTool.ToolType);
@@ -247,25 +251,18 @@ public class PlayerEquip : MonoBehaviour
         if (curTool == null)
             animator.SetInteger("ToolType", 0);
     }
+    #endregion
 
+    /// <summary>
+    /// 장착 도구 내구도 감소
+    /// </summary>
+    /// <param name="amount"></param>
     public void ReduceEquippedDurability(int amount)
     {
         if (curInventoryItem == null)
             return;
 
         inventory.ReduceDurability(curInventoryItem, amount);
-    }
-
-    /// <summary>
-    /// 장착 아이템 검사
-    /// </summary>
-    private void CheckEquippedItem()
-    {
-        if (curInventoryItem == null)
-            return;
-
-        if (!inventory.Contains(curInventoryItem) || curInventoryItem.currentDurability <= 0)
-            ClearCurrentTool();
     }
 
     /// <summary>

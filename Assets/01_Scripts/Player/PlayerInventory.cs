@@ -255,7 +255,7 @@ public class PlayerInventory : MonoBehaviour
         {
             foreach (InventoryItem item in items)
             {
-                if (item.BEmpty || item.itemId == itemId)
+                if (item.BEmpty || item.itemId != itemId)
                     continue;
 
                 // 들어갈 수 있는 공간

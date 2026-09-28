@@ -89,7 +89,7 @@ public class PlayerEquip : MonoBehaviour
     public bool IsEquipped(InventoryItem item)
     {
         return item != null
-            && item.BEmpty
+            && !item.BEmpty
             && ReferenceEquals(item, curInventoryItem);
     }
 
@@ -178,6 +178,7 @@ public class PlayerEquip : MonoBehaviour
 
         curToolObject = Instantiate(data.Prefab, handSocket, false);
         curTool = curToolObject.GetComponent<ToolBase>();
+        curTool.Init(this, rootObject, curToolData);
         animator.SetInteger("ToolType", (int)curTool.ToolType);
 
         OnEquipChanged?.Invoke();

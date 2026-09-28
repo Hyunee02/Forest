@@ -92,6 +92,7 @@ MonoBehaviour:
   icon: {fileID: 4909744993053350803}
   countText: {fileID: 8230486088245608307}
   visuals: {fileID: 6011610389121559881}
+  countRoot: {fileID: 2012165775608949873}
 --- !u!1 &849908051583932443
 GameObject:
   m_ObjectHideFlags: 0
@@ -104,7 +105,7 @@ GameObject:
   - component: {fileID: 3512695049111890117}
   - component: {fileID: 8230486088245608307}
   m_Layer: 5
-  m_Name: CountText
+  m_Name: Count_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -241,7 +242,7 @@ GameObject:
   - component: {fileID: 9027360068057937626}
   - component: {fileID: 7048878962152160536}
   m_Layer: 5
-  m_Name: CountBackground
+  m_Name: Count_Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -390,7 +391,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 70, y: 70}
+  m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6540683600304925724
 CanvasRenderer:

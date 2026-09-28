@@ -30,7 +30,7 @@ public class InventoryUI : MonoBehaviour
 
     private void Awake()
     {
-        GameObject player = GameObject.Find("Player");
+        GameObject player = GameObject.FindWithTag("Player");
         inventory = player.GetComponent<PlayerInventory>();
         equip = player.GetComponent<PlayerEquip>();
         input = player.GetComponent<PlayerBindInput>();

@@ -15,8 +15,7 @@ public class InventorySlot :
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text countText;
     [SerializeField] private CanvasGroup visuals;
-    //[SerializeField] private GameObject durabilityGauge;
-    //[SerializeField] private Image durabilityFill;
+    [SerializeField] private GameObject countRoot;
 
     private InventoryUI owner;
     
@@ -51,6 +50,11 @@ public class InventorySlot :
             visuals.blocksRaycasts = false;
         }
 
+        bool showCount = hasItem && data.itemType != ItemTypeSO.Tool;
+
+        if (countRoot != null)
+            countRoot.SetActive(showCount);
+
         if (!hasItem)
             return;
 
@@ -72,20 +76,6 @@ public class InventorySlot :
             countText.text = item.count > 1
                 ? item.count.ToString() : "";
         }
-
-        //if (durabilityGauge != null)
-        //{
-        //    bool hasDurability = hasItem
-        //        && toolData != null
-        //        && toolData.Durability > 0;
-
-        //    durabilityGauge.SetActive(hasDurability);
-
-        //    if (hasDurability && durabilityGauge != null)
-        //    {
-        //        durabilityFill.fillAmount = (float)item.currentDurability / toolData.Durability;
-        //    }
-        //}
     }
 
     /// <summary>

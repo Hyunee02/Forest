@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public abstract class Interactable : MonoBehaviour
+public abstract class Interactable : MonoBehaviour, IInteractable
 {
     [Header("<< 상호작용 >>")]
     [SerializeField] protected float interactionRange = 1f;
@@ -11,22 +10,21 @@ public abstract class Interactable : MonoBehaviour
 
     public bool IsPlayerInRange => isPlayerInRange;
 
+    public virtual string InteractionText => "E 상호작용";
+
     protected virtual void Start()
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
 
         if (playerObj != null)
+        {
             player = playerObj.transform;
+        }
     }
 
     protected virtual void Update()
     {
         CheckPlayerDistance();
-
-        if (isPlayerInRange && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
-        {
-            Interact();
-        }
     }
 
     protected virtual void CheckPlayerDistance()
@@ -34,7 +32,11 @@ public abstract class Interactable : MonoBehaviour
         if (player == null)
             return;
 
-        float distance = Vector3.Distance(transform.position, player.position);
+        float distance = Vector3.Distance(
+            transform.position,
+            player.position
+        );
+
         bool isInCurrentRange = distance <= interactionRange;
 
         if (isInCurrentRange == isPlayerInRange)
@@ -52,6 +54,16 @@ public abstract class Interactable : MonoBehaviour
         }
     }
 
+    public virtual bool CanInteract(GameObject player)
+    {
+        return isPlayerInRange;
+    }
+
+    public void Interact(GameObject player)
+    {
+        Interact();
+    }
+
     protected abstract void Interact();
 
     protected virtual void OnEnterInteractionRange()
@@ -66,7 +78,13 @@ public abstract class Interactable : MonoBehaviour
 
     protected virtual void OnDrawGizmos()
     {
-        Gizmos.color = isPlayerInRange ? Color.red : Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, interactionRange);
+        Gizmos.color = isPlayerInRange
+            ? Color.red
+            : Color.yellow;
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            interactionRange
+        );
     }
 }

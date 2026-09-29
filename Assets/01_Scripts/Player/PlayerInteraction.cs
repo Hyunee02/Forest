@@ -1,14 +1,14 @@
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerBindInput))]
 public class PlayerInteraction : MonoBehaviour
 {
+    [Header("Interaction")]
     [SerializeField] private Transform rayPos;
-
-    [SerializeField] private float interactDistance = 1.5f;
-
+    [SerializeField] private float interactDistance;
     [SerializeField] private LayerMask interactableLayer;
 
-    [SerializeField] private Message messageUI;
+    [SerializeField] private InteractionMessage message;
 
     private PlayerBindInput input;
     private PlayerRest playerRest;
@@ -18,8 +18,7 @@ public class PlayerInteraction : MonoBehaviour
 #if UNITY_EDITOR
     private void Reset()
     {
-        rayPos = gameObject.transform.FindChildByName("RayPos");
-        messageUI = GetComponentInChildren<Message>();
+        interactDistance = 2f;
     }
 #endif
 
@@ -27,7 +26,8 @@ public class PlayerInteraction : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         playerRest = GetComponent<PlayerRest>();
-        messageUI = GetComponentInChildren<Message>();
+
+        rayPos = transform.FindChildByName("RayPos");
     }
 
     private void OnEnable()
@@ -38,28 +38,50 @@ public class PlayerInteraction : MonoBehaviour
     private void OnDisable()
     {
         input.OnInteractInput -= TryInteract;
+
+        currentTarget = null;
+
+        if (message != null)
+            message.HideText();
     }
 
     private void Update()
     {
+        if (message == null)
+            return;
+
+        // 쉬는 중에는 메세지 숨기기
         if (playerRest != null && playerRest.BRest)
         {
-            messageUI.HideText();
+            currentTarget = null;
+            message.HideText();
             return;
         }
 
         currentTarget = FindInteractable();
 
-        if (currentTarget != null && currentTarget.CanInteract(gameObject))
-            messageUI.ShowText(currentTarget.InteractionText);
+        // 대상 없거나 상호작용 못하면 메세지 숨기기
+        if (currentTarget == null || !currentTarget.CanInteract(gameObject))
+        {
+            message.HideText();
+            return;
+        }
 
-        else
-            messageUI.HideText();
+        Component targetComponent = currentTarget as Component;
+
+        if (targetComponent == null)
+        {
+            message.HideText();
+            return;
+        }
+
+        message.ShowText(currentTarget.InteractionText, targetComponent.transform);
 
     }
 
     private void TryInteract()
     {
+        // 쉬는 중이면 일어나기
         if (playerRest != null && playerRest.BRest)
         {
             playerRest.StandUp();
@@ -76,13 +98,16 @@ public class PlayerInteraction : MonoBehaviour
 
         // 상호작용 가능한지
         if (!target.CanInteract(gameObject))
-            return;
+            target = NPCManager.Instance.CurrentNPC;
 
         target.Interact(gameObject);
     }
 
     private IInteractable FindInteractable()
     {
+        if (rayPos == null)
+            return null;
+
         Ray ray = new Ray(rayPos.position, rayPos.forward);
 
         if (Physics.Raycast(ray,

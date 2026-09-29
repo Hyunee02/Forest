@@ -5,10 +5,11 @@ using UnityEngine.InputSystem;
 [RequireComponent (typeof(CinemachineCamera), typeof(CinemachineFollow))]
 public class CameraMove : MonoBehaviour
 {
-    [Header("---- Components -----")]
-    [SerializeField] PlayerInput playerInput;
+    [Header("Components")]
+    [SerializeField] private PlayerInput playerInput;
+    [SerializeField] private InventoryUI inventoryUI;
 
-    [Header("----- Zoom -----")]
+    [Header("Zoom")]
     [SerializeField] private Vector3 followZoom;
     [SerializeField] private Vector3 followInit;
     [SerializeField, Min(0.01f)] private float zoomSmoothTime;
@@ -67,24 +68,28 @@ public class CameraMove : MonoBehaviour
 
     private void Update()
     {
+        if (inventoryUI != null && inventoryUI.BOpen)
+        {
+            targetOffset = follow.FollowOffset;
+            velocity = Vector3.zero;
+            return;
+        }
+
         follow.FollowOffset = Vector3.SmoothDamp(follow.FollowOffset, targetOffset, ref velocity, zoomSmoothTime);
     }
 
     private void Zoom(InputAction.CallbackContext context)
     {
+        // 인벤토리 조작할 때 줌 X
+        if (inventoryUI != null && inventoryUI.BOpen)
+            return;
+
         scroll = context.ReadValue<Vector2>();
 
         if (scroll.y > deadZone)
             targetOffset = followZoom;
         else if (scroll.y < deadZone)
             targetOffset = followInit;
-
-    }
-
-    // 인벤토리 오픈 시 카메라 이동 멈춤
-
-    private void OnGUI()
-    {
 
     }
 }

@@ -18,11 +18,20 @@ EditorBuildSettings:
     path: Assets/00_Scenes/Tent.unity
     guid: d19066c18653908468c45ce626034ca7
   - enabled: 1
-    path: Assets/00_Scenes/NPC1House.unity
+    path: Assets/00_Scenes/NPC2House.unity
     guid: 15f8030193714e848bdc7cfad6cc6d18
   - enabled: 1
-    path: Assets/00_Scenes/NPC2House.unity
+    path: Assets/00_Scenes/NPC1House.unity
     guid: 39133ff83efeae849af8424b463e2a8b
+  - enabled: 1
+    path: Assets/00_Scenes/Dungeon.unity
+    guid: 2e0f85825706a924e8e55e9e331f09db
+  - enabled: 1
+    path: Assets/00_Scenes/HuntingGround.unity
+    guid: 6047fbc2218a12c459c00898c7fef694
+  - enabled: 1
+    path: Assets/00_Scenes/PlayerHouse.unity
+    guid: c1f787cf8abef664a88ae12c11e85b5b
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

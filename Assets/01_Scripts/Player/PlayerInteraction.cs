@@ -98,7 +98,7 @@ public class PlayerInteraction : MonoBehaviour
 
         // 상호작용 가능한지
         if (!target.CanInteract(gameObject))
-            return;
+            target = NPCManager.Instance.CurrentNPC;
 
         target.Interact(gameObject);
     }

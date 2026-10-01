@@ -1,14 +1,15 @@
+using TMPro;
 using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
 {
+    [Header("Interaction")]
     [SerializeField] private Transform rayPos;
-
-    [SerializeField] private float interactDistance = 1.5f;
-
+    [SerializeField] private float interactDistance;
     [SerializeField] private LayerMask interactableLayer;
 
-    [SerializeField] private Message messageUI;
+    [Header("UI")]
+    [SerializeField] private InteractionMessage messageUI;
 
     private PlayerBindInput input;
     private PlayerRest playerRest;
@@ -18,8 +19,7 @@ public class PlayerInteraction : MonoBehaviour
 #if UNITY_EDITOR
     private void Reset()
     {
-        rayPos = gameObject.transform.FindChildByName("RayPos");
-        messageUI = GetComponentInChildren<Message>();
+        interactDistance = 1.5f;
     }
 #endif
 
@@ -27,7 +27,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         playerRest = GetComponent<PlayerRest>();
-        messageUI = GetComponentInChildren<Message>();
+        messageUI = GetComponentInChildren<InteractionMessage>();
     }
 
     private void OnEnable()
@@ -44,6 +44,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (playerRest != null && playerRest.BRest)
         {
+            currentTarget = null;
             messageUI.HideText();
             return;
         }
@@ -58,7 +59,7 @@ public class PlayerInteraction : MonoBehaviour
         if (currentTarget != null &&
             currentTarget.CanInteract(gameObject))
         {
-            messageUI.ShowText(currentTarget.InteractionText);
+            messageUI.ShowText(currentTarget.InteractionText, this.transform);
         }
         else
         {
@@ -68,6 +69,7 @@ public class PlayerInteraction : MonoBehaviour
 
     private void TryInteract()
     {
+        // 앉아있는 상태면 먼저 일어나기
         if (playerRest != null && playerRest.BRest)
         {
             playerRest.StandUp();
@@ -75,11 +77,6 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         IInteractable target = FindInteractable();
-
-        if (target == null && NPCManager.Instance != null)
-        {
-            target = NPCManager.Instance.CurrentNPC;
-        }
 
         if (target == null && NPCManager.Instance != null)
         {

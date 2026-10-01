@@ -14,7 +14,7 @@ public class InteractionMessage : MonoBehaviour
 #if UNITY_EDITOR
     private void Reset()
     {
-        offsetY = 2f;
+        offsetY = 1.5f;
     }
 #endif
 

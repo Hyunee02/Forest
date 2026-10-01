@@ -18,4 +18,5 @@ MonoBehaviour:
   price: 300
   description: "\uCCA0\uAD11\uC11D"
   icon: {fileID: 21300000, guid: 35b71b33e1cfa434282b18b16e687104, type: 3}
-  prefab: {fileID: 1084728798392563482, guid: c7604df3710421943ad9ab30759e6e3b, type: 3}
+  maxStack: 30
+  prefab: {fileID: 8202654189192602268, guid: dff1a9c3b75f9a448b1c490b017fdd39, type: 3}

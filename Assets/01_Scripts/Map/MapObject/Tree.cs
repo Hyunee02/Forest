@@ -73,10 +73,11 @@ public class Tree : MapObject, IHitTarget
     {
         minDropRadius = 1.2f;
         maxDropradius = 2f;
-        dropHeight = 0.15f;
+        dropHeight = 0.5f;
+        groundOffset = 0.1f;
 
         jumpHeight = 0.8f;
-        dropDuration = 0.4f;
+        dropDuration = 0.5f;
     }
 
 #endif

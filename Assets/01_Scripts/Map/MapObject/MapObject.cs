@@ -13,13 +13,15 @@ public abstract class MapObject : MonoBehaviour
     [SerializeField] protected float minDropRadius;
     [SerializeField] protected float maxDropradius;
     [SerializeField] protected float dropHeight;
+    [SerializeField] protected float groundOffset;
 
     [Header("Drop Animation")]
     [SerializeField] protected float jumpHeight;
     [SerializeField] protected float dropDuration;
 
     [Header("Hit")]
-    [SerializeField, Min(1)] protected int maxHitCount;
+    [SerializeField, Min(1)] protected int maxHitCount = 3;
+
     protected int hitCount;
     protected bool bDestoryed;
 
@@ -35,20 +37,24 @@ public abstract class MapObject : MonoBehaviour
         if (dropItemPrefab == null)
             return;
 
+        // 랜덤 방향 정하기 (0~360)
         float angle = Random.Range(0f, Mathf.PI * 2f);
 
+        // Cos(X방향), Sin(Z방향)
         Vector3 direction = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
 
         // 최소 반경보다 가까이 떨어지지 않게
         float minRadius = Mathf.Max(0f, minDropRadius);
         float maxRadius = Mathf.Max(minRadius, maxDropradius);
+
+        // 랜덤 거리 정하기
         float distance = Random.Range(minRadius, maxRadius);
 
         // 출발 위치
         Vector3 startPos = transform.position + Vector3.up * dropHeight;
-        
+
         // 도착 위치
-        Vector3 endPos = startPos + direction * distance;
+        Vector3 endPos = transform.position + direction * distance + Vector3.up * groundOffset;
 
         WorldItem item = Instantiate(dropItemPrefab, startPos, Quaternion.identity);
 

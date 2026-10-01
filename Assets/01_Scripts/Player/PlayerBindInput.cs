@@ -22,33 +22,33 @@ public class PlayerBindInput : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         InputActionMap actionMap = playerInput.actions.FindActionMap("Player");
 
-        // Move
+        // Move (W/A/S/D)
         {
             InputAction action = actionMap.FindAction("Move");
             action.performed += context => moveInput = context.ReadValue<Vector2>();
             action.canceled += context => moveInput = Vector2.zero;
         }
 
-        // Sprint
+        // Sprint (Left Shift)
         {
             InputAction action = actionMap.FindAction("Sprint");
             action.performed += context => bRun = true;
             action.canceled += context => bRun = false;
         }
 
-        // Inventory
+        // Inventory (I)
         {
             InputAction action = actionMap.FindAction("Inventory");
             action.performed += context => OnInventoryInput?.Invoke();
         }
 
-        // Use
+        // Use (Left Mouse)
         {
             InputAction action = actionMap.FindAction("Use");
             action.performed += context => OnUseInput?.Invoke();
         }
 
-        // Interact
+        // Interact (E)
         {
             InputAction action = actionMap.FindAction("Interact");
             action.performed += context => OnInteractInput?.Invoke();

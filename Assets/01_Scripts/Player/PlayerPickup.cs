@@ -29,7 +29,6 @@ public class PlayerPickup : MonoBehaviour
     /// </summary>
     private void TryPickup()
     {
-
         WorldItem target = FindNearestItem();
 
         if (target == null)

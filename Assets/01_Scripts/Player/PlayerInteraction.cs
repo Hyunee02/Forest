@@ -50,6 +50,7 @@ public class PlayerInteraction : MonoBehaviour
 
         currentTarget = FindInteractable();
 
+        // raycast 못찾았을 경우 현재 NPC 확인
         if (currentTarget == null && NPCManager.Instance != null)
         {
             currentTarget = NPCManager.Instance.CurrentNPC;
@@ -81,14 +82,20 @@ public class PlayerInteraction : MonoBehaviour
             target = NPCManager.Instance.CurrentNPC;
         }
 
+        // raycast 못찾았을 경우 현재 NPC 확인
+        if (target == null && NPCManager.Instance != null)
+        {
+            target = NPCManager.Instance.CurrentNPC;
+        }
+
         if (target == null)
         {
             Debug.LogWarning("상호작용 할 대상이 없습니다.", this);
             return;
         }
 
-        if (!target.CanInteract(gameObject))
-            return;
+        if (!target.CanInteract(gameObject)) 
+            return; 
 
         target.Interact(gameObject);
     }

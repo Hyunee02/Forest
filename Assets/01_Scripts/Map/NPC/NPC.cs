@@ -26,6 +26,7 @@ public class NPC : Interactable
 
     private Quaternion originalRotation;
 
+
     public NPCType NPCType => npcType;
 
     protected override void Start()
@@ -74,5 +75,10 @@ public class NPC : Interactable
         {
             NPCManager.Instance.ClearCurrentNPC(this);
         }
+    }
+
+    public void RestoreOriginalRotation()
+    {
+        transform.rotation = originalRotation;
     }
 }

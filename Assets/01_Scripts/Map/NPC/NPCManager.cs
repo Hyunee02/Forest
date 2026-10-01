@@ -31,6 +31,8 @@ public class NPCManager : MonoBehaviour
         Instance = this;
     }
 
+    #region < Current NPC >
+
     public void SetCurrentNPC(NPC npc)
     {
         currentNPC = npc;
@@ -44,25 +46,23 @@ public class NPCManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+
+    #region < Interact >
+
     public void InteractWithCurrentNPC()
     {
         if (currentNPC == null)
             return;
 
-        // NPC가  바라봄
         LookAtPlayer(currentNPC.transform);
 
-        if (currentNPC.DialogueData != null &&
-         dialogueUI != null)
+        if (currentNPC.DialogueData != null && dialogueUI != null)
         {
-            string dialogue =
-                currentNPC.DialogueData.GetRandomGreeting();
+            string dialogue =  currentNPC.DialogueData.GetRandomGreeting();
 
-            dialogueUI.OpenDialogue(
-                dialogue,
-                currentNPC.DialogueData.yesDialogue,
-                currentNPC.DialogueData.noDialogue
-            );
+            dialogueUI.OpenDialogue(dialogue, currentNPC.DialogueData.choices);
         }
 
         switch (currentNPC.NPCType)
@@ -82,8 +82,7 @@ public class NPCManager : MonoBehaviour
             case NPCType.Fisherman:
                 Debug.Log("Fisherman NPC와 상호작용");
 
-                FishermanController fisherman =
-                    currentNPC.GetComponent<FishermanController>();
+                FishermanController fisherman = currentNPC.GetComponent<FishermanController>();
 
                 if (fisherman != null)
                 {
@@ -122,43 +121,124 @@ public class NPCManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+
+    #region < LookAtPlayer >
+
     private void LookAtPlayer(Transform npcTransform)
     {
-        GameObject playerObj =
-            GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
 
         if (playerObj == null)
             return;
 
-        Vector3 direction =
-            playerObj.transform.position - npcTransform.position;
+        Vector3 direction = playerObj.transform.position - npcTransform.position;
 
-        // 위아래로 고개를 돌리지 않도록
         direction.y = 0f;
 
         if (direction.sqrMagnitude <= 0.001f)
             return;
 
-        npcTransform.rotation =
-            Quaternion.LookRotation(direction);
+        npcTransform.rotation = Quaternion.LookRotation(direction);
     }
 
-    public void OnDialogueYes()
+    #endregion
+
+    #region < Dialogue Choice >
+
+    public void OnDialogueChoice(int index)
     {
         if (currentNPC == null)
             return;
 
         switch (currentNPC.NPCType)
         {
+            //==================================================
+            // Pirate
+            // 1번 : HuntingGround 이동
+            // 2번 : 취소
+            //==================================================
             case NPCType.Pirate:
-                StartCoroutine(MoveToScene(huntingGroundSceneName));
+
+                if (index == 0)
+                {
+                    StartCoroutine(MoveToScene(huntingGroundSceneName));
+                }
+                else if (index == 1)
+                {
+                    currentNPC.RestoreOriginalRotation();
+
+                    if (dialogueUI != null)
+                    {
+                        dialogueUI.CloseDialogueAfterDelay(1.5f);
+                    }
+                }
+
                 break;
 
+
+            //==================================================
+            // TrainDriver
+            // 1번 : Dungeon 이동
+            // 2번 : 취소
+            //==================================================
             case NPCType.TrainDriver:
-                StartCoroutine(MoveToScene(dungeonSceneName));
+
+                if (index == 0)
+                {
+                    StartCoroutine(MoveToScene(dungeonSceneName));
+                }
+                else if (index == 1)
+                {
+                    currentNPC.RestoreOriginalRotation();
+
+                    if (dialogueUI != null)
+                    {
+                        dialogueUI.CloseDialogueAfterDelay(1.5f);
+                    }
+                }
+
+                break;
+
+
+            //==================================================
+            // Fisherman
+            // 1번 : 낚시하는 법
+            // 2번 : 미끼 구매
+            // 3번 : 취소
+            //==================================================
+            case NPCType.Fisherman:
+
+                if (index == 0)
+                {
+                    Debug.Log("낚시하는 법 선택");
+                }
+                else if (index == 1)
+                {
+                    Debug.Log("미끼 구매하기 선택");
+                }
+                else if (index == 2)
+                {
+                    currentNPC.RestoreOriginalRotation();
+
+                    if (dialogueUI != null)
+                    {
+                        dialogueUI.CloseDialogueAfterDelay(1.5f);
+                    }
+                }
+
                 break;
         }
-    }   
+    }
+
+    public void OnDialogueClose()
+    {
+        if (currentNPC == null)
+            return;
+
+        currentNPC.RestoreOriginalRotation();
+    }
 
     private IEnumerator MoveToScene(string sceneName)
     {
@@ -166,4 +246,9 @@ public class NPCManager : MonoBehaviour
 
         SceneManager.LoadScene(sceneName);
     }
+
+    #endregion
+
+
+   
 }

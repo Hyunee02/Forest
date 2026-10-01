@@ -1,6 +1,6 @@
+using TMPro;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerBindInput))]
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Interaction")]
@@ -8,7 +8,8 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private float interactDistance;
     [SerializeField] private LayerMask interactableLayer;
 
-    [SerializeField] private InteractionMessage message;
+    [Header("UI")]
+    [SerializeField] private InteractionMessage messageUI;
 
     private PlayerBindInput input;
     private PlayerRest playerRest;
@@ -18,7 +19,7 @@ public class PlayerInteraction : MonoBehaviour
 #if UNITY_EDITOR
     private void Reset()
     {
-        interactDistance = 2f;
+        interactDistance = 1.5f;
     }
 #endif
 
@@ -26,8 +27,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         playerRest = GetComponent<PlayerRest>();
-
-        rayPos = transform.FindChildByName("RayPos");
+        messageUI = GetComponentInChildren<InteractionMessage>();
     }
 
     private void OnEnable()
@@ -38,50 +38,38 @@ public class PlayerInteraction : MonoBehaviour
     private void OnDisable()
     {
         input.OnInteractInput -= TryInteract;
-
-        currentTarget = null;
-
-        if (message != null)
-            message.HideText();
     }
 
     private void Update()
     {
-        if (message == null)
-            return;
-
-        // 쉬는 중에는 메세지 숨기기
         if (playerRest != null && playerRest.BRest)
         {
             currentTarget = null;
-            message.HideText();
+            messageUI.HideText();
             return;
         }
 
         currentTarget = FindInteractable();
 
-        // 대상 없거나 상호작용 못하면 메세지 숨기기
-        if (currentTarget == null || !currentTarget.CanInteract(gameObject))
+        if (currentTarget == null && NPCManager.Instance != null)
         {
-            message.HideText();
-            return;
+            currentTarget = NPCManager.Instance.CurrentNPC;
         }
 
-        Component targetComponent = currentTarget as Component;
-
-        if (targetComponent == null)
+        if (currentTarget != null &&
+            currentTarget.CanInteract(gameObject))
         {
-            message.HideText();
-            return;
+            messageUI.ShowText(currentTarget.InteractionText, this.transform);
         }
-
-        message.ShowText(currentTarget.InteractionText, targetComponent.transform);
-
+        else
+        {
+            messageUI.HideText();
+        }
     }
 
     private void TryInteract()
     {
-        // 쉬는 중이면 일어나기
+        // 앉아있는 상태면 먼저 일어나기
         if (playerRest != null && playerRest.BRest)
         {
             playerRest.StandUp();
@@ -90,24 +78,26 @@ public class PlayerInteraction : MonoBehaviour
 
         IInteractable target = FindInteractable();
 
+        if (target == null && NPCManager.Instance != null)
+        {
+            target = NPCManager.Instance.CurrentNPC;
+        }
+
         if (target == null)
         {
-            Debug.LogWarning("상호작용 할 대상이 없습니다.", this);
+            Debug.LogWarning("npc가 없습니다.", this);
             return;
         }
 
-        // 상호작용 가능한지
         if (!target.CanInteract(gameObject))
-            target = NPCManager.Instance.CurrentNPC;
+            return;
 
         target.Interact(gameObject);
+
     }
 
     private IInteractable FindInteractable()
     {
-        if (rayPos == null)
-            return null;
-
         Ray ray = new Ray(rayPos.position, rayPos.forward);
 
         if (Physics.Raycast(ray,
@@ -125,16 +115,6 @@ public class PlayerInteraction : MonoBehaviour
             return;
 
         Ray ray = new Ray(rayPos.position, rayPos.forward);
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(rayPos.position, rayPos.position + rayPos.forward * interactDistance);
-
-        if (Physics.Raycast(ray,
-            out RaycastHit hit,
-            interactDistance,
-            interactableLayer))
-        {
-            Gizmos.DrawSphere(hit.point, 0.1f);
-        }
     }
 }
+

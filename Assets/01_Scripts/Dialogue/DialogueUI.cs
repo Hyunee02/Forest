@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -5,21 +6,26 @@ public class DialogueUI : MonoBehaviour
 {
     [Header("<< Dialogue Text >>")]
     [SerializeField] private TMP_Text dialogueText;
+    [SerializeField] private TMP_Text npcNameText;
 
     [Header("<< Choice >>")]
-    [SerializeField] private YesOrNoChoice yesOrNoChoice;
+    [SerializeField] private Choice2 choice2;
+    [SerializeField] private Choice3 choice3;
 
-    private string yesDialogue;
-    private string noDialogue;
+    private DialogueChoiceData[] choices;
+
+    private PlayerMove playerMove;
 
     private void Awake()
     {
-        yesOrNoChoice.OnChoiceConfirmed += OnYesOrNoSelected;
+        choice2.OnChoiceConfirmed += OnChoiceConfirmed;
+        choice3.OnChoiceConfirmed += OnChoiceConfirmed;
     }
 
     private void OnDestroy()
     {
-        yesOrNoChoice.OnChoiceConfirmed -= OnYesOrNoSelected;
+        choice2.OnChoiceConfirmed -= OnChoiceConfirmed;
+        choice3.OnChoiceConfirmed -= OnChoiceConfirmed;
     }
 
     private void Update()
@@ -30,45 +36,146 @@ public class DialogueUI : MonoBehaviour
         }
     }
 
-    public void OpenDialogue(
-        string dialogue,
-        string yesDialogue,
-        string noDialogue)
+    public void OpenDialogue(string dialogue, DialogueChoiceData[] choices)
     {
         dialogueText.text = dialogue;
 
-        this.yesDialogue = yesDialogue;
-        this.noDialogue = noDialogue;
+        if (NPCManager.Instance != null)
+        {
+            NPC npc = NPCManager.Instance.CurrentNPC;
+
+            if (npc != null && npc.DialogueData != null)
+            {
+                npcNameText.text = npc.DialogueData.npcName;
+            }
+        }
+
+        this.choices = choices;
+
+        LockPlayerMove();
 
         gameObject.SetActive(true);
 
-        yesOrNoChoice.gameObject.SetActive(true);
+        choice2.gameObject.SetActive(false);
+        choice3.gameObject.SetActive(false);
+
+        if (choices == null || choices.Length == 0)
+            return;
+
+        if (choices.Length == 2)
+        {
+            choice2.SetChoices(choices);
+            choice2.gameObject.SetActive(true);
+        }
+        else if (choices.Length == 3)
+        {
+            choice3.SetChoices(choices);
+            choice3.gameObject.SetActive(true);
+        }
     }
 
-    private void OnYesOrNoSelected(bool isYes)
+    private void OnChoiceConfirmed(int index)
     {
-        if (isYes)
-        {
-            dialogueText.text = yesDialogue;
+        if (choices == null)
+            return;
 
-            if (NPCManager.Instance != null)
-            {
-                NPCManager.Instance.OnDialogueYes();
-            }
-        }
-        else
-        {
-            dialogueText.text = noDialogue;
-        }
+        if (index < 0 || index >= choices.Length)
+            return;
 
-        // ¼±ÅÃ ¿Ï·á ¡æ ¼±ÅÃ UI ¼û±è
-        yesOrNoChoice.gameObject.SetActive(false);
+        dialogueText.text = choices[index].dialogue;
+
+        choice2.gameObject.SetActive(false);
+        choice3.gameObject.SetActive(false);
+
+        if (NPCManager.Instance != null)
+        {
+            NPCManager.Instance.OnDialogueChoice(index);
+        }
+    }
+
+    public void ShowByeDialogue()
+    {
+        if (NPCManager.Instance == null)
+            return;
+
+        NPC npc = NPCManager.Instance.CurrentNPC;
+
+        if (npc == null || npc.DialogueData == null)
+            return;
+
+        dialogueText.text = npc.DialogueData.GetRandomBye();
+
+        choice2.gameObject.SetActive(false);
+        choice3.gameObject.SetActive(false);
+
+        CloseDialogueAfterDelay(1.5f);
+    }
+
+    public void CloseDialogueAfterDelay(float delay)
+    {
+        StartCoroutine(CloseDialogueCoroutine(delay));
+    }
+
+    private IEnumerator CloseDialogueCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        CloseDialogue();
     }
 
     public void CloseDialogue()
     {
-        yesOrNoChoice.gameObject.SetActive(false);
+        choice2.gameObject.SetActive(false);
+        choice3.gameObject.SetActive(false);
+
+        if (NPCManager.Instance != null)
+        {
+            NPCManager.Instance.OnDialogueClose();
+        }
+
+        UnlockPlayerMove();
 
         gameObject.SetActive(false);
     }
+
+    #region < Lock Player Move >
+
+    private void LockPlayerMove()
+    {
+        GameObject playerObj =
+            GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObj == null)
+            return;
+
+        playerMove =
+            playerObj.GetComponent<PlayerMove>();
+
+        if (playerMove == null)
+            return;
+
+        playerMove.SetMoveEnabled(false);
+    }
+
+    private void UnlockPlayerMove()
+    {
+        if (playerMove == null)
+        {
+            GameObject playerObj =
+                GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObj != null)
+            {
+                playerMove =
+                    playerObj.GetComponent<PlayerMove>();
+            }
+        }
+
+        if (playerMove != null)
+        {
+            playerMove.SetMoveEnabled(true);
+        }
+    }
+
+    #endregion
 }

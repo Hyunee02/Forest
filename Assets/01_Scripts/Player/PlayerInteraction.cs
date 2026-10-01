@@ -1,14 +1,14 @@
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerBindInput))]
 public class PlayerInteraction : MonoBehaviour
 {
-    [Header("Interaction")]
     [SerializeField] private Transform rayPos;
-    [SerializeField] private float interactDistance;
+
+    [SerializeField] private float interactDistance = 1.5f;
+
     [SerializeField] private LayerMask interactableLayer;
 
-    [SerializeField] private InteractionMessage message;
+    [SerializeField] private Message messageUI;
 
     private PlayerBindInput input;
     private PlayerRest playerRest;
@@ -18,7 +18,8 @@ public class PlayerInteraction : MonoBehaviour
 #if UNITY_EDITOR
     private void Reset()
     {
-        interactDistance = 2f;
+        rayPos = gameObject.transform.FindChildByName("RayPos");
+        messageUI = GetComponentInChildren<Message>();
     }
 #endif
 
@@ -26,8 +27,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         playerRest = GetComponent<PlayerRest>();
-
-        rayPos = transform.FindChildByName("RayPos");
+        messageUI = GetComponentInChildren<Message>();
     }
 
     private void OnEnable()
@@ -38,55 +38,36 @@ public class PlayerInteraction : MonoBehaviour
     private void OnDisable()
     {
         input.OnInteractInput -= TryInteract;
-
-        currentTarget = null;
-
-        if (message != null)
-            message.HideText();
     }
 
     private void Update()
     {
-        if (message == null)
-            return;
-
-        // 쉬는 중에는 메세지 숨기기
         if (playerRest != null && playerRest.BRest)
         {
-            currentTarget = null;
-            message.HideText();
+            messageUI.HideText();
             return;
         }
 
         currentTarget = FindInteractable();
 
-        // raycast 못찾았을 경우 현재 NPC 확인
         if (currentTarget == null && NPCManager.Instance != null)
         {
             currentTarget = NPCManager.Instance.CurrentNPC;
         }
 
-        if (currentTarget == null || !currentTarget.CanInteract(gameObject))
+        if (currentTarget != null &&
+            currentTarget.CanInteract(gameObject))
         {
-            message.HideText();
-            return;
+            messageUI.ShowText(currentTarget.InteractionText);
         }
-
-        Component targetComponent = currentTarget as Component;
-
-        if (targetComponent == null)
+        else
         {
-            message.HideText();
-            return;
+            messageUI.HideText();
         }
-
-        message.ShowText(currentTarget.InteractionText, targetComponent.transform);
-
     }
 
     private void TryInteract()
     {
-        // 쉬는 중이면 일어나기
         if (playerRest != null && playerRest.BRest)
         {
             playerRest.StandUp();
@@ -95,7 +76,11 @@ public class PlayerInteraction : MonoBehaviour
 
         IInteractable target = FindInteractable();
 
-        // raycast 못찾았을 경우 현재 NPC 확인
+        if (target == null && NPCManager.Instance != null)
+        {
+            target = NPCManager.Instance.CurrentNPC;
+        }
+
         if (target == null && NPCManager.Instance != null)
         {
             target = NPCManager.Instance.CurrentNPC;
@@ -103,23 +88,19 @@ public class PlayerInteraction : MonoBehaviour
 
         if (target == null)
         {
-            Debug.LogWarning("상호작용 할 대상이 없습니다.", this);
+            Debug.LogWarning("npc가 없습니다.", this);
             return;
         }
 
         if (!target.CanInteract(gameObject))
-        {
             return;
-        }
 
         target.Interact(gameObject);
+
     }
 
     private IInteractable FindInteractable()
     {
-        if (rayPos == null)
-            return null;
-
         Ray ray = new Ray(rayPos.position, rayPos.forward);
 
         if (Physics.Raycast(ray,
@@ -137,16 +118,6 @@ public class PlayerInteraction : MonoBehaviour
             return;
 
         Ray ray = new Ray(rayPos.position, rayPos.forward);
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(rayPos.position, rayPos.position + rayPos.forward * interactDistance);
-
-        if (Physics.Raycast(ray,
-            out RaycastHit hit,
-            interactDistance,
-            interactableLayer))
-        {
-            Gizmos.DrawSphere(hit.point, 0.1f);
-        }
     }
 }
+

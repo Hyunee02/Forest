@@ -18,7 +18,7 @@ public class WorldItem : MonoBehaviour
         if (pickedUp || inventory == null || itemData == null)
             return false;
 
-        bool success = inventory.AddItem(itemData.id, amount);
+        bool success = inventory.AddItem(itemData.Id, amount);
 
         if (!success)
         {

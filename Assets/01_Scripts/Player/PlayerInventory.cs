@@ -140,10 +140,10 @@ public class PlayerInventory : MonoBehaviour
     private int GetMaxStack(ItemData_SO data)
     {
         // 도구면 MaxStack 1
-        if (data.itemType == ItemTypeSO.Tool)
+        if (data.ItemType == ItemTypeSO.Tool)
             return 1;
 
-        return Mathf.Max(1, data.maxStack);
+        return Mathf.Max(1, data.MaxStack);
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public class PlayerInventory : MonoBehaviour
             return false;
 
         // 아이템이 도구이면
-        bool bTool = data.itemType == ItemTypeSO.Tool;
+        bool bTool = data.ItemType == ItemTypeSO.Tool;
 
         if (bTool)
         {
@@ -226,7 +226,7 @@ public class PlayerInventory : MonoBehaviour
             return false;
 
         ItemData_SO data = GetItemData(itemId);
-        bool bTool = data.itemType == ItemTypeSO.Tool;
+        bool bTool = data.ItemType == ItemTypeSO.Tool;
         int maxStack = GetMaxStack(data);
 
         // 추가하려는 아이템이 도구일 때
@@ -341,7 +341,7 @@ public class PlayerInventory : MonoBehaviour
 
         bool bMerge = !to.BEmpty
             && from.itemId == to.itemId
-            && data.itemType != ItemTypeSO.Tool;
+            && data.ItemType != ItemTypeSO.Tool;
 
         // 합병 가능할 때
         if (bMerge)
@@ -414,7 +414,7 @@ public class PlayerInventory : MonoBehaviour
 
         ItemData_SO data = GetItemData(item.itemId);
 
-        if (data == null || data.itemType != ItemTypeSO.Tool)
+        if (data == null || data.ItemType != ItemTypeSO.Tool)
             return false;
 
         item.currentDurability = Mathf.Max(0, item.currentDurability - amount);

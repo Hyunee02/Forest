@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa350b591f6b1884f9792c5f720f4e98, type: 3}
   m_Name: Dialogue_Fisherman
   m_EditorClassIdentifier: 
+  npcName: "\uC5D0\uB514"
   greetings:
   - "\uC654\uAD6C\uB098~ \uC624\uB298\uB3C4 \uB09A\uC2DC\uD558\uB7EC \uC628 \uAC70\uC57C?"
   - "\uC624\uB298 \uB09A\uC2DC\uB294 \uAF64 \uAD1C\uCC2E\uC744 \uAC83 \uAC19\uC544.

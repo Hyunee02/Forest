@@ -22,7 +22,7 @@ public class ItemDatabase : ScriptableObject
             if (item == null)
                 continue;
 
-            if (item.id == id)
+            if (item.Id == id)
                 return item;
         }
 

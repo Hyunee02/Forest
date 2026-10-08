@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa350b591f6b1884f9792c5f720f4e98, type: 3}
   m_Name: Dialogue_Merchant_Weapon
   m_EditorClassIdentifier: 
+  npcName: "\uCE74\uC77C"
   greetings:
   - "\uC5B4\uC11C \uC624\uC2ED\uC2DC\uC624.\n\uCC3E\uC73C\uC2DC\uB294 \uBB3C\uAC74\uC774
     \uC788\uC73C\uC2ED\uB2C8\uAE4C?"

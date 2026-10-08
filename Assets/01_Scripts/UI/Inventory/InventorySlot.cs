@@ -50,7 +50,7 @@ public class InventorySlot :
             visuals.blocksRaycasts = false;
         }
 
-        bool showCount = hasItem && data.itemType != ItemTypeSO.Tool;
+        bool showCount = hasItem && data.ItemType != ItemTypeSO.Tool;
 
         if (countRoot != null)
             countRoot.SetActive(showCount);
@@ -60,7 +60,7 @@ public class InventorySlot :
 
         if (icon != null)
         {
-            Sprite sprite = data.icon;
+            Sprite sprite = data.Icon;
 
             if (sprite == null && toolData != null)
                 sprite = toolData.Icon;

@@ -153,7 +153,7 @@ public class PlayerEquip : MonoBehaviour
 
         // 장착 가능한 도구인지 검사
         if (itemData == null
-            || itemData.itemType != ItemTypeSO.Tool)
+            || itemData.ItemType != ItemTypeSO.Tool)
             return false;
 
         ToolData data = inventory.GetToolData(item.itemId);

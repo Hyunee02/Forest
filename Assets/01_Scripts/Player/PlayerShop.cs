@@ -83,11 +83,13 @@ public class PlayerShop : MonoBehaviour
 
         bTrading = true;
 
-        try
-        {
-            int previousMoney = save.money;
+        //try
+        //{
+        //    int previousMoney = save.money;
 
-            save.money -= data.Buy;
-        }
+        //    save.money -= data.Buy;
+        //}
+
+        return true;
     }
 }

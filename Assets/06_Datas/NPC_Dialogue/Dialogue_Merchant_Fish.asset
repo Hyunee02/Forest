@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa350b591f6b1884f9792c5f720f4e98, type: 3}
   m_Name: Dialogue_Merchant_Fish
   m_EditorClassIdentifier: 
+  npcName: "\uD540"
   greetings:
   - "\uC5B4\uC11C \uC640~ \uC624\uB298 \uC7A1\uC740 \uBB3C\uACE0\uAE30 \uAD6C\uACBD\uD558\uACE0
     \uAC00"

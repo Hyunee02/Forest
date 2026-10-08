@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa350b591f6b1884f9792c5f720f4e98, type: 3}
   m_Name: Dialogue_Pirate
   m_EditorClassIdentifier: 
+  npcName: "\uC7AD"
   greetings:
   - "\uC5B4\uC11C \uC624\uAC8C, \u3147\u3147 \n\uC0AC\uB0E5\uC744 \uB5A0\uB0A0 \uC900\uBE44\uB294
     \uB418\uC5B4 \uC788\uB098?"
@@ -24,3 +25,4 @@ MonoBehaviour:
     dialogue: "\uC88B\uC544, \uADF8\uB7FC \uC0AC\uB0E5\uD130\uB85C \uCD9C\uBC1C\uD558\uC790\uACE0!"
   - choiceText: "\uC544\uB2C8\uC694"
     dialogue: "\uC54C\uACA0\uB124, \uB2E4\uC74C\uC5D0 \uB610 \uBCF4\uC790\uACE0!"
+  byes: []

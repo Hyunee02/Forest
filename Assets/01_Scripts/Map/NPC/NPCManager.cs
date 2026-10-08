@@ -9,6 +9,10 @@ public class NPCManager : MonoBehaviour
     [Header("<< Dialogue >>")]
     [SerializeField] private DialogueUI dialogueUI;
 
+    [Header("<< Shop >>")]
+    [SerializeField] private GameObject shopPanel;
+    [SerializeField] private float shopOpenDelay = 1f;
+
     [Header("<< 이동할 씬 이름 >>")]
     [SerializeField] private string huntingGroundSceneName = "HuntingGround";
     [SerializeField] private string dungeonSceneName = "Dungeon";
@@ -229,6 +233,49 @@ public class NPCManager : MonoBehaviour
                 }
 
                 break;
+
+            //==================================================
+            // Shop NPC
+            // 1번 : 구매하기
+            // 2번 : 판매하기
+            // 3번 : 취소하기
+            //==================================================
+            case NPCType.FishShop:
+            case NPCType.GroceryShop:
+            case NPCType.WeaponShop:
+
+                if (index == 0)
+                {
+                    StartCoroutine(OpenShopAfterDelay());
+                }
+                else if (index == 1)
+                {
+                    Debug.Log("판매하기");
+                }
+                else if (index == 2)
+                {
+                    if (dialogueUI != null)
+                    {
+                        dialogueUI.CloseDialogueAfterDelay(1.5f);
+                    }
+                }
+
+                break;
+        }
+    }
+
+    private IEnumerator OpenShopAfterDelay()
+    {
+        yield return new WaitForSeconds(shopOpenDelay);
+
+        if (dialogueUI != null)
+        {
+            dialogueUI.gameObject.SetActive(false);
+        }
+
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(true);
         }
     }
 
@@ -247,8 +294,22 @@ public class NPCManager : MonoBehaviour
         SceneManager.LoadScene(sceneName);
     }
 
+    public void CloseShop()
+    {
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(false);
+        }
+
+        if (dialogueUI != null)
+        {
+            dialogueUI.gameObject.SetActive(true);
+            dialogueUI.ShowByeDialogue();
+        }
+    }
+
     #endregion
 
 
-   
+
 }

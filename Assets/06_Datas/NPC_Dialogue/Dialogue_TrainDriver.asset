@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa350b591f6b1884f9792c5f720f4e98, type: 3}
   m_Name: Dialogue_TrainDriver
   m_EditorClassIdentifier: 
+  npcName: "\uD1A0\uB9C8\uC2A4"
   greetings:
   - "\uC548\uB155\uD558\uC138\uC694 \u3147\u3147\uB2D8\n\uAD11\uC0B0\uC73C\uB85C
     \uAC00\uC2DC\uACA0\uC5B4\uC694?"
@@ -24,3 +25,4 @@ MonoBehaviour:
     dialogue: "\uC88B\uC544\uC694\n\uAD11\uC0B0\uC73C\uB85C \uCD9C\uBC1C\uD558\uACA0\uC2B5\uB2C8\uB2E4"
   - choiceText: "\uC544\uB2C8\uC694"
     dialogue: "\uC54C\uACA0\uC2B5\uB2C8\uB2E4,\n\uB2E4\uC74C\uC5D0 \uB610 \uC774\uC6A9\uD574\uC8FC\uC138\uC694"
+  byes: []

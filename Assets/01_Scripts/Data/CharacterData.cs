@@ -7,10 +7,10 @@ public class CharacterData : ScriptableObject
     private string characterName;
 
     private Sprite portrait;
-    private GameObject characterPrefab;
+    private CharacterView characterPrefab;
 
     public string ID => id;
     public string CharacterName => characterName;
     public Sprite Portrait => portrait;
-    public GameObject CharacterPrefab => characterPrefab;
+    public CharacterView CharacterPrefab => characterPrefab;
 }

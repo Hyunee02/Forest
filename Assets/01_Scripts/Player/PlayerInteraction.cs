@@ -9,7 +9,7 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private LayerMask interactableLayer;
 
     [Header("UI")]
-    [SerializeField] private InteractionMessage messageUI;
+    [SerializeField] private InteractionMessage message;
 
     private PlayerBindInput input;
     private PlayerRest playerRest;
@@ -19,7 +19,7 @@ public class PlayerInteraction : MonoBehaviour
 #if UNITY_EDITOR
     private void Reset()
     {
-        interactDistance = 1.5f;
+        interactDistance = 2f;
     }
 #endif
 
@@ -27,7 +27,8 @@ public class PlayerInteraction : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         playerRest = GetComponent<PlayerRest>();
-        messageUI = GetComponentInChildren<InteractionMessage>();
+
+        rayPos = transform.FindChildByName("RayPos");
     }
 
     private void OnEnable()
@@ -38,33 +39,52 @@ public class PlayerInteraction : MonoBehaviour
     private void OnDisable()
     {
         input.OnInteractInput -= TryInteract;
+
+        currentTarget = null;
+
+        if (message != null)
+            message.HideText();
     }
 
     private void Update()
     {
+        if (message == null)
+            return;
+
         if (playerRest != null && playerRest.BRest)
         {
             currentTarget = null;
-            messageUI.HideText();
+            message.HideText();
             return;
         }
 
+        // Raycast로 상호작용 대상 찾기
         currentTarget = FindInteractable();
 
+        // Raycast로 찾은 대상 없으면 범위 내의 NPC 가져오기
         if (currentTarget == null && NPCManager.Instance != null)
         {
             currentTarget = NPCManager.Instance.CurrentNPC;
         }
 
-        if (currentTarget != null &&
-            currentTarget.CanInteract(gameObject))
+        // 대상 없거나 상호작용 할 수 없으면 메시지 숨기기
+        if (currentTarget == null || !currentTarget.CanInteract(gameObject))
         {
-            messageUI.ShowText(currentTarget.InteractionText, this.transform);
+            message.HideText();
+            return;
         }
-        else
+
+        // 대상의 Transform 가져오기 위해 컴포넌트로 변환
+        Component targetComponent = currentTarget as Component;
+
+        if (targetComponent == null)
         {
-            messageUI.HideText();
+            message.HideText();
+            return;
         }
+
+        message.ShowText(currentTarget.InteractionText, targetComponent.transform);
+
     }
 
     private void TryInteract()

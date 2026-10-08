@@ -3997,7 +3997,7 @@ PrefabInstance:
     - target: {fileID: 795527422908244164, guid: 70f65a0d914c0ff47bd2778425133e3d, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 9100000, guid: bb06efcfe326b6346aedf1070c2e0943, type: 2}
     - target: {fileID: 4827356728388519438, guid: 70f65a0d914c0ff47bd2778425133e3d, type: 3}
       propertyPath: dragIcon
       value: 

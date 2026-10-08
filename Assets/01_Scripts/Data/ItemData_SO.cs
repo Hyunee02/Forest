@@ -14,19 +14,34 @@ public enum ItemTypeSO
 public class ItemData_SO : ScriptableObject
 {
     [Header("<< Basic >>")]
-    public string id;
-    public ItemTypeSO itemType;
+    private string id;
+    private ItemTypeSO itemType;
 
-    public string itemName;
-    public int price;
+    private string itemName;
+    private int buy;
+    private int sell;
 
     [TextArea]
-    public string description;
+    private string description;
 
     [Header("<< Inventory >>")]
-    public Sprite icon;
-    public int maxStack = 30;
+    private Sprite icon;
+    private int maxStack = 30;
 
     [Header("<< World >>")]
-    public GameObject prefab;
+    private GameObject prefab;
+
+    public string Id => id;
+    public ItemTypeSO ItemType => itemType;
+
+    public string ItemName => itemName;
+    public int Buy => buy;
+    public int Sell => sell;
+
+    public string Description => description;
+
+    public Sprite Icon => icon;
+    public int MaxStack => maxStack;
+
+    public GameObject Prefab => prefab;
 }

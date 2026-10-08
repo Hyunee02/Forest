@@ -12,7 +12,7 @@ public class InventoryItemUI : MonoBehaviour
         if (itemData == null)
             return;
 
-        icon.sprite = itemData.icon;
+        icon.sprite = itemData.Icon;
 
         if (count > 1)
             countText.text = count.ToString();

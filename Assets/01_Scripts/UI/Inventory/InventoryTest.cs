@@ -64,14 +64,14 @@ public class InventoryTest : MonoBehaviour
             if (entry == null || entry.itemData == null)
                 continue;
 
-            bool success = inventory.AddItem(entry.itemData.id, entry.amount, entry.durability);
+            bool success = inventory.AddItem(entry.itemData.Id, entry.amount, entry.durability);
 
             if (success)
-                Debug.Log($"{entry.itemData.itemName}, {entry.amount}개 지급 완료", this);
+                Debug.Log($"{entry.itemData.ItemName}, {entry.amount}개 지급 완료", this);
 
             else
-                Debug.Log($"{entry.itemData.itemName} 지금 실패" +
-                    $"ID : {entry.itemData.id}");
+                Debug.Log($"{entry.itemData.ItemName} 지금 실패" +
+                    $"ID : {entry.itemData.Id}");
         }
 
         RefreshView();
@@ -104,7 +104,7 @@ public class InventoryTest : MonoBehaviour
 
                 info.itemId = item.itemId;
                 info.itemName = data != null
-                    ? data.itemName : "데이터 없음";
+                    ? data.ItemName : "데이터 없음";
 
                 info.count = item.count;
                 info.currentDurability = item.currentDurability;

@@ -236,7 +236,7 @@ public class InventoryUI : MonoBehaviour
                 ? inventory.GetItemData(item.itemId) : null;
 
             ToolData toolData =
-                data != null && data.itemType == ItemTypeSO.Tool
+                data != null && data.ItemType == ItemTypeSO.Tool
                 ? inventory.GetToolData(item.itemId) : null;
 
             slots[i].Refresh(item, data, toolData, equip.IsEquipped(item));

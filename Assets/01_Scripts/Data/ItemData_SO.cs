@@ -14,22 +14,23 @@ public enum ItemTypeSO
 public class ItemData_SO : ScriptableObject
 {
     [Header("<< Basic >>")]
-    private string id;
-    private ItemTypeSO itemType;
+    [SerializeField] private string id;
+    [SerializeField] private ItemTypeSO itemType;
+    [SerializeField] private string itemName;
 
-    private string itemName;
-    private int buy;
-    private int sell;
+    [Header("<< Price >>")]
+    [SerializeField, Min(0)] private int buy;
+    [SerializeField, Min(0)] private int sell;
 
     [TextArea]
-    private string description;
+    [SerializeField] private string description;
 
     [Header("<< Inventory >>")]
-    private Sprite icon;
-    private int maxStack = 30;
+    [SerializeField] private Sprite icon;
+    [SerializeField, Min(1)] private int maxStack = 30;
 
     [Header("<< World >>")]
-    private GameObject prefab;
+    [SerializeField] private GameObject prefab;
 
     public string Id => id;
     public ItemTypeSO ItemType => itemType;

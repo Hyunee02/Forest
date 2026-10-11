@@ -22,7 +22,13 @@ public class NPC : Interactable
 
     [Header("<< Dialogue >>")]
     [SerializeField] private DialogueData dialogueData;
+
+    [Header("<< Shop >>")]
+    [SerializeField] private ShopData shopData;
+
     public DialogueData DialogueData => dialogueData;
+
+    public ShopData ShopData => shopData;
 
     private Quaternion originalRotation;
 

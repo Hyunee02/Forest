@@ -8,9 +8,6 @@ public class ShopData : ScriptableObject
     [Header("Buy")]
     public string[] buyItemIds;
 
-    [Header("Sell")]
-    public string[] sellItemIds;
-
     /// <summary>
     /// 상점 구매 가능 여부
     /// </summary>
@@ -19,16 +16,6 @@ public class ShopData : ScriptableObject
     public bool CanBuy(string itemId)
     {
         return ContainsId(buyItemIds, itemId);
-    }
-
-    /// <summary>
-    /// 상점 판매 가능 여부
-    /// </summary>
-    /// <param name="itemId"></param>
-    /// <returns></returns>
-    public bool CanSell(string itemId)
-    {
-        return ContainsId(sellItemIds, itemId);
     }
 
     /// <summary>

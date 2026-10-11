@@ -35,6 +35,12 @@ public class NPCManager : MonoBehaviour
         Instance = this;
     }
 
+    private void OnDestroy()
+    {
+        if (Instance != null)
+            Instance = null;
+    }
+
     #region < Current NPC >
 
     public void SetCurrentNPC(NPC npc)

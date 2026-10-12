@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerInventory))]
@@ -147,22 +148,19 @@ public class PlayerShop : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 아이템 판매 (상점 종류와 무관)
-    /// </summary>
-    /// <param name="shop"></param>
-    /// <param name="slotIndex"></param>
-    /// <param name="expectedItem"></param>
-    /// <param name="expectedItemId"></param>
-    /// <param name="message"></param>
-    /// <returns></returns>
-    public bool TrySell(ShopData shop, int slotIndex, InventoryItem expectedItem, string expectedItemId, out string message)
+    public bool TrySellSelected(IReadOnlyList<SaleSelection> selections, out string message)
     {
         message = "";
 
         if (bTrading || IsUsingTool)
         {
-            message = "지금은 거래할 수 없습니다.";
+            message = "지금은 판매할 수 없습니다.";
+            return false;
+        }
+
+        if (selections == null || selections.Count == 0)
+        {
+            message = "판매할 아이템을 선택해주세요.";
             return false;
         }
 
@@ -171,36 +169,64 @@ public class PlayerShop : MonoBehaviour
         if (save == null)
             return ConfigError("GameSession 데이터가 없습니다.", out message);
 
-        InventoryItem item = inventory.GetItem(slotIndex);
-
-        // 선택 이후에 슬롯 바뀌었으면 거래 취소
-        if (item == null
-            || item.BEmpty
-            || !ReferenceEquals(item, expectedItem)
-            || item.itemId != expectedItemId)
-        {
-            message = "아이템이 변경되었습니다\n다시 선택해주세요.";
-            return false;
-        }
-
-        ItemData_SO data = inventory.GetItemData(item.itemId);
-
-        if (data == null)
-            return ConfigError($"아이템 데이터 없음 : {item.itemId}", out message);
-
-        if (data.Sell < 0)
-        {
-            message = "판매할 수 없는 아이템입니다.";
-            return false;
-        }
-
         if (save.money < 0)
             return ConfigError("소지금이 음수입니다.", out message);
 
-        if (save.money > int.MaxValue - data.Sell)
+        // 판매 중 UI 선택 목록이 초기화되어도 영향 X
+        List<SaleSelection> transaction = new List<SaleSelection>(selections);
+
+        HashSet<int> checkedSlots = new();
+
+        int total = 0;
+
+        foreach (SaleSelection selection in transaction)
         {
-            message = "소지금이 최대치에 도달했습니다.";
-            return false;
+            if (selection == null || !checkedSlots.Add(selection.SlotIndex))
+            {
+                message = "판매할 아이템을 다시 선택해주세요.";
+                return false;
+            }
+
+            InventoryItem item = inventory.GetItem(selection.SlotIndex);
+
+            // 선택 당시의 아이템이랑 수량 같은지 검사
+            if (item == null
+                || item.BEmpty
+                || !ReferenceEquals(item, selection.Item)
+                || item.itemId != selection.ItemId
+                || item.count != selection.Count
+                || selection.Count <= 0)
+            {
+                message = "아이템이 변경되었습니다. 다시 선택해주세요.";
+                return false;
+            }
+
+            ItemData_SO data = inventory.GetItemData(item.itemId);
+
+            if (data == null)
+            {
+                return ConfigError($"아이템 데이터가 없습니다 : {item.itemId}", out message);
+            }
+
+            if (data.Sell <= 0)
+            {
+                message = "판매할 수 없는 아이템이 포함되어 있습니다.";
+                return false;
+            }
+
+            if (data.Sell != selection.UnitPrice)
+            {
+                message = "판매 가격이 변경되었습니다. 다시 선택해주세요.";
+                return false;
+            }
+
+            total += selection.Total;
+
+            if (total > int.MaxValue - save.money)
+            {
+                message = "판매 후 소지금이 최대치를 초과합니다.";
+                return false;
+            }
         }
 
         bTrading = true;
@@ -208,16 +234,19 @@ public class PlayerShop : MonoBehaviour
         try
         {
             int previousMoney = save.money;
-            save.money += data.Sell;
 
-            if (!inventory.RemoveItem(slotIndex, 1))
+            // 인벤토리 변경 이벤트에서 갱신된 소지금을 확인하게 돈 먼저 반영
+            save.money += total;
+
+            if (!inventory.RemoveSaleSelections(transaction))
             {
                 save.money = previousMoney;
-                message = "판매하지 못했습니다.\n다시 선택해주세요.";
+
+                message = "아이템이 변경되었습니다. 다시 선택해주세요.";
                 return false;
             }
 
-            message = $"{data.ItemName} 1개를 판매했습니다.";
+            message = $"{total:N0}골드에 판매했습니다.";
             return true;
         }
 

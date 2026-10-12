@@ -17,6 +17,11 @@ public class InventorySlot :
     [SerializeField] private CanvasGroup visuals;
     [SerializeField] private GameObject countRoot;
 
+    [Header("Sale Selection")]
+    [SerializeField] private Image selectionBackground;
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color selectedColor = new Color(1f, 0.8f, 0.25f, 1f);
+
     private InventoryUI owner;
     
     public InventoryUI Owner => owner;
@@ -27,6 +32,8 @@ public class InventorySlot :
     {
         owner = inventoryUI;
         SlotIndex = index;
+
+        SetSelected(false);
     }
 
     /// <summary>
@@ -78,6 +85,14 @@ public class InventorySlot :
         }
     }
 
+    public void SetSelected(bool selected)
+    {
+        if (selectionBackground == null)
+            return;
+
+        selectionBackground.color = selected ? selectedColor : normalColor;
+    }
+
     /// <summary>
     /// 클릭했을 때
     /// </summary>
@@ -87,10 +102,18 @@ public class InventorySlot :
         if (owner == null || eventData.dragging)
             return;
 
-        if (eventData.button == PointerEventData.InputButton.Right)
+        // 판매 모드 (좌클릭)
+        if (owner.BSellMode)
         {
-            owner.ToggleEquip(SlotIndex);
+            if (eventData.button == PointerEventData.InputButton.Left)
+                owner.ClickSaleSlot(SlotIndex);
+
+            return;
         }
+
+        // 일반 모드
+        if (eventData.button == PointerEventData.InputButton.Right)
+            owner.ToggleEquip(SlotIndex);
     }
 
     /// <summary>

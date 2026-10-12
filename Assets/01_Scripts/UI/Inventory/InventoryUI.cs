@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -25,8 +25,21 @@ public class InventoryUI : MonoBehaviour
     private int dragIndex = -1;
     private InventoryItem dragItem;
 
+    public event Action<int> OnSaleSlotClicked;
+    public event Action OnClosed;
+
     public bool BOpen => inventoryPanel != null
         && inventoryPanel.activeInHierarchy;
+
+    public bool BSellMode {  get; private set; }
+
+    public bool CanOpenSales => isActiveAndEnabled
+        && inventory != null
+        && equip != null
+        && !equip.BUse
+        && inventoryPanel != null;
+
+    public PlayerInventory Inventory => inventory;
 
     private void Awake()
     {
@@ -75,10 +88,7 @@ public class InventoryUI : MonoBehaviour
         equip.OnEquipChanged -= RefreshAll;
         input.OnInventoryInput -= ToggleInventory;
 
-        CancelDrag();
-
-        if (inventoryPanel != null)
-            inventoryPanel.SetActive(false);
+        SetOpen(false);
     }
 
     #region > 버튼 연결
@@ -103,17 +113,39 @@ public class InventoryUI : MonoBehaviour
     /// <param name="open"></param>
     public void SetOpen(bool open)
     {
-        if (!isActiveAndEnabled)
+        if (open)
+        {
+            if (!isActiveAndEnabled
+                || equip == null
+                || equip.BUse)
+                return;
+
+            // 대화, 구매 중 인벤토리 열기 제한
+            // 판매 모드는 판매 UI에서 열기 가능
+            if (!BSellMode
+                && NPCManager.Instance != null
+                && NPCManager.Instance.IsUIBusy)
+                return;
+        }
+
+        if (inventoryPanel == null)
             return;
 
-        if (open && equip.BUse)
-            return;
+        bool wasOpen = BOpen;
 
         CancelDrag();
         inventoryPanel.SetActive(open);
 
         if (open)
             RefreshAll();
+
+        else
+        {
+            SetSellMode(false);
+
+            if (wasOpen)
+                OnClosed?.Invoke();
+        }
     }
     #endregion
 
@@ -125,6 +157,9 @@ public class InventoryUI : MonoBehaviour
     /// <param name="eventData"></param>
     public void BeginDrag(InventorySlot slot, PointerEventData eventData)
     {
+        if (BSellMode)
+            return;
+
         if (!BOpen || equip.BUse)
             return;
 
@@ -167,6 +202,9 @@ public class InventoryUI : MonoBehaviour
     /// <param name="slot">어디에서 드래그 해왔는지</param>
     public void DropOn(int targetIndex, InventorySlot slot)
     {
+        if (BSellMode)
+            return;
+
         if (!BOpen
             || slot == null
             || slot.Owner != this
@@ -184,6 +222,38 @@ public class InventoryUI : MonoBehaviour
             return;
 
         inventory.MoveItem(fromIndex, targetIndex);
+    }
+    #endregion
+
+    #region > 판매
+    public void SetSellMode(bool enabled)
+    {
+        BSellMode = enabled;
+
+        CancelDrag();
+        ClearSaleHighlights();
+    }
+
+    public void ClickSaleSlot(int index)
+    {
+        if (!BOpen || !BSellMode || equip.BUse)
+            return;
+
+        OnSaleSlotClicked?.Invoke(index);
+    }
+
+    public void SetSaleHightlight(int index, bool selected)
+    {
+        if (index < 0 || index >= slots.Count)
+            return;
+
+        slots[index].SetSelected(selected);
+    }
+
+    public void ClearSaleHighlights()
+    {
+        foreach (InventorySlot slot in slots)
+            slot.SetSelected(false);
     }
     #endregion
 
@@ -249,6 +319,9 @@ public class InventoryUI : MonoBehaviour
     /// <param name="slotIndex"></param>
     public void ToggleEquip(int slotIndex)
     {
+        if (BSellMode)
+            return;
+
         if (!BOpen || equip.BUse)
             return;
 

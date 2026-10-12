@@ -12,6 +12,8 @@ public class NPCManager : MonoBehaviour
     [Header("<< Shop >>")]
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private float shopOpenDelay = 1f;
+    [SerializeField] private ShopUI shopUI;
+    [SerializeField] private InventorySellUI sellUI;
 
     [Header("<< 이동할 씬 이름 >>")]
     [SerializeField] private string huntingGroundSceneName = "HuntingGround";
@@ -23,6 +25,9 @@ public class NPCManager : MonoBehaviour
     private NPC currentNPC;
 
     public NPC CurrentNPC => currentNPC;
+    public bool IsUIBusy => (dialogueUI != null && dialogueUI.gameObject.activeInHierarchy)
+        || (shopUI != null && shopUI.BOpen)
+        || (sellUI != null && sellUI.BOpen);
 
     private void Awake()
     {
@@ -252,11 +257,41 @@ public class NPCManager : MonoBehaviour
 
                 if (index == 0)
                 {
-                    StartCoroutine(OpenShopAfterDelay());
+                    if (shopUI == null || currentNPC.ShopData == null)
+                    {
+                        Debug.LogError("ShopUI 또는 NPC ShopData의 연결을 확인해주세요.", this);
+                        return;
+                    }
+
+                    if (!shopUI.CanOpen)
+                        return;
+
+                    ShopData data = currentNPC.ShopData;
+
+                    // 대화 종료 시 이동 잠금 해제
+                    // ShopUI.Open에서 구매 중 이동 막기
+                    if (dialogueUI != null)
+                        dialogueUI.CloseDialogue();
+
+                    shopUI.Open(data);
+
+                    //StartCoroutine(OpenShopAfterDelay());
                 }
                 else if (index == 1)
                 {
-                    Debug.Log("판매하기");
+                    if (sellUI == null)
+                    {
+                        Debug.LogError("InventorySellUI를 연결해주세요.", this);
+                        return;
+                    }
+
+                    if (!sellUI.CanOpen)
+                        return;
+
+                    if (dialogueUI != null)
+                        dialogueUI.CloseDialogue();
+
+                    sellUI.Open();
                 }
                 else if (index == 2)
                 {
@@ -270,20 +305,20 @@ public class NPCManager : MonoBehaviour
         }
     }
 
-    private IEnumerator OpenShopAfterDelay()
-    {
-        yield return new WaitForSeconds(shopOpenDelay);
+    //private IEnumerator OpenShopAfterDelay()
+    //{
+    //    yield return new WaitForSeconds(shopOpenDelay);
 
-        if (dialogueUI != null)
-        {
-            dialogueUI.gameObject.SetActive(false);
-        }
+    //    if (dialogueUI != null)
+    //    {
+    //        dialogueUI.gameObject.SetActive(false);
+    //    }
 
-        if (shopPanel != null)
-        {
-            shopPanel.SetActive(true);
-        }
-    }
+    //    if (shopPanel != null)
+    //    {
+    //        shopPanel.SetActive(true);
+    //    }
+    //}
 
     public void OnDialogueClose()
     {
@@ -302,16 +337,22 @@ public class NPCManager : MonoBehaviour
 
     public void CloseShop()
     {
-        if (shopPanel != null)
-        {
-            shopPanel.SetActive(false);
-        }
+        if (shopUI != null)
+            shopUI.Close();
 
-        if (dialogueUI != null)
-        {
-            dialogueUI.gameObject.SetActive(true);
-            dialogueUI.ShowByeDialogue();
-        }
+        if (sellUI != null)
+            sellUI.Close();
+
+        //if (shopPanel != null)
+        //{
+        //    shopPanel.SetActive(false);
+        //}
+
+        //if (dialogueUI != null)
+        //{
+        //    dialogueUI.gameObject.SetActive(true);
+        //    dialogueUI.ShowByeDialogue();
+        //}
     }
 
     #endregion

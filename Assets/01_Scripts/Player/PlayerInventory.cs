@@ -404,6 +404,43 @@ public class PlayerInventory : MonoBehaviour
     }
     #endregion
 
+    #region > 상점
+    public bool RemoveSaleSelections(IReadOnlyList<SaleSelection> selections)
+    {
+        if (selections == null || selections.Count == 0)
+            return false;
+
+        HashSet<int> checkedSlots = new();
+
+        // 전체 검사
+        foreach (SaleSelection selection in selections)
+        {
+            if (selection == null
+                || !checkedSlots.Add(selection.SlotIndex))
+                return false;
+
+            InventoryItem item = GetItem(selection.SlotIndex);
+
+            if (item == null
+                || item.BEmpty
+                || !ReferenceEquals(item, selection.Item)
+                || item.itemId != selection.ItemId
+                || item.count != selection.Count
+                || selection.Count <= 0
+                || IsUsingItem(item))
+                return false;
+        }
+
+        // 선택한 슬롯 전체 수량 삭제
+        foreach (SaleSelection selection in selections)
+            GetItem(selection.SlotIndex).Clear();
+
+        NotifyChanged();
+
+        return true;
+    }
+    #endregion
+
     /// <summary>
     /// 내구도 감소
     /// </summary>

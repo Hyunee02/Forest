@@ -205,6 +205,10 @@ public class PlayerEquip : MonoBehaviour
     /// </summary>
     public void UseTool()
     {
+        if (NPCManager.Instance != null
+            && NPCManager.Instance.IsUIBusy)
+            return;
+
         if (bUse)
             return;
 

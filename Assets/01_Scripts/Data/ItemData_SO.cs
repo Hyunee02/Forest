@@ -32,6 +32,8 @@ public class ItemData_SO : ScriptableObject
     [Header("<< World >>")]
     [SerializeField] private GameObject prefab;
 
+    public int SellPrice => Mathf.FloorToInt(buyPrice * 0.3f);
+
     public string Id => id;
     public ItemTypeSO ItemType => itemType;
 
@@ -45,4 +47,17 @@ public class ItemData_SO : ScriptableObject
     public int MaxStack => maxStack;
 
     public GameObject Prefab => prefab;
+
+    private void OnValidate()
+    {
+        if (!canBuy)
+        {
+            buyPrice = 0;
+        }
+
+        if (canBuy)
+        {
+            sellPrice = Mathf.FloorToInt(buyPrice * 0.3f);
+        }
+    }
 }

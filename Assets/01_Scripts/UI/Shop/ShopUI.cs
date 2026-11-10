@@ -6,22 +6,30 @@ using UnityEngine.UI;
 
 public class ShopUI : MonoBehaviour
 {
-    [Header("Panel")]
+    [Header("패널")]
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private Button closeButton;
 
-    [Header("Shop List")]
+    [Header("상품 목록")]
     [SerializeField] private Transform slotRoot;
     [SerializeField] private ShopSlot slotPrefab;
 
-    [Header("Text")]
+    [Header("일괄 구매")]
+    [SerializeField] private Button buyButton;
+    [SerializeField] private TMP_Text totalPriceText;
+
+    [Header("표시")]
     [SerializeField] private TMP_Text moneyText;
     [SerializeField] private TMP_Text messageText;
 
-    [Header("InventoryUI")]
+    [Header("인벤토리")]
     [SerializeField] private InventoryUI inventoryUI;
 
     private readonly List<ShopSlot> slots = new();
+
+    // 아이템 ID → 구매하려는 수량
+    // 0개인 상품은 딕셔너리에 넣지 않음
+    private readonly Dictionary<string, int> selectedAmounts = new();
 
     private PlayerShop shop;
     private PlayerMove move;
@@ -30,11 +38,15 @@ public class ShopUI : MonoBehaviour
 
     private bool dirty;
 
+    private int displayedMoney;
+    private int displayedDay;
+
     public bool BOpen { get; private set; }
 
     public bool CanOpen => isActiveAndEnabled
         && !BOpen
         && BindPlayer()
+        && shop.IsReady
         && !shop.IsUsingTool;
 
     private void Awake()
@@ -45,20 +57,25 @@ public class ShopUI : MonoBehaviour
     private void OnEnable()
     {
         closeButton.onClick.AddListener(Close);
+        buyButton.onClick.AddListener(BuySelected);
     }
 
     private void OnDisable()
     {
         closeButton.onClick.RemoveListener(Close);
+        buyButton.onClick.RemoveListener(BuySelected);
+
         Close();
     }
 
     private void Update()
     {
-        if (BOpen
-            && Keyboard.current != null
-            && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (BOpen &&
+            Keyboard.current != null &&
+            Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
             Close();
+        }
     }
 
     private void LateUpdate()
@@ -66,30 +83,37 @@ public class ShopUI : MonoBehaviour
         if (!BOpen)
             return;
 
+        if (displayedDay != shop.Day)
+        {
+            selectedAmounts.Clear();
+
+            ShowMessage(
+                "날짜가 변경되어 구매 수량을 초기화했습니다.");
+
+            dirty = true;
+        }
+
+        if (displayedMoney != shop.Money)
+            dirty = true;
+
         if (dirty)
             RefreshSlots();
-
-        // 다른 기능에서 소지금 바뀔 시 표시
-        string money = shop.Money.ToString("N0");
-
-        if (moneyText.text != money)
-            moneyText.text = money;
     }
 
-    /// <summary>
-    /// 플레이어 연결
-    /// </summary>
-    /// <returns></returns>
     private bool BindPlayer()
     {
         if (shop != null && move != null)
             return true;
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject player =
+            GameObject.FindGameObjectWithTag("Player");
 
         if (player == null)
         {
-            Debug.LogError("[ShopUI] Player를 찾을 수 없습니다.", this);
+            Debug.LogError(
+                "[ShopUI] Player를 찾을 수 없습니다.",
+                this);
+
             return false;
         }
 
@@ -98,43 +122,46 @@ public class ShopUI : MonoBehaviour
 
         if (shop == null || move == null)
         {
-            Debug.LogError("[ShopUI] PlayerShop 또는 PlayerMove가 없습니다.", this);
+            Debug.LogError(
+                "[ShopUI] PlayerShop 또는 PlayerMove가 없습니다.",
+                this);
+
             return false;
         }
 
         return true;
     }
 
-    /// <summary>
-    /// 상점 열기
-    /// </summary>
-    /// <param name="data"></param>
     public void Open(ShopData data)
     {
         if (data == null || !CanOpen)
             return;
 
+        if (!data.Validate(out string error))
+        {
+            Debug.LogError($"[ShopUI] {error}", this);
+            return;
+        }
+
         currentShop = data;
 
-        // 인벤토리 닫기
+        selectedAmounts.Clear();
+
         if (inventoryUI != null)
             inventoryUI.SetOpen(false);
 
         BOpen = true;
 
         move.SetMoveEnabled(false);
+
         shop.Inventory.OnChanged += RequestRefresh;
 
         shopPanel.SetActive(true);
 
         ShowMessage("");
         RefreshSlots();
-        moneyText.text = shop.Money.ToString("N0");
     }
 
-    /// <summary>
-    /// 상점 닫기
-    /// </summary>
     public void Close()
     {
         if (!BOpen)
@@ -148,6 +175,8 @@ public class ShopUI : MonoBehaviour
         if (move != null)
             move.SetMoveEnabled(true);
 
+        selectedAmounts.Clear();
+
         shopPanel.SetActive(false);
 
         currentShop = null;
@@ -159,31 +188,23 @@ public class ShopUI : MonoBehaviour
         dirty = true;
     }
 
-    /// <summary>
-    /// 슬롯 생성 및 재사용
-    /// </summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
     private ShopSlot GetSlot(int index)
     {
-        // 현재 슬롯 개수가 요청한 인덱스보다 작거나 같으면 슬롯 추가
         while (slots.Count <= index)
         {
-            ShopSlot slot = Instantiate(slotPrefab, slotRoot, false);
+            ShopSlot slot =
+                Instantiate(slotPrefab, slotRoot, false);
+
             slots.Add(slot);
         }
 
         ShopSlot result = slots[index];
+
         result.gameObject.SetActive(true);
 
         return result;
     }
 
-    /// <summary>
-    /// 아이템 이미지 가져오기
-    /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
     private Sprite GetIcon(ItemData_SO data)
     {
         if (data.Icon != null)
@@ -195,9 +216,39 @@ public class ShopUI : MonoBehaviour
         return null;
     }
 
-    /// <summary>
-    /// 상품 목록 갱신
-    /// </summary>
+    private int GetSelectedAmount(string itemId)
+    {
+        return selectedAmounts.TryGetValue(itemId, out int amount)
+            ? amount
+            : 0;
+    }
+
+    private void ChangeAmount(string itemId, int delta)
+    {
+        if (!BOpen || currentShop == null)
+            return;
+
+        int current = GetSelectedAmount(itemId);
+
+        int remaining =
+            shop.GetBuyRemaining(currentShop, itemId);
+
+        // int 최대값에서 +1 하는 경우도 안전하게 처리
+        long requested = (long)current + delta;
+
+        int next = (int)System.Math.Max(
+            0L,
+            System.Math.Min(requested, (long)remaining));
+
+        if (next == 0)
+            selectedAmounts.Remove(itemId);
+        else
+            selectedAmounts[itemId] = next;
+
+        ShowMessage("");
+        RefreshSlots();
+    }
+
     private void RefreshSlots()
     {
         dirty = false;
@@ -205,57 +256,134 @@ public class ShopUI : MonoBehaviour
         if (!BOpen || currentShop == null)
             return;
 
+        displayedMoney = shop.Money;
+        displayedDay = shop.Day;
+
         int visibleCount = 0;
 
-        if (currentShop.buyItemIds != null)
+        if (currentShop.buyItems != null)
         {
-            // 현재 상점 아이템 목록 순회
-            foreach (string itemId in currentShop.buyItemIds)
+            foreach (ShopItemEntry entry in currentShop.buyItems)
             {
-                ItemData_SO data = shop.Inventory.GetItemData(itemId);
+                if (entry == null)
+                    continue;
+
+                ItemData_SO data =
+                    shop.Inventory.GetItemData(entry.itemId);
 
                 if (data == null)
                 {
-                    Debug.LogWarning($"[ShopUI] ItemDatabase 없는 ID : {itemId}", this);
+                    selectedAmounts.Remove(entry.itemId);
+
+                    Debug.LogWarning(
+                        $"[ShopUI] ItemDatabase에 없는 ID: {entry.itemId}",
+                        this);
+
                     continue;
                 }
 
-                string id = itemId;
+                int remaining =
+                    shop.GetBuyRemaining(currentShop, entry.itemId);
+
+                int amount = Mathf.Clamp(
+                    GetSelectedAmount(entry.itemId),
+                    0,
+                    remaining);
+
+                if (amount == 0)
+                    selectedAmounts.Remove(entry.itemId);
+                else
+                    selectedAmounts[entry.itemId] = amount;
+
+                string itemId = entry.itemId;
+
                 ShopSlot slot = GetSlot(visibleCount);
 
-                slot.Bind(data, GetIcon(data), shop.GetOwnedCount(id), () => Buy(id));
+                slot.Bind(
+                    data,
+                    GetIcon(data),
+                    shop.GetOwnedCount(itemId),
+                    amount,
+                    remaining,
+                    entry.dailyLimit < 0,
+                    delta => ChangeAmount(itemId, delta));
 
                 visibleCount++;
             }
         }
 
-        // 이전 상점에서 사용했던 남는 슬롯 숨기기
         for (int i = visibleCount; i < slots.Count; i++)
             slots[i].gameObject.SetActive(false);
+
+        RefreshSummary();
     }
 
-    /// <summary>
-    /// 구매 처리
-    /// </summary>
-    /// <param name="itemId"></param>
-    private void Buy(string itemId)
+    private void RefreshSummary()
     {
-        if (!BOpen)
+        // 표시용 합계.
+        // 여러 상품 합계를 넉넉하게 표현하기 위해 decimal 사용.
+        decimal total = 0;
+        long totalCount = 0;
+
+        bool valid = selectedAmounts.Count > 0;
+
+        foreach (KeyValuePair<string, int> selection in selectedAmounts)
+        {
+            ItemData_SO data =
+                shop.Inventory.GetItemData(selection.Key);
+
+            if (data == null || data.Buy < 0)
+            {
+                valid = false;
+                continue;
+            }
+
+            if (!currentShop.CanBuy(selection.Key) ||
+                selection.Value <= 0 ||
+                selection.Value >
+                    shop.GetBuyRemaining(currentShop, selection.Key))
+            {
+                valid = false;
+            }
+
+            total += (decimal)data.Buy * selection.Value;
+            totalCount += selection.Value;
+        }
+
+        moneyText.text = $"소지금 {shop.Money:N0} G";
+
+        totalPriceText.text =
+            $"선택 {selectedAmounts.Count}종 / {totalCount:N0}개\n" +
+            $"총 구매 금액 {total:N0} G";
+
+        buyButton.interactable =
+            valid &&
+            shop.IsReady &&
+            !shop.IsUsingTool &&
+            total <= shop.Money;
+    }
+
+    private void BuySelected()
+    {
+        if (!BOpen || selectedAmounts.Count == 0)
             return;
 
-        shop.TryBuy(currentShop, itemId, out string message);
+        bool success = shop.TryBuySelected(
+            currentShop,
+            selectedAmounts,
+            out string message);
 
-        ShowMessage(message);
+        // 성공한 상품 수량이 다시 구매되지 않도록 초기화
+        if (success)
+            selectedAmounts.Clear();
+
         RefreshSlots();
-
-        moneyText.text = shop.Money.ToString("N0");
+        ShowMessage(message);
     }
 
     private void ShowMessage(string message)
     {
-        if (messageText == null)
-            return;
-
-        messageText.text = message;
+        if (messageText != null)
+            messageText.text = message;
     }
 }

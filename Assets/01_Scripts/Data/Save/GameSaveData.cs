@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 /// <summary>
@@ -30,9 +31,19 @@ public class GameSaveData
     public const int CurrentVersion = 1;
 
     public int version = CurrentVersion;
+
     public PlayerProfileData profile = new();
 
     public int money;
+    public int day = 1;
+
+    // dailyTrades에 기록된 거래의 날짜
+    public int tradeDay = 1;
+
+    // null이면 새 캐릭터로 아직 인벤토리를 연결하지 않은 상태
+    public List<InventoryItem> inventory;
+
+    public List<ShopDailyRecord> dailyTrades = new();
 }
 
 /// <summary>

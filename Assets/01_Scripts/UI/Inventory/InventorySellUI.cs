@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,15 +7,21 @@ using UnityEngine.UI;
 
 public class InventorySellUI : MonoBehaviour
 {
-    [Header("Inventory")]
+    [Header("인벤토리")]
     [SerializeField] private InventoryUI inventoryUI;
 
-    [Header("Sale Controls")]
+    [Header("판매 패널")]
     [SerializeField] private GameObject saleControls;
     [SerializeField] private Button sellButton;
     [SerializeField] private Button closeButton;
 
-    [Header("Text")]
+    [Header("현재 슬롯 수량 조절")]
+    [SerializeField] private Button minusButton;
+    [SerializeField] private Button plusButton;
+    [SerializeField] private Button removeButton;
+    [SerializeField] private TMP_Text quantityText;
+
+    [Header("표시")]
     [SerializeField] private TMP_Text totalText;
     [SerializeField] private TMP_Text moneyText;
     [SerializeField] private TMP_Text messageText;
@@ -22,7 +29,12 @@ public class InventorySellUI : MonoBehaviour
     private PlayerShop shop;
     private PlayerMove move;
 
+    private ShopData currentShop;
+
     private readonly Dictionary<int, SaleSelection> selected = new();
+
+    private int editingIndex = -1;
+    private int openedDay;
 
     public bool BOpen { get; private set; }
 
@@ -33,10 +45,15 @@ public class InventorySellUI : MonoBehaviour
         && saleControls != null
         && sellButton != null
         && closeButton != null
+        && minusButton != null
+        && plusButton != null
+        && removeButton != null
+        && quantityText != null
         && totalText != null
         && moneyText != null
         && messageText != null
         && BindPlayer()
+        && shop.IsReady
         && inventoryUI.Inventory == shop.Inventory
         && !shop.IsUsingTool;
 
@@ -50,6 +67,10 @@ public class InventorySellUI : MonoBehaviour
     {
         sellButton.onClick.AddListener(SellSelected);
         closeButton.onClick.AddListener(Close);
+
+        minusButton.onClick.AddListener(Decrease);
+        plusButton.onClick.AddListener(Increase);
+        removeButton.onClick.AddListener(RemoveEditingSelection);
     }
 
     private void OnDisable()
@@ -57,17 +78,21 @@ public class InventorySellUI : MonoBehaviour
         sellButton.onClick.RemoveListener(SellSelected);
         closeButton.onClick.RemoveListener(Close);
 
+        minusButton.onClick.RemoveListener(Decrease);
+        plusButton.onClick.RemoveListener(Increase);
+        removeButton.onClick.RemoveListener(RemoveEditingSelection);
+
         Close();
     }
 
     private void Update()
     {
-        if (!BOpen)
-            return;
-
-        if (Keyboard.current != null &&
+        if (BOpen &&
+            Keyboard.current != null &&
             Keyboard.current.escapeKey.wasPressedThisFrame)
-                Close();
+        {
+            Close();
+        }
     }
 
     private void LateUpdate()
@@ -75,14 +100,21 @@ public class InventorySellUI : MonoBehaviour
         if (!BOpen)
             return;
 
-        // 다른 경로로 인벤토리가 닫힌 경우에도 상태 정리
         if (inventoryUI == null || !inventoryUI.BOpen)
         {
             Close();
             return;
         }
 
-        // 다른 기능에서 소지금이 변경되는 경우도 반영
+        if (openedDay != shop.Day)
+        {
+            openedDay = shop.Day;
+            ClearSelection();
+
+            messageText.text =
+                "날짜가 변경되었습니다. 판매할 아이템을 다시 선택해주세요.";
+        }
+
         RefreshSummary();
     }
 
@@ -91,7 +123,8 @@ public class InventorySellUI : MonoBehaviour
         if (shop != null && move != null)
             return true;
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject player =
+            GameObject.FindGameObjectWithTag("Player");
 
         if (player == null)
             return false;
@@ -102,12 +135,21 @@ public class InventorySellUI : MonoBehaviour
         return shop != null && move != null;
     }
 
-    public void Open()
+    public void Open(ShopData data)
     {
-        if (!CanOpen)
+        if (data == null || !CanOpen)
             return;
 
-        selected.Clear();
+        if (!data.Validate(out string error))
+        {
+            Debug.LogError($"[InventorySellUI] {error}", this);
+            return;
+        }
+
+        currentShop = data;
+        openedDay = shop.Day;
+
+        ClearSelection();
 
         inventoryUI.SetSellMode(true);
         inventoryUI.SetOpen(true);
@@ -115,12 +157,13 @@ public class InventorySellUI : MonoBehaviour
         if (!inventoryUI.BOpen)
         {
             inventoryUI.SetSellMode(false);
+            currentShop = null;
             return;
         }
 
         BOpen = true;
 
-        inventoryUI.OnSaleSlotClicked += ToggleSelection;
+        inventoryUI.OnSaleSlotClicked += SelectSlot;
         inventoryUI.OnClosed += Close;
 
         shop.Inventory.OnChanged += OnInventoryChanged;
@@ -141,84 +184,173 @@ public class InventorySellUI : MonoBehaviour
 
         BOpen = false;
 
-        if (inventoryUI != null)
-        {
-            inventoryUI.OnSaleSlotClicked -= ToggleSelection;
-            inventoryUI.OnClosed -= Close;
-        }
+        inventoryUI.OnSaleSlotClicked -= SelectSlot;
+        inventoryUI.OnClosed -= Close;
 
         if (shop != null && shop.Inventory != null)
             shop.Inventory.OnChanged -= OnInventoryChanged;
 
-        selected.Clear();
+        ClearSelection();
 
-        if (inventoryUI != null)
-        {
-            inventoryUI.SetSellMode(false);
-            inventoryUI.SetOpen(false);
-        }
+        inventoryUI.SetSellMode(false);
+        inventoryUI.SetOpen(false);
 
-        if (saleControls != null)
-            saleControls.SetActive(false);
+        saleControls.SetActive(false);
 
         if (move != null)
             move.SetMoveEnabled(true);
+
+        currentShop = null;
     }
 
-    private void ToggleSelection(int index)
+    private void SelectSlot(int index)
     {
         if (!BOpen)
             return;
 
-        // 이미 선택된 슬롯이면 선택 해제
-        if (selected.Remove(index))
-        {
-            inventoryUI.SetSaleHightlight(index, false);
-
-            messageText.text = "";
-
-            RefreshSummary();
-
-            return;
-        }
-
         InventoryItem item = shop.Inventory.GetItem(index);
 
-        if (item == null || item.BEmpty || item.count <= 0)
+        if (item == null || item.BEmpty)
             return;
 
-        ItemData_SO data = shop.Inventory.GetItemData(item.itemId);
+        ItemData_SO data =
+            shop.Inventory.GetItemData(item.itemId);
 
         if (data == null)
+            return;
+
+        if (!currentShop.CanSell(item.itemId) || data.Sell <= 0)
         {
-            Debug.LogError($"아이템 데이터가 없습니다 : {item.itemId}", this);
+            messageText.text =
+                $"{data.ItemName}은(는) 이 상점에서 판매할 수 없습니다.";
 
             return;
         }
 
-        if (data.Sell <= 0)
+        // 이미 선택한 슬롯이면 편집 대상만 변경
+        if (selected.ContainsKey(index))
         {
-            messageText.text = "판매할 수 없는 아이템입니다.";
+            editingIndex = index;
+            messageText.text = "";
+            RefreshSummary();
             return;
         }
 
-        SaleSelection selection = new SaleSelection(index, item, data.Sell);
+        if (GetMaximumForSlot(index) <= 0)
+        {
+            messageText.text =
+                "오늘 판매 가능한 수량을 모두 선택했습니다.";
 
-        selected.Add(index, selection);
+            return;
+        }
+
+        selected[index] = new SaleSelection(
+            index,
+            item,
+            1,
+            data.Sell);
+
+        editingIndex = index;
 
         inventoryUI.SetSaleHightlight(index, true);
 
-        messageText.text = $"{data.ItemName} {item.count}개 선택";
+        messageText.text = "";
 
         RefreshSummary();
     }
 
+    // 다른 슬롯에서 선택한 같은 아이템 수량을 제외한 최대값
+    private int GetMaximumForSlot(int index)
+    {
+        InventoryItem item = shop.Inventory.GetItem(index);
+
+        if (item == null || item.BEmpty || currentShop == null)
+            return 0;
+
+        long otherSelected = 0;
+
+        foreach (KeyValuePair<int, SaleSelection> pair in selected)
+        {
+            if (pair.Key != index &&
+                pair.Value.ItemId == item.itemId)
+            {
+                otherSelected += pair.Value.Count;
+            }
+        }
+
+        long available =
+            (long)shop.GetSellRemaining(currentShop, item.itemId)
+            - otherSelected;
+
+        if (available <= 0)
+            return 0;
+
+        return (int)System.Math.Min(item.count, available);
+    }
+
+    private void Decrease()
+    {
+        ChangeAmount(-1);
+    }
+
+    private void Increase()
+    {
+        ChangeAmount(1);
+    }
+
+    private void ChangeAmount(int delta)
+    {
+        if (!selected.TryGetValue(
+                editingIndex,
+                out SaleSelection previous))
+        {
+            return;
+        }
+
+        int maximum = GetMaximumForSlot(editingIndex);
+
+        long requested = (long)previous.Count + delta;
+
+        if (requested < 1 || requested > maximum)
+            return;
+
+        InventoryItem item =
+            shop.Inventory.GetItem(editingIndex);
+
+        selected[editingIndex] = new SaleSelection(
+            editingIndex,
+            item,
+            (int)requested,
+            previous.UnitPrice);
+
+        RefreshSummary();
+    }
+
+    private void RemoveEditingSelection()
+    {
+        if (editingIndex < 0)
+            return;
+
+        selected.Remove(editingIndex);
+        inventoryUI.SetSaleHightlight(editingIndex, false);
+
+        editingIndex = -1;
+
+        RefreshSummary();
+    }
+
+    private void ClearSelection()
+    {
+        selected.Clear();
+        editingIndex = -1;
+
+        if (inventoryUI != null)
+            inventoryUI.ClearSaleHighlights();
+    }
+
     private void OnInventoryChanged()
     {
-        // 선택 이후 획득, 소모 등으로 내용이 바뀌면 다시 선택
-        selected.Clear();
-
-        inventoryUI.ClearSaleHighlights();
+        ClearSelection();
 
         messageText.text =
             "인벤토리가 변경되어 선택을 초기화했습니다.";
@@ -228,24 +360,102 @@ public class InventorySellUI : MonoBehaviour
 
     private void RefreshSummary()
     {
-        int total = 0;
+        if (!BOpen || currentShop == null)
+            return;
 
-        foreach (SaleSelection selection in selected.Values)
-            total += selection.Total;
+        long total = 0;
+        bool valid = selected.Count > 0;
 
-        int money = shop.Money;
+        StringBuilder summary = new();
 
-        totalText.text = $"선택 {selected.Count}칸\n판매 총액 {total:N0} G";
+        foreach (KeyValuePair<int, SaleSelection> pair in selected)
+        {
+            SaleSelection selection = pair.Value;
 
-        moneyText.text = $"소지금 {money:N0} G";
+            ItemData_SO data =
+                shop.Inventory.GetItemData(selection.ItemId);
+
+            if (data == null ||
+                !currentShop.CanSell(selection.ItemId) ||
+                data.Sell != selection.UnitPrice ||
+                selection.Count > GetMaximumForSlot(pair.Key))
+            {
+                valid = false;
+            }
+
+            summary.AppendLine(
+                $"{data?.ItemName ?? selection.ItemId} × {selection.Count:N0}");
+
+            // 최대 소지금을 넘은 뒤에는 합계를 더 키울 필요가 없음
+            if (total <= int.MaxValue)
+                total += selection.Total;
+        }
+
+        if (!shop.Inventory.ValidateSaleSelections(
+                new List<SaleSelection>(selected.Values)))
+        {
+            valid = false;
+        }
+
+        if (total > (long)int.MaxValue - shop.Money)
+            valid = false;
+
+        if (total > int.MaxValue)
+            summary.Append("판매 금액이 최대치를 초과합니다.");
+        else
+            summary.Append($"판매 총액 {total:N0} G");
+
+        totalText.text = summary.ToString();
+        moneyText.text = $"소지금 {shop.Money:N0} G";
 
         sellButton.interactable =
-            BOpen &&
-            selected.Count > 0 &&
+            valid &&
             total > 0 &&
-            money >= 0 &&
-            total <= (long)int.MaxValue - money &&
+            shop.IsReady &&
             !shop.IsUsingTool;
+
+        RefreshQuantityEditor();
+    }
+
+    private void RefreshQuantityEditor()
+    {
+        bool hasSelection =
+            selected.TryGetValue(
+                editingIndex,
+                out SaleSelection selection);
+
+        minusButton.interactable =
+            hasSelection && selection.Count > 1;
+
+        plusButton.interactable =
+            hasSelection &&
+            selection.Count < GetMaximumForSlot(editingIndex);
+
+        removeButton.interactable = hasSelection;
+
+        if (!hasSelection)
+        {
+            quantityText.text = "수량을 바꿀 슬롯을 선택해주세요.";
+            return;
+        }
+
+        ItemData_SO data =
+            shop.Inventory.GetItemData(selection.ItemId);
+
+        ShopItemEntry entry =
+            currentShop.GetSellEntry(selection.ItemId);
+
+        int remaining =
+            shop.GetSellRemaining(currentShop, selection.ItemId);
+
+        string limit = entry != null && entry.dailyLimit < 0
+            ? "하루 제한 없음"
+            : $"오늘 남은 판매 한도 {remaining:N0}개";
+
+        quantityText.text =
+            $"{data?.ItemName ?? selection.ItemId}\n" +
+            $"판매 수량 {selection.Count:N0} / 보유 {selection.SourceCount:N0}\n" +
+            limit;
     }
 
     private void SellSelected()
@@ -254,23 +464,19 @@ public class InventorySellUI : MonoBehaviour
             return;
 
         List<SaleSelection> transaction =
-            new List<SaleSelection>(selected.Values);
+            new(selected.Values);
 
         shop.TrySellSelected(
+            currentShop,
             transaction,
             out string message);
 
-        // 성공 시에는 인벤토리 이벤트에서도 초기화
-        // 실패한 경우도 다시 선택하도록 정리
-        selected.Clear();
+        ClearSelection();
 
-        inventoryUI.ClearSaleHighlights();
         inventoryUI.RefreshAll();
-
         RefreshSummary();
 
-        // 인벤토리 이벤트 안내 문구 다음에 판매 결과 표시
+        // 거래 중 발생한 인벤토리 이벤트 안내보다 결과를 나중에 표시
         messageText.text = message;
     }
-
 }

@@ -299,17 +299,30 @@ public class InventoryUI : MonoBehaviour
 
         for (int i = 0; i < slots.Count; i++)
         {
+            bool visible = i < inventory.SlotCount;
+
+            slots[i].gameObject.SetActive(visible);
+
+            if (!visible)
+                continue;
+
             InventoryItem item = inventory.GetItem(i);
 
             ItemData_SO data =
                 item != null && !item.BEmpty
-                ? inventory.GetItemData(item.itemId) : null;
+                    ? inventory.GetItemData(item.itemId)
+                    : null;
 
             ToolData toolData =
                 data != null && data.ItemType == ItemTypeSO.Tool
-                ? inventory.GetToolData(item.itemId) : null;
+                    ? inventory.GetToolData(item.itemId)
+                    : null;
 
-            slots[i].Refresh(item, data, toolData, equip.IsEquipped(item));
+            slots[i].Refresh(
+                item,
+                data,
+                toolData,
+                equip.IsEquipped(item));
         }
     }
 

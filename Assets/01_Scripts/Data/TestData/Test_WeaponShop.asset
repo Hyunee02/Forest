@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9070d1be6a16d484a9da19aa9a27af46, type: 3}
   m_Name: Test_WeaponShop
   m_EditorClassIdentifier: 
-  shopName: Weapon Shop
-  buyItemIds:
-  - 00
-  - 90
+  shopId: weapon_shop
+  shopName: "\uBB34\uAE30 \uC0C1\uC810"
+  buyItems:
+  - itemId: 90
+    dailyLimit: 5
+  sellItems:
+  - itemId: 90
+    dailyLimit: 5

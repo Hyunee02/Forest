@@ -405,35 +405,327 @@ public class PlayerInventory : MonoBehaviour
     #endregion
 
     #region > 상점
-    public bool RemoveSaleSelections(IReadOnlyList<SaleSelection> selections)
+    /// <summary>
+    /// 판매 목록 검증
+    /// </summary>
+    /// <param name="selections"></param>
+    /// <returns></returns>
+    public bool ValidateSaleSelections(
+        IReadOnlyList<SaleSelection> selections)
     {
         if (selections == null || selections.Count == 0)
             return false;
 
         HashSet<int> checkedSlots = new();
 
-        // 전체 검사
         foreach (SaleSelection selection in selections)
         {
-            if (selection == null
-                || !checkedSlots.Add(selection.SlotIndex))
+            if (selection == null ||
+                !checkedSlots.Add(selection.SlotIndex))
                 return false;
 
             InventoryItem item = GetItem(selection.SlotIndex);
 
-            if (item == null
-                || item.BEmpty
-                || !ReferenceEquals(item, selection.Item)
-                || item.itemId != selection.ItemId
-                || item.count != selection.Count
-                || selection.Count <= 0
-                || IsUsingItem(item))
+            if (item == null ||
+                item.BEmpty ||
+                !ReferenceEquals(item, selection.Item) ||
+                item.itemId != selection.ItemId ||
+                item.count != selection.SourceCount ||
+                item.currentDurability != selection.SourceDurability ||
+                selection.Count <= 0 ||
+                selection.Count > item.count ||
+                IsUsingItem(item))
+            {
                 return false;
+            }
         }
 
-        // 선택한 슬롯 전체 수량 삭제
+        return true;
+    }
+
+    /// <summary>
+    /// 실제 아이템 제거
+    /// </summary>
+    /// <param name="selections"></param>
+    /// <returns></returns>
+    public bool RemoveSaleSelections(
+        IReadOnlyList<SaleSelection> selections)
+    {
+        if (!ValidateSaleSelections(selections))
+            return false;
+
         foreach (SaleSelection selection in selections)
-            GetItem(selection.SlotIndex).Clear();
+        {
+            InventoryItem item = GetItem(selection.SlotIndex);
+
+            item.count -= selection.Count;
+
+            if (item.count == 0)
+                item.Clear();
+        }
+
+        NotifyChanged();
+
+        return true;
+    }
+
+    public bool TryAddItemsBatch(
+    IReadOnlyDictionary<string, int> purchases,
+    out string message)
+    {
+        message = "";
+
+        if (purchases == null || purchases.Count == 0)
+        {
+            message = "구매할 상품을 선택해주세요.";
+            return false;
+        }
+
+        // 실제 인벤토리를 건드리지 않고 복사본으로 먼저 계산
+        List<InventoryItem> preview = CaptureSaveItems();
+
+        foreach (KeyValuePair<string, int> purchase in purchases)
+        {
+            string itemId = purchase.Key;
+            int amount = purchase.Value;
+
+            if (amount <= 0)
+            {
+                message = "구매 수량이 올바르지 않습니다.";
+                return false;
+            }
+
+            ItemData_SO data = GetItemData(itemId);
+
+            if (data == null)
+            {
+                Debug.LogError($"아이템 데이터가 없습니다: {itemId}", this);
+
+                message = "상품 정보를 확인할 수 없습니다.";
+                return false;
+            }
+
+            bool isTool = data.ItemType == ItemTypeSO.Tool;
+
+            int durability = 0;
+
+            if (isTool)
+            {
+                ToolData tool = GetToolData(itemId);
+
+                if (tool == null || tool.Durability <= 0)
+                {
+                    Debug.LogError($"도구 데이터 오류: {itemId}", this);
+
+                    message = "상품 정보를 확인할 수 없습니다.";
+                    return false;
+                }
+
+                durability = tool.Durability;
+            }
+
+            int maxStack = GetMaxStack(data);
+            int remain = amount;
+
+            // 일반 아이템은 기존 스택의 빈 공간부터 채움
+            if (!isTool)
+            {
+                foreach (InventoryItem item in preview)
+                {
+                    if (item.BEmpty || item.itemId != itemId)
+                        continue;
+
+                    int space = Mathf.Max(0, maxStack - item.count);
+                    int added = Mathf.Min(remain, space);
+
+                    item.count += added;
+                    remain -= added;
+
+                    if (remain == 0)
+                        break;
+                }
+            }
+
+            // 나머지는 빈 슬롯에 넣음
+            if (remain > 0)
+            {
+                foreach (InventoryItem item in preview)
+                {
+                    if (!item.BEmpty)
+                        continue;
+
+                    int added = Mathf.Min(remain, maxStack);
+
+                    item.Set(itemId, added, durability);
+
+                    remain -= added;
+
+                    if (remain == 0)
+                        break;
+                }
+            }
+
+            if (remain > 0)
+            {
+                message = "선택한 상품을 모두 넣을 인벤토리 공간이 부족합니다.";
+                return false;
+            }
+        }
+
+        // 모든 상품이 들어간다는 것을 확인한 후 실제 슬롯에 반영
+        for (int i = 0; i < items.Count; i++)
+        {
+            InventoryItem source = preview[i];
+            InventoryItem target = items[i];
+
+            if (source.BEmpty)
+            {
+                target.Clear();
+            }
+            else
+            {
+                target.Set(
+                    source.itemId,
+                    source.count,
+                    source.currentDurability);
+            }
+        }
+
+        // 전체 구매가 끝난 뒤 한 번만 알림
+        NotifyChanged();
+
+        return true;
+    }
+    #endregion
+
+    #region > 데이터 저장
+    /// <summary>
+    /// 저장할 인벤토리 복사 (데이터 복사)
+    /// </summary>
+    /// <returns></returns>
+    public List<InventoryItem> CaptureSaveItems()
+    {
+        Initialize();
+
+        List<InventoryItem> result = new(items.Count);
+
+        foreach (InventoryItem item in items)
+        {
+            InventoryItem copy = new();
+
+            if (!item.BEmpty)
+            {
+                copy.Set(
+                    item.itemId,
+                    item.count,
+                    item.currentDurability);
+            }
+
+            result.Add(copy);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 저장 데이터 검증
+    /// </summary>
+    /// <param name="savedItems"></param>
+    /// <param name="error"></param>
+    /// <returns></returns>
+    public bool ValidateSaveItems(
+        List<InventoryItem> savedItems,
+        out string error)
+    {
+        Initialize();
+        error = "";
+
+        if (savedItems == null ||
+            savedItems.Count < 1 ||
+            savedItems.Count > maxSlotCount)
+        {
+            error = "저장된 인벤토리 크기가 올바르지 않습니다.";
+            return false;
+        }
+
+        foreach (InventoryItem item in savedItems)
+        {
+            if (item == null)
+            {
+                error = "저장된 슬롯 데이터가 없습니다.";
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(item.itemId) &&
+                item.count == 0 &&
+                item.currentDurability == 0)
+            {
+                continue;
+            }
+
+            ItemData_SO data = GetItemData(item.itemId);
+
+            if (data == null ||
+                item.count <= 0 ||
+                item.count > GetMaxStack(data))
+            {
+                error = $"저장된 아이템 정보가 올바르지 않습니다: {item.itemId}";
+                return false;
+            }
+
+            if (data.ItemType == ItemTypeSO.Tool)
+            {
+                ToolData tool = GetToolData(item.itemId);
+
+                if (tool == null ||
+                    item.currentDurability <= 0 ||
+                    item.currentDurability > tool.Durability)
+                {
+                    error = $"저장된 도구 내구도가 올바르지 않습니다: {item.itemId}";
+                    return false;
+                }
+            }
+            else if (item.currentDurability != 0)
+            {
+                error = $"일반 아이템에 내구도가 기록되어 있습니다: {item.itemId}";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// 인벤토리 복원
+    /// </summary>
+    /// <param name="savedItems"></param>
+    /// <param name="error"></param>
+    /// <returns></returns>
+    public bool RestoreSaveItems(
+        List<InventoryItem> savedItems,
+        out string error)
+    {
+        if (!ValidateSaveItems(savedItems, out error))
+            return false;
+
+        List<InventoryItem> restored = new(savedItems.Count);
+
+        foreach (InventoryItem saved in savedItems)
+        {
+            InventoryItem item = new();
+
+            if (!saved.BEmpty)
+            {
+                item.Set(
+                    saved.itemId,
+                    saved.count,
+                    saved.currentDurability);
+            }
+
+            restored.Add(item);
+        }
+
+        items = restored;
 
         NotifyChanged();
 

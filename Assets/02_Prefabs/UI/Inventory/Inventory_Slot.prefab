@@ -93,6 +93,9 @@ MonoBehaviour:
   countText: {fileID: 8230486088245608307}
   visuals: {fileID: 6011610389121559881}
   countRoot: {fileID: 2012165775608949873}
+  selectionBackground: {fileID: 6070866486006369786}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedColor: {r: 1, g: 0.8, b: 0.25, a: 1}
 --- !u!1 &849908051583932443
 GameObject:
   m_ObjectHideFlags: 0

@@ -279,19 +279,30 @@ public class NPCManager : MonoBehaviour
                 }
                 else if (index == 1)
                 {
-                    if (sellUI == null)
+                    if (sellUI == null || currentNPC.ShopData == null)
                     {
-                        Debug.LogError("InventorySellUI를 연결해주세요.", this);
+                        Debug.LogError(
+                            "InventorySellUI 또는 NPC ShopData 연결을 확인해주세요.",
+                            this);
+
                         return;
                     }
 
                     if (!sellUI.CanOpen)
                         return;
 
+                    ShopData data = currentNPC.ShopData;
+
+                    if (!data.Validate(out string error))
+                    {
+                        Debug.LogError(error, this);
+                        return;
+                    }
+
                     if (dialogueUI != null)
                         dialogueUI.CloseDialogue();
 
-                    sellUI.Open();
+                    sellUI.Open(data);
                 }
                 else if (index == 2)
                 {
@@ -305,20 +316,20 @@ public class NPCManager : MonoBehaviour
         }
     }
 
-    //private IEnumerator OpenShopAfterDelay()
-    //{
-    //    yield return new WaitForSeconds(shopOpenDelay);
+    private IEnumerator OpenShopAfterDelay()
+    {
+        yield return new WaitForSeconds(shopOpenDelay);
 
-    //    if (dialogueUI != null)
-    //    {
-    //        dialogueUI.gameObject.SetActive(false);
-    //    }
+        if (dialogueUI != null)
+        {
+            dialogueUI.gameObject.SetActive(false);
+        }
 
-    //    if (shopPanel != null)
-    //    {
-    //        shopPanel.SetActive(true);
-    //    }
-    //}
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(true);
+        }
+    }
 
     public void OnDialogueClose()
     {

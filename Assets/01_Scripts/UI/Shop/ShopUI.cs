@@ -333,7 +333,7 @@ public class ShopUI : MonoBehaviour
             ItemData_SO data =
                 shop.Inventory.GetItemData(selection.Key);
 
-            if (data == null || data.Buy < 0)
+            if (data == null || data.BuyPrice < 0)
             {
                 valid = false;
                 continue;
@@ -347,7 +347,7 @@ public class ShopUI : MonoBehaviour
                 valid = false;
             }
 
-            total += (decimal)data.Buy * selection.Value;
+            total += (decimal)data.BuyPrice * selection.Value;
             totalCount += selection.Value;
         }
 

@@ -52,7 +52,7 @@ public class ShopSlot : MonoBehaviour
         ownedCountText.text = ownedCount.ToString("N0");
 
         // 동전 아이콘 옆: 개당 가격
-        priceText.text = data.Buy.ToString("N0");
+        priceText.text = data.BuyPrice.ToString("N0");
 
         // 상품 이미지
         icon.sprite = sprite;
@@ -69,7 +69,7 @@ public class ShopSlot : MonoBehaviour
             $"{selectedAmount:N0}/{remainingText}";
 
         bool canChange =
-            data.Buy >= 0 &&
+            data.BuyPrice >= 0 &&
             onChangeAmount != null;
 
         minusButton.interactable =

@@ -207,7 +207,7 @@ public class PlayerShop : MonoBehaviour
 
         ItemData_SO data = inventory.GetItemData(itemId);
 
-        if (data == null || data.Buy < 0)
+        if (data == null || data.BuyPrice < 0)
         {
             return ConfigError(
                 $"상품 데이터 오류: {itemId}",
@@ -232,7 +232,7 @@ public class PlayerShop : MonoBehaviour
             return false;
         }
 
-        long total = (long)data.Buy * amount;
+        long total = (long)data.BuyPrice * amount;
 
         GameSaveData save = GameSession.Instance.CurrentData;
 
@@ -323,7 +323,7 @@ public class PlayerShop : MonoBehaviour
 
             ItemData_SO data = inventory.GetItemData(itemId);
 
-            if (data == null || data.Buy < 0)
+            if (data == null || data.BuyPrice < 0)
             {
                 return ConfigError(
                     $"상품 데이터 오류: {itemId}",
@@ -350,7 +350,7 @@ public class PlayerShop : MonoBehaviour
                 return false;
             }
 
-            long itemPrice = (long)data.Buy * amount;
+            long itemPrice = (long)data.BuyPrice * amount;
 
             // 더하기 전에 남은 예산과 비교
             if (itemPrice > (long)save.money - totalPrice)
@@ -457,20 +457,20 @@ public class PlayerShop : MonoBehaviour
             ItemData_SO data =
                 inventory.GetItemData(selection.ItemId);
 
-            if (data == null || data.Sell < 0)
+            if (data == null || data.SellPrice < 0)
             {
                 return ConfigError(
                     $"판매 데이터가 올바르지 않습니다: {selection.ItemId}",
                     out message);
             }
 
-            if (data.Sell != selection.UnitPrice)
+            if (data.SellPrice != selection.UnitPrice)
             {
                 message = "판매 가격이 변경되었습니다. 다시 선택해주세요.";
                 return false;
             }
 
-            long itemTotal = (long)data.Sell * selection.Count;
+            long itemTotal = (long)data.SellPrice * selection.Count;
 
             // 합산 전에 소지금의 int 범위 검사
             if (itemTotal > (long)int.MaxValue - save.money - total)

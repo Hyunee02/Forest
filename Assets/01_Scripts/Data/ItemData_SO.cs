@@ -19,8 +19,11 @@ public class ItemData_SO : ScriptableObject
     [SerializeField] private string itemName;
 
     [Header("<< Price >>")]
-    [SerializeField, Min(0)] private int buy;
-    [SerializeField, Min(0)] private int sell;
+    [SerializeField] public bool canBuy = true;
+    [SerializeField, Min(0)] private int buyPrice;
+
+    [SerializeField] public bool canSell = true;
+    [SerializeField, Min(0)] private int sellPrice;
 
     [TextArea]
     [SerializeField] private string description;
@@ -32,14 +35,12 @@ public class ItemData_SO : ScriptableObject
     [Header("<< World >>")]
     [SerializeField] private GameObject prefab;
 
-    public int SellPrice => Mathf.FloorToInt(buyPrice * 0.3f);
-
     public string Id => id;
     public ItemTypeSO ItemType => itemType;
 
     public string ItemName => itemName;
-    public int Buy => buy;
-    public int Sell => sell;
+    public int BuyPrice => buyPrice;
+    public int SellPrice => Mathf.FloorToInt(buyPrice * 0.3f);
 
     public string Description => description;
 

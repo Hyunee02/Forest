@@ -186,7 +186,7 @@ public class InventorySellUI : MonoBehaviour
         ItemData_SO data =
             shop.Inventory.GetItemData(item.itemId);
 
-        if (data == null || data.Sell < 0)
+        if (data == null || data.SellPrice < 0)
         {
             ShowMessage("판매 정보를 확인할 수 없습니다.");
             return;
@@ -218,7 +218,7 @@ public class InventorySellUI : MonoBehaviour
                 inventoryIndex,
                 item,
                 nextCount,
-                data.Sell);
+                data.SellPrice);
         }
 
         ShowMessage("");
@@ -387,8 +387,8 @@ public class InventorySellUI : MonoBehaviour
                 shop.Inventory.GetItemData(selection.ItemId);
 
             if (data == null ||
-                data.Sell < 0 ||
-                data.Sell != selection.UnitPrice)
+                data.SellPrice < 0 ||
+                data.SellPrice != selection.UnitPrice)
             {
                 valid = false;
             }

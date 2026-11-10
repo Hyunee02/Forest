@@ -102,7 +102,7 @@ public class SellSlot : MonoBehaviour
         {
             priceText.gameObject.SetActive(showPrice);
 
-            long total = (long)data.Sell * selectedAmount;
+            long total = (long)data.SellPrice * selectedAmount;
             priceText.text = $"{total:N0} G";
         }
 
@@ -114,7 +114,7 @@ public class SellSlot : MonoBehaviour
         }
 
         bool canChange =
-            data.Sell >= 0 &&
+            data.SellPrice >= 0 &&
             onChangeAmount != null;
 
         if (minusButton != null)

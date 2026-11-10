@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d59189fe9ab71e48a77e3b3bb12d140, type: 3}
+  m_Name: 51_Pickaxe
+  m_EditorClassIdentifier: 
+  id: 51
+  itemType: 1
+  itemName: Pick
+  canBuy: 1
+  buyPrice: 900
+  canSell: 1
+  sellPrice: 270
+  description: "\uACE1\uAD2D\uC774"
+  icon: {fileID: 21300000, guid: b51677c802b562a48840093c010d14b8, type: 3}
+  maxStack: 1
+  prefab: {fileID: 0}

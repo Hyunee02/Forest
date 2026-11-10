@@ -14,29 +14,33 @@ public enum ItemTypeSO
 public class ItemData_SO : ScriptableObject
 {
     [Header("<< Basic >>")]
-    private string id;
-    private ItemTypeSO itemType;
+    [SerializeField] private string id;
+    [SerializeField] private ItemTypeSO itemType;
+    [SerializeField] private string itemName;
 
-    private string itemName;
-    private int buy;
-    private int sell;
+    [Header("<< Price >>")]
+    [SerializeField] public bool canBuy = true;
+    [SerializeField, Min(0)] private int buyPrice;
+
+    [SerializeField] public bool canSell = true;
+    [SerializeField, Min(0)] private int sellPrice;
 
     [TextArea]
-    private string description;
+    [SerializeField] private string description;
 
     [Header("<< Inventory >>")]
-    private Sprite icon;
-    private int maxStack = 30;
+    [SerializeField] private Sprite icon;
+    [SerializeField, Min(1)] private int maxStack = 30;
 
     [Header("<< World >>")]
-    private GameObject prefab;
+    [SerializeField] private GameObject prefab;
 
     public string Id => id;
     public ItemTypeSO ItemType => itemType;
 
     public string ItemName => itemName;
-    public int Buy => buy;
-    public int Sell => sell;
+    public int BuyPrice => buyPrice;
+    public int SellPrice => Mathf.FloorToInt(buyPrice * 0.3f);
 
     public string Description => description;
 
@@ -44,4 +48,17 @@ public class ItemData_SO : ScriptableObject
     public int MaxStack => maxStack;
 
     public GameObject Prefab => prefab;
+
+    private void OnValidate()
+    {
+        if (!canBuy)
+        {
+            buyPrice = 0;
+        }
+
+        if (canBuy)
+        {
+            sellPrice = Mathf.FloorToInt(buyPrice * 0.3f);
+        }
+    }
 }

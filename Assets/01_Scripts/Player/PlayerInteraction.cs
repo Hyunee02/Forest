@@ -51,6 +51,14 @@ public class PlayerInteraction : MonoBehaviour
         if (message == null)
             return;
 
+        if (NPCManager.Instance != null
+            && NPCManager.Instance.IsUIBusy)
+        {
+            currentTarget = null;
+            message.HideText();
+            return;
+        }
+
         if (playerRest != null && playerRest.BRest)
         {
             currentTarget = null;
@@ -89,6 +97,10 @@ public class PlayerInteraction : MonoBehaviour
 
     private void TryInteract()
     {
+        if (NPCManager.Instance != null
+            && NPCManager.Instance.IsUIBusy)
+            return;
+
         // 앉아있는 상태면 먼저 일어나기
         if (playerRest != null && playerRest.BRest)
         {

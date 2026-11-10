@@ -5,6 +5,7 @@ public enum ItemTypeSO
     None,
     Tool,
     Material,
+    Fish,
     Food,
     Furniture,
     Etc,
@@ -16,9 +17,14 @@ public class ItemData_SO : ScriptableObject
     [Header("<< Basic >>")]
     public string id;
     public ItemTypeSO itemType;
-
     public string itemName;
-    public int price;
+
+    [Header("<< Price >>")]
+    public bool canBuy = true;
+    public int buyPrice;
+
+    public bool canSell = true;
+    public int sellPrice;
 
     [TextArea]
     public string description;
@@ -29,4 +35,19 @@ public class ItemData_SO : ScriptableObject
 
     [Header("<< World >>")]
     public GameObject prefab;
+
+    public int SellPrice => Mathf.FloorToInt(buyPrice * 0.3f);
+
+    private void OnValidate()
+    {
+        if (!canBuy)
+        {
+            buyPrice = 0;
+        }
+
+        if (canBuy)
+        {
+            sellPrice = Mathf.FloorToInt(buyPrice * 0.3f);
+        }
+    }
 }

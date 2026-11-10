@@ -15,8 +15,11 @@ MonoBehaviour:
   id: 22
   itemType: 2
   itemName: Peach
-  price: 100
+  canBuy: 0
+  buyPrice: 0
+  canSell: 1
+  sellPrice: 500
   description: "\uBCF5\uC22D\uC544"
   icon: {fileID: 21300000, guid: ae8e4906659bf7e429d93ff3073e9cc8, type: 3}
   maxStack: 30
-  prefab: {fileID: 5257919372667998080, guid: 30c3a066611791b4fa69bbad68e053f3, type: 3}
+  prefab: {fileID: 3755891818289729071, guid: dc6d33b14253ef8479d8c7bb4ab349af, type: 3}

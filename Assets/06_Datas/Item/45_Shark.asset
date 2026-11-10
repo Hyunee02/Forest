@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d59189fe9ab71e48a77e3b3bb12d140, type: 3}
+  m_Name: 45_Shark
+  m_EditorClassIdentifier: 
+  id: 45
+  itemType: 3
+  itemName: Shark
+  canBuy: 0
+  buyPrice: 0
+  canSell: 1
+  sellPrice: 15000
+  description: "\uC0C1\uC5B4"
+  icon: {fileID: 21300000, guid: 10ed1c46476116044a217acb58f05b22, type: 3}
+  maxStack: 30
+  prefab: {fileID: 9053366620924946618, guid: d8a3afc4bcbaaa546857d97c0b3a2ee1, type: 3}

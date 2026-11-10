@@ -20,10 +20,12 @@ public class ShopUI : MonoBehaviour
 
     [Header("표시")]
     [SerializeField] private TMP_Text moneyText;
-    [SerializeField] private TMP_Text messageText;
 
     [Header("인벤토리")]
     [SerializeField] private InventoryUI inventoryUI;
+
+    [Header("선택사항")]
+    [SerializeField] private TMP_Text messageText;
 
     private readonly List<ShopSlot> slots = new();
 
@@ -42,7 +44,6 @@ public class ShopUI : MonoBehaviour
     private int displayedDay;
 
     public bool BOpen { get; private set; }
-
     public bool CanOpen => isActiveAndEnabled
         && !BOpen
         && BindPlayer()
@@ -352,9 +353,7 @@ public class ShopUI : MonoBehaviour
 
         moneyText.text = $"소지금 {shop.Money:N0} G";
 
-        totalPriceText.text =
-            $"선택 {selectedAmounts.Count}종 / {totalCount:N0}개\n" +
-            $"총 구매 금액 {total:N0} G";
+        totalPriceText.text = $"{total:N0} G";
 
         buyButton.interactable =
             valid &&
@@ -383,7 +382,9 @@ public class ShopUI : MonoBehaviour
 
     private void ShowMessage(string message)
     {
-        if (messageText != null)
-            messageText.text = message;
+        if (messageText == null)
+            return;
+
+        messageText.text = message;
     }
 }

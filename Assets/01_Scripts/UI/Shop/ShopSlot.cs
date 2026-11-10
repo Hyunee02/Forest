@@ -66,7 +66,7 @@ public class ShopSlot : MonoBehaviour
             : remaining.ToString("N0");
 
         purchaseText.text =
-            $"±¸¸Å {selectedAmount:N0}/{remainingText}";
+            $"{selectedAmount:N0}/{remainingText}";
 
         bool canChange =
             data.Buy >= 0 &&

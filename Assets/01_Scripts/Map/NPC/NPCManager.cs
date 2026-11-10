@@ -291,18 +291,10 @@ public class NPCManager : MonoBehaviour
                     if (!sellUI.CanOpen)
                         return;
 
-                    ShopData data = currentNPC.ShopData;
-
-                    if (!data.Validate(out string error))
-                    {
-                        Debug.LogError(error, this);
-                        return;
-                    }
-
                     if (dialogueUI != null)
                         dialogueUI.CloseDialogue();
 
-                    sellUI.Open(data);
+                    sellUI.Open();
                 }
                 else if (index == 2)
                 {
@@ -316,20 +308,20 @@ public class NPCManager : MonoBehaviour
         }
     }
 
-    private IEnumerator OpenShopAfterDelay()
-    {
-        yield return new WaitForSeconds(shopOpenDelay);
+    //private IEnumerator OpenShopAfterDelay()
+    //{
+    //    yield return new WaitForSeconds(shopOpenDelay);
 
-        if (dialogueUI != null)
-        {
-            dialogueUI.gameObject.SetActive(false);
-        }
+    //    if (dialogueUI != null)
+    //    {
+    //        dialogueUI.gameObject.SetActive(false);
+    //    }
 
-        if (shopPanel != null)
-        {
-            shopPanel.SetActive(true);
-        }
-    }
+    //    if (shopPanel != null)
+    //    {
+    //        shopPanel.SetActive(true);
+    //    }
+    //}
 
     public void OnDialogueClose()
     {

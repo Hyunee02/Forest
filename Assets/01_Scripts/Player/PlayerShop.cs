@@ -414,12 +414,31 @@ public class PlayerShop : MonoBehaviour
     }
 
     public bool TrySellSelected(
-        ShopData market,
-        IReadOnlyList<SaleSelection> selections,
-        out string message)
+    IReadOnlyList<SaleSelection> selections,
+    out string message)
     {
-        if (!CheckReady(market, out message))
+        message = "";
+
+        if (!IsReady)
+        {
+            message = "플레이어 데이터를 준비 중입니다.";
             return false;
+        }
+
+        if (bTrading || IsUsingTool)
+        {
+            message = "지금은 거래할 수 없습니다.";
+            return false;
+        }
+
+        GameSaveData save = GameSession.Instance.CurrentData;
+
+        if (save == null || save.money < 0)
+        {
+            return ConfigError(
+                "플레이어 소지금 데이터가 올바르지 않습니다.",
+                out message);
+        }
 
         if (!inventory.ValidateSaleSelections(selections))
         {
@@ -427,12 +446,9 @@ public class PlayerShop : MonoBehaviour
             return false;
         }
 
-        // UI 이벤트로 선택 목록이 바뀌어도 영향받지 않는 복사본
+        // 인벤토리 변경 이벤트가 UI 선택을 초기화해도
+        // 거래에 사용할 목록은 유지됨
         List<SaleSelection> transaction = new(selections);
-
-        Dictionary<string, int> amounts = new();
-
-        GameSaveData save = GameSession.Instance.CurrentData;
 
         long total = 0;
 
@@ -441,18 +457,11 @@ public class PlayerShop : MonoBehaviour
             ItemData_SO data =
                 inventory.GetItemData(selection.ItemId);
 
-            if (data == null)
+            if (data == null || data.Sell < 0)
             {
                 return ConfigError(
-                    $"아이템 데이터가 없습니다: {selection.ItemId}",
+                    $"판매 데이터가 올바르지 않습니다: {selection.ItemId}",
                     out message);
-            }
-
-            if (!market.CanSell(selection.ItemId) ||
-                data.Sell <= 0)
-            {
-                message = $"{data.ItemName}은(는) 이 상점에서 판매할 수 없습니다.";
-                return false;
             }
 
             if (data.Sell != selection.UnitPrice)
@@ -461,32 +470,16 @@ public class PlayerShop : MonoBehaviour
                 return false;
             }
 
-            amounts.TryGetValue(
-                selection.ItemId,
-                out int previousAmount);
+            long itemTotal = (long)data.Sell * selection.Count;
 
-            long combinedAmount =
-                (long)previousAmount + selection.Count;
-
-            if (combinedAmount >
-                GetSellRemaining(market, selection.ItemId))
-            {
-                message =
-                    $"{data.ItemName}의 오늘 판매 가능 수량을 초과했습니다.";
-
-                return false;
-            }
-
-            amounts[selection.ItemId] = (int)combinedAmount;
-
-            total += selection.Total;
-
-            // 매 항목마다 검사하므로 합계가 계속 커지는 것을 제한
-            if (total > (long)int.MaxValue - save.money)
+            // 합산 전에 소지금의 int 범위 검사
+            if (itemTotal > (long)int.MaxValue - save.money - total)
             {
                 message = "판매 후 소지금이 최대치를 초과합니다.";
                 return false;
             }
+
+            total += itemTotal;
         }
 
         bTrading = true;
@@ -495,25 +488,12 @@ public class PlayerShop : MonoBehaviour
         {
             int previousMoney = save.money;
 
+            // 인벤토리 변경 이벤트가 새 소지금을 읽도록 먼저 반영
             save.money += (int)total;
-
-            foreach (KeyValuePair<string, int> pair in amounts)
-            {
-                GetOrCreateRecord(
-                    market.shopId,
-                    pair.Key).sold += pair.Value;
-            }
 
             if (!inventory.RemoveSaleSelections(transaction))
             {
                 save.money = previousMoney;
-
-                foreach (KeyValuePair<string, int> pair in amounts)
-                {
-                    GetOrCreateRecord(
-                        market.shopId,
-                        pair.Key).sold -= pair.Value;
-                }
 
                 message = "아이템이 변경되었습니다. 다시 선택해주세요.";
                 return false;

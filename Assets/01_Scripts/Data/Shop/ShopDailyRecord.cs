@@ -8,7 +8,5 @@ public class ShopDailyRecord
 {
     public string shopId;
     public string itemId;
-
     public int bought;
-    public int sold;
 }

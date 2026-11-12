@@ -18,6 +18,7 @@ public class PlayerEquip : MonoBehaviour
 
     private PlayerBindInput input;
     private PlayerInventory inventory;
+    private PlayerFishing fishing;
 
     private GameObject curToolObject;
     private ToolBase curTool;
@@ -34,7 +35,7 @@ public class PlayerEquip : MonoBehaviour
     public InventoryItem CurInventoryItem => curInventoryItem;
 
     public bool BTool => curTool != null;
-    public bool BUse => bUse;
+    public bool BUse => bUse || (fishing != null && fishing.IsFishing);
 
 #if UNITY_EDITOR
 
@@ -49,6 +50,7 @@ public class PlayerEquip : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         inventory = GetComponent<PlayerInventory>();
+        fishing = GetComponent<PlayerFishing>();
 
         if (rootObject == null)
             rootObject = transform.root;
@@ -72,6 +74,9 @@ public class PlayerEquip : MonoBehaviour
     {
         input.OnUseInput -= UseTool;
         inventory.OnChanged -= CheckEquippedItem;
+
+        if (fishing != null && fishing.IsFishing)
+            fishing.AbortFishing();
 
         EndUseTool();
     }
@@ -115,7 +120,7 @@ public class PlayerEquip : MonoBehaviour
     /// <param name="slotIndex"></param>
     public void ToggleEquip(int slotIndex)
     {
-        if (bUse)
+        if (BUse)
             return;
 
         InventoryItem item = inventory.GetItem(slotIndex);
@@ -138,7 +143,7 @@ public class PlayerEquip : MonoBehaviour
     /// <returns></returns>
     public bool EquipTool(int slotIndex)
     {
-        if (bUse)
+        if (BUse)
             return false;
 
         InventoryItem item = inventory.GetItem(slotIndex);
@@ -191,7 +196,7 @@ public class PlayerEquip : MonoBehaviour
     /// </summary>
     public void UnEquipTool()
     {
-        if (bUse)
+        if (BUse)
             return;
 
         // 현재 도구 정보 초기화
@@ -208,6 +213,13 @@ public class PlayerEquip : MonoBehaviour
         if (NPCManager.Instance != null
             && NPCManager.Instance.IsUIBusy)
             return;
+
+        // 낚시 중 재입력은 회수 또는 낚아채기로 처리
+        if (fishing != null && fishing.IsFishing)
+        {
+            fishing.HandleUse();
+            return;
+        }
 
         if (bUse)
             return;
@@ -230,6 +242,18 @@ public class PlayerEquip : MonoBehaviour
 
         if (Time.time < nextUseTime)
             return;
+
+        if (curTool is Tool_FishingRod)
+        {
+            if (fishing == null || !fishing.isActiveAndEnabled)
+            {
+                Debug.LogError("PlayerFishing을 연결해주세요.", this);
+                return;
+            }
+
+            fishing.HandleUse();
+            return;
+        }
 
         // 사용 가능 여부 검사
         if (!curTool.TryUse())

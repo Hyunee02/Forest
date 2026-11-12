@@ -438,6 +438,15 @@ public class PlayerInventory : MonoBehaviour
             {
                 return false;
             }
+
+            ItemData_SO data = GetItemData(item.itemId);
+
+            if (data == null ||
+                !data.canSell ||
+                data.SellPrice < 0)
+            {
+                return false;
+            }
         }
 
         return true;

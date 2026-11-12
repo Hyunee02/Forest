@@ -330,6 +330,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1857988048549482420}
+  - component: {fileID: 8685684161736601829}
+  - component: {fileID: -2462982032163037108}
   m_Layer: 0
   m_Name: 41_Angelfish
   m_TagString: Untagged
@@ -354,6 +356,32 @@ Transform:
   - {fileID: 1664039967734133748}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &8685684161736601829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2454135804449002196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2647f223585b5dc4c8c0e104fc0fe4cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: 237a59ef8984a7e479d0f0b2f18c0e5b, type: 2}
+  amount: 1
+--- !u!114 &-2462982032163037108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2454135804449002196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3344a843d8389584a8326d47b4c84616, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3108751841053866722
 GameObject:
   m_ObjectHideFlags: 0

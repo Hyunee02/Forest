@@ -15,10 +15,10 @@ MonoBehaviour:
   id: 21
   itemType: 2
   itemName: Orange
-  canBuy: 0
-  buyPrice: 0
+  canBuy: 1
+  buyPrice: 1500
   canSell: 1
-  sellPrice: 500
+  sellPrice: 450
   description: "\uC624\uB80C\uC9C0"
   icon: {fileID: 21300000, guid: 689ff383221960c43943487d63ae320c, type: 3}
   maxStack: 30

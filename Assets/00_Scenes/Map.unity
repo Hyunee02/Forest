@@ -133656,8 +133656,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 22.2, y: 1}
-  m_SizeDelta: {x: 145.236, y: 41.0209}
+  m_AnchoredPosition: {x: 26.1181, y: -0.6294}
+  m_SizeDelta: {x: 187.7058, y: 44.2797}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &277614888
 MonoBehaviour:
@@ -356148,8 +356148,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 22.2, y: 1}
-  m_SizeDelta: {x: 145.236, y: 41.0209}
+  m_AnchoredPosition: {x: 27.5, y: 3.5769}
+  m_SizeDelta: {x: 180.1065, y: 35.8671}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &726077865
 MonoBehaviour:
@@ -472443,7 +472443,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &964312887
 RectTransform:
   m_ObjectHideFlags: 0
@@ -515294,9 +515294,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactionRange: 4
   isPlayerInRange: 0
-  npcType: 2
-  dialogueData: {fileID: 11400000, guid: bb19882134cd9fc4e8f506649a82e6e4, type: 2}
-  shopData: {fileID: 11400000, guid: 3b28bafd83af51c439699686ae715bda, type: 2}
+  npcType: 1
+  dialogueData: {fileID: 11400000, guid: d1a6fd6025ae7f34a8defe679a61ce2a, type: 2}
+  shopData: {fileID: 11400000, guid: a915142ee5a3a5d4c840903e66aa77b9, type: 2}
 --- !u!1 &1043827675
 GameObject:
   m_ObjectHideFlags: 0
@@ -1069443,7 +1069443,7 @@ PrefabInstance:
     - target: {fileID: -8113636423760279925, guid: 8ccdc5e3fb4cbe4489746511285069f2, type: 3}
       propertyPath: shopData
       value: 
-      objectReference: {fileID: 11400000, guid: 3b28bafd83af51c439699686ae715bda, type: 2}
+      objectReference: {fileID: 11400000, guid: b0f0aefd2fa4f804fb6577caf4923be1, type: 2}
     - target: {fileID: -8113636423760279925, guid: 8ccdc5e3fb4cbe4489746511285069f2, type: 3}
       propertyPath: dialogueData
       value: 
@@ -1069552,6 +1069552,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6298055198627540715, guid: c15ce2d686a5db949b22539f483d08e7, type: 3}
+      propertyPath: shopData
+      value: 
+      objectReference: {fileID: 11400000, guid: 5b1151f049a486e45a870b3d134f52c8, type: 2}
     - target: {fileID: 6298055198627540715, guid: c15ce2d686a5db949b22539f483d08e7, type: 3}
       propertyPath: dialogueData
       value: 
@@ -1070235,7 +1070239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e922c804a373f4c4c8686a3b3ebbb5b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemDatabase: {fileID: 11400000, guid: 2d8833db14d147649b357eb7c825ad9f, type: 2}
+  itemDatabase: {fileID: 11400000, guid: 806cf210baf359143860cad4db35b143, type: 2}
   slotCount: 16
   maxSlotCount: 48
   upgradeSlotCount: 8
@@ -1072125,6 +1072129,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1080767784}
     m_Modifications:
+    - target: {fileID: 2303125665005117892, guid: 023930dfd11c4294d9fa4ce8c55edb1c, type: 3}
+      propertyPath: shopData
+      value: 
+      objectReference: {fileID: 11400000, guid: a915142ee5a3a5d4c840903e66aa77b9, type: 2}
     - target: {fileID: 2303125665005117892, guid: 023930dfd11c4294d9fa4ce8c55edb1c, type: 3}
       propertyPath: dialogueData
       value: 

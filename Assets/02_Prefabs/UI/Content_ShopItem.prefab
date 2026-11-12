@@ -413,12 +413,10 @@ MonoBehaviour:
   icon: {fileID: 6947122619917673173}
   nameText: {fileID: 7295102502492548240}
   ownedCountText: {fileID: 7004192145003066288}
-  purchaseText: {fileID: 7164835568643841062}
   priceText: {fileID: 2801424935582647667}
-  limitText: {fileID: 0}
+  purchaseText: {fileID: 7164835568643841062}
   minusButton: {fileID: 1492572269752629014}
   plusButton: {fileID: 2350068068025832699}
-  buyButton: {fileID: 0}
 --- !u!1 &1443275738998875005
 GameObject:
   m_ObjectHideFlags: 0
@@ -533,8 +531,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 20, y: -97.83718}
-  m_SizeDelta: {x: 47.1674, y: 24.2982}
+  m_AnchoredPosition: {x: 33.7, y: -97.83718}
+  m_SizeDelta: {x: 80, y: 24.2982}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8435773902017998764
 CanvasRenderer:
@@ -598,7 +596,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 2
+  m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -944,7 +942,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -20, y: -96.43711}
+  m_AnchoredPosition: {x: -29.799988, y: -96.43711}
   m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8859946849152339667

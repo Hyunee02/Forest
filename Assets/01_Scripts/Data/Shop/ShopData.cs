@@ -8,7 +8,7 @@ using UnityEngine;
 [Serializable]
 public class ShopItemEntry
 {
-    public string itemId;
+    public ItemData_SO itemData;
 
     [Tooltip("-1: 무제한 / 0: 거래 불가 / 양수: 하루 거래 수량")]
     [Min(-1)] public int dailyLimit = -1;
@@ -73,15 +73,21 @@ public class ShopData : ScriptableObject
     /// <param name="entries"></param>
     /// <param name="itemId"></param>
     /// <returns></returns>
-    private static ShopItemEntry FindEntry(ShopItemEntry[] entries, string itemId)
+    private static ShopItemEntry FindEntry(
+    ShopItemEntry[] entries,
+    string itemId)
     {
         if (entries == null || string.IsNullOrWhiteSpace(itemId))
             return null;
 
         foreach (ShopItemEntry entry in entries)
         {
-            if (entry != null && entry.itemId == itemId)
+            if (entry != null &&
+                entry.itemData != null &&
+                entry.itemData.Id == itemId)
+            {
                 return entry;
+            }
         }
 
         return null;
@@ -128,21 +134,22 @@ public class ShopData : ScriptableObject
         foreach (ShopItemEntry entry in entries)
         {
             if (entry == null ||
-                string.IsNullOrWhiteSpace(entry.itemId))
+                entry.itemData == null ||
+                string.IsNullOrWhiteSpace(entry.itemData.Id))
             {
                 error = $"{label} 목록에 비어 있는 상품이 있습니다.";
                 return false;
             }
 
-            if (!ids.Add(entry.itemId))
+            if (!ids.Add(entry.itemData.Id))
             {
-                error = $"{label} 목록에 중복 ID가 있습니다: {entry.itemId}";
+                error = $"{label} 목록에 중복 ID가 있습니다: {entry.itemData.Id}";
                 return false;
             }
 
             if (entry.dailyLimit < -1)
             {
-                error = $"{entry.itemId}의 한도는 -1 이상이어야 합니다.";
+                error = $"{entry.itemData.Id}의 한도는 -1 이상이어야 합니다.";
                 return false;
             }
         }

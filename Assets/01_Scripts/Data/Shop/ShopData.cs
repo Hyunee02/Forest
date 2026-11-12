@@ -24,9 +24,6 @@ public class ShopData : ScriptableObject
     [Header("구매할 수 있는 상품")]
     public ShopItemEntry[] buyItems = Array.Empty<ShopItemEntry>();
 
-    [Header("판매할 수 있는 상품")]
-    public ShopItemEntry[] sellItems = Array.Empty<ShopItemEntry>();
-
     /// <summary>
     /// 구매 목록에서 아이템 찾아 반환
     /// </summary>
@@ -38,16 +35,6 @@ public class ShopData : ScriptableObject
     }
 
     /// <summary>
-    /// 판매 목록에서 아이템 찾아 반환
-    /// </summary>
-    /// <param name="itemId"></param>
-    /// <returns></returns>
-    public ShopItemEntry GetSellEntry(string itemId)
-    {
-        return FindEntry(sellItems, itemId);
-    }
-
-    /// <summary>
     /// 아이템이 구매 목록에 있는지 확인
     /// </summary>
     /// <param name="itemId"></param>
@@ -55,16 +42,6 @@ public class ShopData : ScriptableObject
     public bool CanBuy(string itemId)
     {
         return GetBuyEntry(itemId) != null;
-    }
-
-    /// <summary>
-    /// 아이템이 판매 목록에 있는지 확인
-    /// </summary>
-    /// <param name="itemId"></param>
-    /// <returns></returns>
-    public bool CanSell(string itemId)
-    {
-        return GetSellEntry(itemId) != null;
     }
 
     /// <summary>
@@ -100,10 +77,7 @@ public class ShopData : ScriptableObject
             return false;
         }
 
-        if (!ValidateEntries(buyItems, "구매", out error))
-            return false;
-
-        return ValidateEntries(sellItems, "판매", out error);
+        return ValidateEntries(buyItems, "구매", out error);
     }
 
     /// <summary>

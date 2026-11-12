@@ -293,4 +293,27 @@ public class PlayerSave : MonoBehaviour
 
         Debug.Log($"[PlayerSave] {message}", this);
     }
+
+    [ContextMenu("테스트/골드 초기화")]
+    private void ResetMoney()
+    {
+        if (!IsReady ||
+            GameSession.Instance == null ||
+            GameSession.Instance.CurrentData == null)
+        {
+            ShowStatus("플레이어 데이터가 아직 준비되지 않았습니다.");
+            return;
+        }
+
+        if (IsGameplayBusy())
+        {
+            ShowStatus("대화나 도구 사용을 마친 뒤 초기화해주세요.");
+            return;
+        }
+
+        GameSession.Instance.CurrentData.money =
+            Mathf.Max(0, testMoney);
+
+        SaveNow();
+    }
 }

@@ -13,6 +13,7 @@ public class PlayerInteraction : MonoBehaviour
 
     private PlayerBindInput input;
     private PlayerRest playerRest;
+    private PlayerFishing fishing;
 
     private IInteractable currentTarget;
 
@@ -27,6 +28,7 @@ public class PlayerInteraction : MonoBehaviour
     {
         input = GetComponent<PlayerBindInput>();
         playerRest = GetComponent<PlayerRest>();
+        fishing = GetComponent<PlayerFishing>();
 
         rayPos = transform.FindChildByName("RayPos");
     }
@@ -48,6 +50,17 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
+        // 낚시 중 상호작용 안내 숨기기
+        if (fishing != null && fishing.IsFishing)
+        {
+            currentTarget = null;
+
+            if (message != null)
+                message.HideText();
+
+            return;
+        }
+
         if (message == null)
             return;
 
@@ -99,6 +112,10 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (NPCManager.Instance != null
             && NPCManager.Instance.IsUIBusy)
+            return;
+
+        // 낚시 중 NPC 대화, 가구 사용 등 차단
+        if (fishing != null && fishing.IsFishing)
             return;
 
         // 앉아있는 상태면 먼저 일어나기

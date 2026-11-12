@@ -4,12 +4,16 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Button))]
+[RequireComponent(typeof(CanvasGroup))]
 public class SellSlot : MonoBehaviour
 {
     [Header("물품 표시")]
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text countText;
+
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private Color originalIconColor;
 
     [Header("판매 수량")]
     [SerializeField] private TMP_Text saleCountText;
@@ -30,6 +34,10 @@ public class SellSlot : MonoBehaviour
     private void Awake()
     {
         button = GetComponent<Button>();
+        canvasGroup = GetComponent<CanvasGroup>();
+
+        if (icon != null)
+            originalIconColor = icon.color;
     }
 
     private void OnEnable()
@@ -69,7 +77,19 @@ public class SellSlot : MonoBehaviour
         onClick = clickAction;
         onChangeAmount = changeAmountAction;
 
-        button.interactable = clickAction != null;
+        bool canSell = data.canSell && data.SellPrice >= 0;
+
+        // 판매 불가 아이템은 흐리게 표시하고 입력 차단
+        canvasGroup.alpha = canSell ? 1f : 0.4f;
+        canvasGroup.interactable = canSell;
+
+        button.interactable = canSell && clickAction != null;
+
+        if (icon != null)
+        {
+            // 재사용되는 슬롯이므로 판매 가능할 때 원래 색상 복원
+            icon.color = canSell ? originalIconColor : Color.gray;
+        }
 
         if (icon != null)
         {
@@ -114,7 +134,7 @@ public class SellSlot : MonoBehaviour
         }
 
         bool canChange =
-            data.SellPrice >= 0 &&
+            canSell &&
             onChangeAmount != null;
 
         if (minusButton != null)

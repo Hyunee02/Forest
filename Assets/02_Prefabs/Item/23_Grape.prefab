@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 5148221571205576892}
   - component: {fileID: 8582846213307513316}
   - component: {fileID: 7810883611506209706}
+  - component: {fileID: 6042115596711353149}
+  - component: {fileID: -645682837232003410}
   m_Layer: 0
   m_Name: 23_Grape
   m_TagString: Untagged
@@ -109,3 +111,29 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -6853702486799400099, guid: 0baa9e18e118081418ad7fa0f12ca5b8, type: 3}
+--- !u!114 &6042115596711353149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 916668766169918335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2647f223585b5dc4c8c0e104fc0fe4cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: 1d2e34e289d85e4488937725c386f8ce, type: 2}
+  amount: 1
+--- !u!114 &-645682837232003410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 916668766169918335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3344a843d8389584a8326d47b4c84616, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

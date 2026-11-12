@@ -197,7 +197,6 @@ public static class GameSaveFile
                 string.IsNullOrWhiteSpace(record.shopId) ||
                 string.IsNullOrWhiteSpace(record.itemId) ||
                 record.bought < 0 ||
-                record.sold < 0 ||
                 !keys.Add((record.shopId, record.itemId)))
             {
                 error = "일일 거래 기록이 올바르지 않습니다.";

@@ -23,7 +23,6 @@ public class NPCManager : MonoBehaviour
     [SerializeField] private float sceneMoveDelay = 2f;
 
     private NPC currentNPC;
-
     public NPC CurrentNPC => currentNPC;
     public bool IsUIBusy => (dialogueUI != null && dialogueUI.gameObject.activeInHierarchy)
         || (shopUI != null && shopUI.BOpen)
@@ -294,7 +293,7 @@ public class NPCManager : MonoBehaviour
                     if (dialogueUI != null)
                         dialogueUI.CloseDialogue();
 
-                    sellUI.Open(currentNPC.ShopData);
+                    sellUI.Open();
                 }
                 else if (index == 2)
                 {

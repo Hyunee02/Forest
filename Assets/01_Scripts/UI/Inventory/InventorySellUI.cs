@@ -31,7 +31,6 @@ public class InventorySellUI : MonoBehaviour
 
     private PlayerShop shop;
     private PlayerMove move;
-    private ShopData currentShop;
 
     // 실제 인벤토리 슬롯 번호 → 판매 선택 정보
     private readonly Dictionary<int, SaleSelection> selected = new();
@@ -123,25 +122,19 @@ public class InventorySellUI : MonoBehaviour
         return shop != null && move != null;
     }
 
-    public void Open(ShopData data)
+    public void Open()
     {
-        if (data == null || !CanOpen)
+        if (!CanOpen)
         {
             Debug.LogWarning(
-                "[InventorySellUI] UI 연결 또는 플레이어 상태를 확인해주세요.",
+                "[InventorySellUI] UI 연결, 활성 상태, " +
+                "PlayerSave 준비 상태를 확인해주세요.",
                 this);
 
             return;
         }
 
-        if (!data.Validate(out string error))
-        {
-            Debug.LogError($"[InventorySellUI] {error}", this);
-            return;
-        }
-
-        currentShop = data;
-
+        // 일반 인벤토리 창은 사용하지 않음
         if (normalInventoryUI != null)
             normalInventoryUI.SetOpen(false);
 
@@ -175,8 +168,6 @@ public class InventorySellUI : MonoBehaviour
 
         if (move != null)
             move.SetMoveEnabled(true);
-
-        currentShop = null;
     }
 
     private void ChangeSelectionAmount(
@@ -192,11 +183,8 @@ public class InventorySellUI : MonoBehaviour
         if (item == null || item.BEmpty)
             return;
 
-        if (currentShop == null ||
-            !currentShop.CanSell(item.itemId))
-            return;
-
-        ItemData_SO data = GetSellItemData(item.itemId);
+        ItemData_SO data =
+            shop.Inventory.GetItemData(item.itemId);
 
         if (data == null || data.SellPrice < 0)
         {
@@ -219,15 +207,9 @@ public class InventorySellUI : MonoBehaviour
 
         long requested = (long)currentCount + delta;
 
-        int remaining = shop.GetSellRemaining(
-            currentShop,
-            item.itemId);
-
-        int maxCount = Mathf.Min(item.count, remaining);
-
         int nextCount = (int)System.Math.Max(
             0L,
-            System.Math.Min(requested, (long)maxCount));
+            System.Math.Min(requested, (long)item.count));
 
         if (nextCount == currentCount)
             return;
@@ -279,19 +261,8 @@ public class InventorySellUI : MonoBehaviour
             if (item == null || item.BEmpty)
                 continue;
 
-            if (currentShop == null ||
-                !currentShop.CanSell(item.itemId))
-                continue;
-
-            int remaining = shop.GetSellRemaining(
-                currentShop,
-                item.itemId);
-
-            // 오늘 판매 한도를 모두 사용한 상품은 표시하지 않음
-            if (remaining <= 0)
-                continue;
-
-            ItemData_SO data = GetSellItemData(item.itemId);
+            ItemData_SO data =
+                shop.Inventory.GetItemData(item.itemId);
 
             if (data == null)
                 continue;
@@ -314,7 +285,7 @@ public class InventorySellUI : MonoBehaviour
             slot.Bind(
                 data,
                 GetIcon(data),
-                Mathf.Min(item.count, remaining), 
+                item.count,
                 selectedAmount,
                 false,
 
@@ -344,7 +315,8 @@ public class InventorySellUI : MonoBehaviour
                 continue;
             }
 
-            ItemData_SO data = GetSellItemData(selection.ItemId);
+            ItemData_SO data =
+                shop.Inventory.GetItemData(selection.ItemId);
 
             if (data == null)
                 continue;
@@ -397,14 +369,6 @@ public class InventorySellUI : MonoBehaviour
             slots[i].gameObject.SetActive(false);
     }
 
-    private ItemData_SO GetSellItemData(string itemId)
-    {
-        if (currentShop == null)
-            return null;
-
-        return currentShop.GetSellEntry(itemId)?.itemData;
-    }
-
     private Sprite GetIcon(ItemData_SO data)
     {
         if (data.Icon != null)
@@ -425,16 +389,13 @@ public class InventorySellUI : MonoBehaviour
 
         foreach (SaleSelection selection in selected.Values)
         {
-            ItemData_SO data = GetSellItemData(selection.ItemId);
+            ItemData_SO data =
+                shop.Inventory.GetItemData(selection.ItemId);
 
             if (data == null ||
                 !data.canSell ||
                 data.SellPrice < 0 ||
-                data.SellPrice != selection.UnitPrice ||
-                !currentShop.CanSell(selection.ItemId) ||
-                selection.Count > shop.GetSellRemaining(
-                    currentShop,
-                    selection.ItemId))
+                data.SellPrice != selection.UnitPrice)
             {
                 valid = false;
             }
@@ -480,7 +441,6 @@ public class InventorySellUI : MonoBehaviour
         List<SaleSelection> transaction = new(selected.Values);
 
         bool success = shop.TrySellSelected(
-            currentShop,
             transaction,
             out string message);
 

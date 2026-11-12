@@ -51,22 +51,6 @@ public class PlayerShop : MonoBehaviour
         return total;
     }
 
-    private ItemData_SO GetBuyItemData(ShopData market, string itemId)
-    {
-        if (market == null)
-            return null;
-
-        return market.GetBuyEntry(itemId)?.itemData;
-    }
-
-    private ItemData_SO GetSellItemData(ShopData market, string itemId)
-    {
-        if (market == null)
-            return null;
-
-        return market.GetSellEntry(itemId)?.itemData;
-    }
-
     private ShopDailyRecord FindRecord(
         string shopId,
         string itemId)
@@ -201,7 +185,7 @@ public class PlayerShop : MonoBehaviour
             return false;
         }
 
-        ItemData_SO data = GetBuyItemData(market, itemId);
+        ItemData_SO data = inventory.GetItemData(itemId);
 
         if (data == null || data.BuyPrice < 0)
         {
@@ -317,7 +301,7 @@ public class PlayerShop : MonoBehaviour
                 return false;
             }
 
-            ItemData_SO data = GetBuyItemData(market, itemId);
+            ItemData_SO data = inventory.GetItemData(itemId);
 
             if (data == null || data.BuyPrice < 0)
             {
@@ -409,19 +393,31 @@ public class PlayerShop : MonoBehaviour
         }
     }
 
-
     public bool TrySellSelected(
-        ShopData market,
-        IReadOnlyList<SaleSelection> selections,
-        out string message)
+    IReadOnlyList<SaleSelection> selections,
+    out string message)
     {
-        if (!CheckReady(market, out message))
-            return false;
+        message = "";
 
-        if (selections == null || selections.Count == 0)
+        if (!IsReady)
         {
-            message = "판매할 상품을 선택해주세요.";
+            message = "플레이어 데이터를 준비 중입니다.";
             return false;
+        }
+
+        if (bTrading || IsUsingTool)
+        {
+            message = "지금은 거래할 수 없습니다.";
+            return false;
+        }
+
+        GameSaveData save = GameSession.Instance.CurrentData;
+
+        if (save == null || save.money < 0)
+        {
+            return ConfigError(
+                "플레이어 소지금 데이터가 올바르지 않습니다.",
+                out message);
         }
 
         if (!inventory.ValidateSaleSelections(selections))
@@ -430,33 +426,21 @@ public class PlayerShop : MonoBehaviour
             return false;
         }
 
-        // 거래 중 UI가 변경되어도 영향을 받지 않도록 복사
+        // 인벤토리 변경 이벤트가 UI 선택을 초기화해도
+        // 거래에 사용할 목록은 유지됨
         List<SaleSelection> transaction = new(selections);
-
-        // 같은 아이템이 여러 인벤토리 슬롯에 있을 수 있으므로
-        // 아이템별 판매 수량을 합산
-        Dictionary<string, int> sellCounts = new();
 
         long total = 0;
 
-        GameSaveData save = GameSession.Instance.CurrentData;
-
         foreach (SaleSelection selection in transaction)
         {
-            string itemId = selection.ItemId;
-
-            if (!market.CanSell(itemId))
-            {
-                message = "이 상점에서 판매할 수 없는 상품이 포함되어 있습니다.";
-                return false;
-            }
-
-            ItemData_SO data = GetSellItemData(market, itemId);
+            ItemData_SO data =
+                inventory.GetItemData(selection.ItemId);
 
             if (data == null || data.SellPrice < 0)
             {
                 return ConfigError(
-                    $"판매 데이터가 올바르지 않습니다: {itemId}",
+                    $"판매 데이터가 올바르지 않습니다: {selection.ItemId}",
                     out message);
             }
 
@@ -466,13 +450,9 @@ public class PlayerShop : MonoBehaviour
                 return false;
             }
 
-            if (!sellCounts.ContainsKey(itemId))
-                sellCounts.Add(itemId, 0);
-
-            sellCounts[itemId] += selection.Count;
-
             long itemTotal = (long)data.SellPrice * selection.Count;
 
+            // 합산 전에 소지금의 int 범위 검사
             if (itemTotal > (long)int.MaxValue - save.money - total)
             {
                 message = "판매 후 소지금이 최대치를 초과합니다.";
@@ -482,52 +462,18 @@ public class PlayerShop : MonoBehaviour
             total += itemTotal;
         }
 
-        // 아이템별 하루 판매 한도 확인
-        foreach (KeyValuePair<string, int> sell in sellCounts)
-        {
-            if (sell.Value > GetSellRemaining(market, sell.Key))
-            {
-                ItemData_SO data = GetSellItemData(market, sell.Key);
-
-                message =
-                    $"{data.ItemName}의 오늘 판매 가능 수량을 초과했습니다.";
-
-                return false;
-            }
-        }
-
         bTrading = true;
 
         try
         {
             int previousMoney = save.money;
 
-            Dictionary<string, int> previousSold = new();
-
-            // 판매 기록과 소지금 먼저 반영
+            // 인벤토리 변경 이벤트가 새 소지금을 읽도록 먼저 반영
             save.money += (int)total;
 
-            foreach (KeyValuePair<string, int> sell in sellCounts)
-            {
-                ShopDailyRecord record =
-                    GetOrCreateRecord(market.shopId, sell.Key);
-
-                previousSold.Add(sell.Key, record.sold);
-
-                record.sold += sell.Value;
-            }
-
-            // 인벤토리에서 실제 아이템 제거
             if (!inventory.RemoveSaleSelections(transaction))
             {
                 save.money = previousMoney;
-
-                foreach (KeyValuePair<string, int> previous in previousSold)
-                {
-                    GetOrCreateRecord(
-                        market.shopId,
-                        previous.Key).sold = previous.Value;
-                }
 
                 message = "아이템이 변경되었습니다. 다시 선택해주세요.";
                 return false;
@@ -536,7 +482,6 @@ public class PlayerShop : MonoBehaviour
             message = $"{total:N0} G에 판매했습니다.";
 
             AppendSaveResult(ref message);
-
             return true;
         }
         finally
@@ -544,7 +489,6 @@ public class PlayerShop : MonoBehaviour
             bTrading = false;
         }
     }
-
 
     private void AppendSaveResult(ref string message)
     {

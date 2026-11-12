@@ -266,37 +266,34 @@ public class ShopUI : MonoBehaviour
         {
             foreach (ShopItemEntry entry in currentShop.buyItems)
             {
-                if (entry == null)
+                if (entry == null || entry.itemData == null)
                     continue;
 
-                ItemData_SO data =
-                    shop.Inventory.GetItemData(entry.itemId);
+                // ShopData에 연결된 ItemData 직접 사용
+                ItemData_SO data = entry.itemData;
+                string itemId = data.Id;
 
-                if (data == null)
+                if (string.IsNullOrWhiteSpace(itemId))
                 {
-                    selectedAmounts.Remove(entry.itemId);
-
                     Debug.LogWarning(
-                        $"[ShopUI] ItemDatabase에 없는 ID: {entry.itemId}",
+                        "[ShopUI] 아이템 ID가 비어 있습니다.",
                         this);
 
                     continue;
                 }
 
                 int remaining =
-                    shop.GetBuyRemaining(currentShop, entry.itemId);
+                    shop.GetBuyRemaining(currentShop, itemId);
 
                 int amount = Mathf.Clamp(
-                    GetSelectedAmount(entry.itemId),
+                    GetSelectedAmount(itemId),
                     0,
                     remaining);
 
                 if (amount == 0)
-                    selectedAmounts.Remove(entry.itemId);
+                    selectedAmounts.Remove(itemId);
                 else
-                    selectedAmounts[entry.itemId] = amount;
-
-                string itemId = entry.itemId;
+                    selectedAmounts[itemId] = amount;
 
                 ShopSlot slot = GetSlot(visibleCount);
 
@@ -330,8 +327,7 @@ public class ShopUI : MonoBehaviour
 
         foreach (KeyValuePair<string, int> selection in selectedAmounts)
         {
-            ItemData_SO data =
-                shop.Inventory.GetItemData(selection.Key);
+            ItemData_SO data = GetShopItemData(selection.Key);
 
             if (data == null || data.BuyPrice < 0)
             {
@@ -360,6 +356,23 @@ public class ShopUI : MonoBehaviour
             shop.IsReady &&
             !shop.IsUsingTool &&
             total <= shop.Money;
+    }
+    private ItemData_SO GetShopItemData(string itemId)
+    {
+        if (currentShop == null || currentShop.buyItems == null)
+            return null;
+
+        foreach (ShopItemEntry entry in currentShop.buyItems)
+        {
+            if (entry != null &&
+                entry.itemData != null &&
+                entry.itemData.Id == itemId)
+            {
+                return entry.itemData;
+            }
+        }
+
+        return null;
     }
 
     private void BuySelected()

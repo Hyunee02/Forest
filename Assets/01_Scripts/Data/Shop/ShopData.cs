@@ -8,7 +8,7 @@ using UnityEngine;
 [Serializable]
 public class ShopItemEntry
 {
-    public string itemId;
+    public ItemData_SO itemData;
 
     [Tooltip("-1: 무제한 / 0: 거래 불가 / 양수: 하루 거래 수량")]
     [Min(-1)] public int dailyLimit = -1;
@@ -24,9 +24,6 @@ public class ShopData : ScriptableObject
     [Header("구매할 수 있는 상품")]
     public ShopItemEntry[] buyItems = Array.Empty<ShopItemEntry>();
 
-    [Header("판매할 수 있는 상품")]
-    public ShopItemEntry[] sellItems = Array.Empty<ShopItemEntry>();
-
     /// <summary>
     /// 구매 목록에서 아이템 찾아 반환
     /// </summary>
@@ -35,16 +32,6 @@ public class ShopData : ScriptableObject
     public ShopItemEntry GetBuyEntry(string itemId)
     {
         return FindEntry(buyItems, itemId);
-    }
-
-    /// <summary>
-    /// 판매 목록에서 아이템 찾아 반환
-    /// </summary>
-    /// <param name="itemId"></param>
-    /// <returns></returns>
-    public ShopItemEntry GetSellEntry(string itemId)
-    {
-        return FindEntry(sellItems, itemId);
     }
 
     /// <summary>
@@ -58,30 +45,26 @@ public class ShopData : ScriptableObject
     }
 
     /// <summary>
-    /// 아이템이 판매 목록에 있는지 확인
-    /// </summary>
-    /// <param name="itemId"></param>
-    /// <returns></returns>
-    public bool CanSell(string itemId)
-    {
-        return GetSellEntry(itemId) != null;
-    }
-
-    /// <summary>
     /// 상품 검색
     /// </summary>
     /// <param name="entries"></param>
     /// <param name="itemId"></param>
     /// <returns></returns>
-    private static ShopItemEntry FindEntry(ShopItemEntry[] entries, string itemId)
+    private static ShopItemEntry FindEntry(
+    ShopItemEntry[] entries,
+    string itemId)
     {
         if (entries == null || string.IsNullOrWhiteSpace(itemId))
             return null;
 
         foreach (ShopItemEntry entry in entries)
         {
-            if (entry != null && entry.itemId == itemId)
+            if (entry != null &&
+                entry.itemData != null &&
+                entry.itemData.Id == itemId)
+            {
                 return entry;
+            }
         }
 
         return null;
@@ -100,10 +83,7 @@ public class ShopData : ScriptableObject
             return false;
         }
 
-        if (!ValidateEntries(buyItems, "구매", out error))
-            return false;
-
-        return ValidateEntries(sellItems, "판매", out error);
+        return ValidateEntries(buyItems, "구매", out error);
     }
 
     /// <summary>
@@ -128,21 +108,22 @@ public class ShopData : ScriptableObject
         foreach (ShopItemEntry entry in entries)
         {
             if (entry == null ||
-                string.IsNullOrWhiteSpace(entry.itemId))
+                entry.itemData == null ||
+                string.IsNullOrWhiteSpace(entry.itemData.Id))
             {
                 error = $"{label} 목록에 비어 있는 상품이 있습니다.";
                 return false;
             }
 
-            if (!ids.Add(entry.itemId))
+            if (!ids.Add(entry.itemData.Id))
             {
-                error = $"{label} 목록에 중복 ID가 있습니다: {entry.itemId}";
+                error = $"{label} 목록에 중복 ID가 있습니다: {entry.itemData.Id}";
                 return false;
             }
 
             if (entry.dailyLimit < -1)
             {
-                error = $"{entry.itemId}의 한도는 -1 이상이어야 합니다.";
+                error = $"{entry.itemData.Id}의 한도는 -1 이상이어야 합니다.";
                 return false;
             }
         }

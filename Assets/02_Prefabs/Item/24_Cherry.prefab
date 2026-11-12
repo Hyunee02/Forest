@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 6003674831003653416}
   - component: {fileID: 7276349233742985335}
   - component: {fileID: 6040599883994930832}
+  - component: {fileID: -7188903180844973699}
+  - component: {fileID: -4054341428713222417}
   m_Layer: 0
   m_Name: 24_Cherry
   m_TagString: Untagged
@@ -109,3 +111,29 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -8011890109568322491, guid: 856ba28aeb3277a499b8cca8b6489e8c, type: 3}
+--- !u!114 &-7188903180844973699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7724415210083757735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2647f223585b5dc4c8c0e104fc0fe4cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: e77557cd0c87d1543947bc4f53284635, type: 2}
+  amount: 1
+--- !u!114 &-4054341428713222417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7724415210083757735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3344a843d8389584a8326d47b4c84616, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

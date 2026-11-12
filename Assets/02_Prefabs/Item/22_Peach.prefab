@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 2132563327592829798}
   - component: {fileID: 2008466574743017790}
   - component: {fileID: 329626336749980607}
+  - component: {fileID: -2826400365335549893}
+  - component: {fileID: 2216236422592463372}
   m_Layer: 0
   m_Name: 22_Peach
   m_TagString: Untagged
@@ -109,3 +111,29 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2345399176350469459, guid: 308e99fabfc23294cbb31e8dee2661ab, type: 3}
+--- !u!114 &-2826400365335549893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3755891818289729071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2647f223585b5dc4c8c0e104fc0fe4cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: cc2659f2148b06d4d8918562c295c90a, type: 2}
+  amount: 1
+--- !u!114 &2216236422592463372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3755891818289729071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3344a843d8389584a8326d47b4c84616, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

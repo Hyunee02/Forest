@@ -21,11 +21,13 @@ public class PlayerMove : MonoBehaviour
     private bool bMove = true;
 
     private PlayerBindInput input;
+    private PlayerFishing fishing;
     private Animator animator;
 
     private void Awake()
     {
         input = GetComponent<PlayerBindInput>();
+        fishing = GetComponent<PlayerFishing>();
         animator = GetComponentInChildren<Animator>();
 
         footPos = Helper.FindChildByName(this.transform, "FootPos");
@@ -49,6 +51,23 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
+        // 낚시 중 이동과 회전 중단
+        if (fishing != null && fishing.IsFishing)
+        {
+            moveInput = Vector2.zero;
+            curMoveInput = Vector2.zero;
+            velocity = Vector2.zero;
+            lookDir = Vector3.zero;
+            bRun = false;
+
+            StopFootStep();
+
+            if (animator != null)
+                animator.SetFloat("SpeedZ", 0f);
+
+            return;
+        }
+
         if (!bMove)
             return;
 

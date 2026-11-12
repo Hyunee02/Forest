@@ -23,7 +23,6 @@ public class NPCManager : MonoBehaviour
     [SerializeField] private float sceneMoveDelay = 2f;
 
     private NPC currentNPC;
-
     public NPC CurrentNPC => currentNPC;
     public bool IsUIBusy => (dialogueUI != null && dialogueUI.gameObject.activeInHierarchy)
         || (shopUI != null && shopUI.BOpen)
@@ -275,7 +274,7 @@ public class NPCManager : MonoBehaviour
 
                     shopUI.Open(data);
 
-                    //StartCoroutine(OpenShopAfterDelay());
+                    StartCoroutine(OpenShopAfterDelay());
                 }
                 else if (index == 1)
                 {
@@ -308,20 +307,20 @@ public class NPCManager : MonoBehaviour
         }
     }
 
-    //private IEnumerator OpenShopAfterDelay()
-    //{
-    //    yield return new WaitForSeconds(shopOpenDelay);
+    private IEnumerator OpenShopAfterDelay()
+    {
+        yield return new WaitForSeconds(shopOpenDelay);
 
-    //    if (dialogueUI != null)
-    //    {
-    //        dialogueUI.gameObject.SetActive(false);
-    //    }
+        if (dialogueUI != null)
+        {
+            dialogueUI.gameObject.SetActive(false);
+        }
 
-    //    if (shopPanel != null)
-    //    {
-    //        shopPanel.SetActive(true);
-    //    }
-    //}
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(true);
+        }
+    }
 
     public void OnDialogueClose()
     {
@@ -339,24 +338,19 @@ public class NPCManager : MonoBehaviour
     }
 
     public void CloseShop()
+{
+    if (shopUI != null)
+        shopUI.Close();
+
+    if (sellUI != null)
+        sellUI.Close();
+
+    if (dialogueUI != null)
     {
-        if (shopUI != null)
-            shopUI.Close();
-
-        if (sellUI != null)
-            sellUI.Close();
-
-        //if (shopPanel != null)
-        //{
-        //    shopPanel.SetActive(false);
-        //}
-
-        //if (dialogueUI != null)
-        //{
-        //    dialogueUI.gameObject.SetActive(true);
-        //    dialogueUI.ShowByeDialogue();
-        //}
+        dialogueUI.gameObject.SetActive(true);
+        dialogueUI.ShowByeDialogue();
     }
+}
 
     #endregion
 

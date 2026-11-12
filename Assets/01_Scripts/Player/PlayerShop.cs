@@ -96,27 +96,10 @@ public class PlayerShop : MonoBehaviour
         ShopData market,
         string itemId)
     {
-        return GetRemaining(market, itemId, true);
-    }
-
-    public int GetSellRemaining(
-        ShopData market,
-        string itemId)
-    {
-        return GetRemaining(market, itemId, false);
-    }
-
-    private int GetRemaining(
-        ShopData market,
-        string itemId,
-        bool buying)
-    {
         if (!IsReady || market == null)
             return 0;
 
-        ShopItemEntry entry = buying
-            ? market.GetBuyEntry(itemId)
-            : market.GetSellEntry(itemId);
+        ShopItemEntry entry = market.GetBuyEntry(itemId);
 
         if (entry == null)
             return 0;
@@ -124,11 +107,8 @@ public class PlayerShop : MonoBehaviour
         ShopDailyRecord record =
             FindRecord(market.shopId, itemId);
 
-        int used = record == null
-            ? 0
-            : buying ? record.bought : record.sold;
+        int used = record == null ? 0 : record.bought;
 
-        // 무제한이어도 저장 카운터의 int 범위를 넘기지는 않음
         int limit = entry.dailyLimit < 0
             ? int.MaxValue
             : entry.dailyLimit;

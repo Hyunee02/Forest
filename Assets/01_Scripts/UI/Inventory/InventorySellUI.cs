@@ -192,6 +192,12 @@ public class InventorySellUI : MonoBehaviour
             return;
         }
 
+        if (!data.canSell)
+        {
+            ShowMessage("판매할 수 없는 아이템입니다.");
+            return;
+        }
+
         int currentCount =
             selected.TryGetValue(
                 inventoryIndex,
@@ -387,6 +393,7 @@ public class InventorySellUI : MonoBehaviour
                 shop.Inventory.GetItemData(selection.ItemId);
 
             if (data == null ||
+                !data.canSell ||
                 data.SellPrice < 0 ||
                 data.SellPrice != selection.UnitPrice)
             {

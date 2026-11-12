@@ -4,6 +4,9 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerInventory))]
 public class PlayerSave : MonoBehaviour
 {
+    [Header("임시 테스트: 파일 로드/저장 생략")]
+    [SerializeField] private bool temporaryTestMode = true;
+
     [Header("Map 씬 단독 테스트")]
     [SerializeField] private bool createTestDataIfMissing;
     [SerializeField] private string testCharacterId;
@@ -41,6 +44,26 @@ public class PlayerSave : MonoBehaviour
 
     private void Start()
     {
+        if (temporaryTestMode)
+        {
+            GameSaveData testDatatwo = new()
+            {
+                money = Mathf.Max(0, testMoney),
+                day = 1,
+                tradeDay = 1,
+                inventory = inventory.CaptureSaveItems()
+            };
+
+            GameSession.Instance.SetData(testDatatwo);
+
+            // 현재 인벤토리를 그대로 사용하므로 복원은 생략
+            IsReady = true;
+            dirty = false;
+
+            ShowStatus("임시 테스트 모드: 파일 저장 없이 시작합니다.");
+            return;
+        }
+
         // GameSession 데이터 확인
         GameSaveData data = GameSession.Instance.CurrentData;
 
@@ -185,6 +208,12 @@ public class PlayerSave : MonoBehaviour
     {
         error = "";
 
+        if (temporaryTestMode)
+        {
+            dirty = false;
+            return true;
+        }
+
         if (!IsReady)
         {
             error = "플레이어 데이터가 아직 준비되지 않았습니다.";
@@ -220,6 +249,12 @@ public class PlayerSave : MonoBehaviour
     [ContextMenu("저장/게임 불러오기")]
     public void LoadNow()
     {
+        if (temporaryTestMode)
+        {
+            ShowStatus("임시 테스트 모드에서는 파일을 불러오지 않습니다.");
+            return;
+        }
+
         if (IsGameplayBusy())
         {
             ShowStatus("대화나 도구 사용을 마친 뒤 불러와주세요.");
@@ -292,28 +327,5 @@ public class PlayerSave : MonoBehaviour
             statusText.text = message;
 
         Debug.Log($"[PlayerSave] {message}", this);
-    }
-
-    [ContextMenu("테스트/골드 초기화")]
-    private void ResetMoney()
-    {
-        if (!IsReady ||
-            GameSession.Instance == null ||
-            GameSession.Instance.CurrentData == null)
-        {
-            ShowStatus("플레이어 데이터가 아직 준비되지 않았습니다.");
-            return;
-        }
-
-        if (IsGameplayBusy())
-        {
-            ShowStatus("대화나 도구 사용을 마친 뒤 초기화해주세요.");
-            return;
-        }
-
-        GameSession.Instance.CurrentData.money =
-            Mathf.Max(0, testMoney);
-
-        SaveNow();
     }
 }

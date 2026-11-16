@@ -1,111 +1,72 @@
 using TMPro;
 using UnityEngine;
 
-public enum FishingState
-{
-    Idle,
-    Casting,
-    Searching,
-    Approaching,
-    Waiting,
-    Nibbling,
-    Bite
-}
-
 [RequireComponent(typeof(PlayerEquip))]
 [RequireComponent(typeof(PlayerInventory))]
 public class PlayerFishing : MonoBehaviour
 {
     [Header("물 판정")]
     [SerializeField] private LayerMask waterLayer;
-    [SerializeField, Min(0.1f)] private float castDistance = 3f;
-    [SerializeField, Min(0.1f)] private float rayHeight = 3f;
-    [SerializeField, Min(0.1f)] private float rayDistance = 6f;
+    [SerializeField] private float castDistance = 3f;
+    [SerializeField] private float rayHeight = 3f;
+    [SerializeField] private float rayDistance = 6f;
 
-    [Header("물고기 탐색")]
-    [SerializeField] private LayerMask fishLayer;
-    [SerializeField, Min(0.1f)] private float searchRadius = 3f;
-    [SerializeField, Min(0.05f)] private float searchInterval = 0.2f;
-    [SerializeField, Min(1f)] private float approachTimeout = 10f;
-
-    [Header("찌 던지기")]
+    [Header("찌")]
     [SerializeField] private GameObject bobberPrefab;
-    [SerializeField, Min(0.05f)] private float castDuration = 0.5f;
-    [SerializeField, Min(0f)] private float arcHeight = 1.2f;
-    [SerializeField] private float surfaceOffset = 0.03f;
+    [SerializeField] private float surfaceOffset = 0.05f;
+    [SerializeField] private float biteDepth = 0.2f;
 
-    [Header("입질 간격")]
-    [SerializeField, Min(0.1f)] private float minWaitTime = 1f;
-    [SerializeField, Min(0.1f)] private float maxWaitTime = 2.5f;
+    [Header("획득할 물고기")]
+    [SerializeField] private ItemData_SO fishItem;
 
-    [Header("가짜 입질")]
-    [SerializeField, Range(0, 4)] private int maxFakeBites = 4;
-    [SerializeField, Min(0.05f)] private float nibbleDuration = 0.2f;
-    [SerializeField, Min(0f)] private float nibbleDepth = 0.06f;
+    [Header("입질")]
+    [SerializeField] private float minWaitTime = 2f;
+    [SerializeField] private float maxWaitTime = 5f;
+    [SerializeField] private float reactionTime = 1.5f;
 
-    [Header("진짜 입질")]
-    [SerializeField, Min(0.1f)] private float reactionTime = 0.8f;
-    [SerializeField, Min(0f)] private float biteDepth = 0.25f;
+    [Header("애니메이션")]
+    [SerializeField] private Animator animator;
 
-    [Header("수면 움직임")]
-    [SerializeField, Min(0f)] private float floatAmplitude = 0.02f;
-    [SerializeField, Min(0f)] private float floatSpeed = 3f;
-
-    [Header("표시")]
-    [SerializeField] private LineRenderer fishingLine;
+    [Header("안내 - 선택 사항")]
     [SerializeField] private TMP_Text statusText;
-    [SerializeField] private GameObject splashPrefab;
-
-    [Header("효과음")]
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip nibbleSound;
-    [SerializeField] private AudioClip biteSound;
-    [SerializeField] private AudioClip catchSound;
 
     private PlayerEquip equip;
     private PlayerInventory inventory;
     private PlayerRest rest;
 
     private Tool_FishingRod rod;
-    private FishingFish targetFish;
     private GameObject bobber;
-
-    private Vector3 castStart;
     private Vector3 waterPoint;
 
-    private int fakeBitesRemaining;
-
-    private float stateStartedAt;
-    private float stateEndsAt;
-    private float nextSearchTime;
+    private bool hasBite;
+    private float biteTime;
+    private float expireTime;
     private float nextCastTime;
 
-    public FishingState State { get; private set; }
+    public bool IsFishing { get; private set; }
 
-    public bool IsFishing => State != FishingState.Idle;
+    private static readonly int FishingModeHash =
+    Animator.StringToHash("FishingMode");
+
+    private static readonly int UseToolHash =
+    Animator.StringToHash("UseTool");
 
     private void Awake()
     {
         equip = GetComponent<PlayerEquip>();
         inventory = GetComponent<PlayerInventory>();
         rest = GetComponent<PlayerRest>();
-
-        if (fishingLine != null)
-        {
-            fishingLine.useWorldSpace = true;
-            fishingLine.positionCount = 2;
-            fishingLine.enabled = false;
-        }
+        animator = GetComponentInChildren<Animator>();
     }
 
     private void OnEnable()
     {
-        equip.OnEquipChanged += HandleEquipChanged;
+        equip.OnEquipChanged += CheckEquipment;
     }
 
     private void OnDisable()
     {
-        equip.OnEquipChanged -= HandleEquipChanged;
+        equip.OnEquipChanged -= CheckEquipment;
         AbortFishing();
     }
 
@@ -114,69 +75,34 @@ public class PlayerFishing : MonoBehaviour
         if (!IsFishing)
             return;
 
-        if (!IsSessionValid() || IsOtherActionBusy())
+        if (!CanContinue() || IsOtherActionBusy())
         {
-            FinishFishing("낚시가 중단됐어요.", false);
+            FinishFishing("낚시를 중단했어요.");
             return;
         }
 
-        if (State == FishingState.Casting)
+        if (!hasBite)
         {
-            UpdateCasting();
+            if (Time.time >= biteTime)
+            {
+                hasBite = true;
+                expireTime = Time.time + Mathf.Max(0.1f, reactionTime);
+
+                // 입질이 오면 찌가 아래로 잠김
+                bobber.transform.position =
+                    waterPoint + Vector3.down * biteDepth;
+
+                ShowStatus("입질! 지금 클릭!");
+            }
+
             return;
         }
 
-        UpdateBobber();
-
-        switch (State)
-        {
-            case FishingState.Searching:
-                SearchFish();
-                break;
-
-            case FishingState.Approaching:
-                UpdateApproaching();
-                break;
-
-            case FishingState.Waiting:
-                if (Time.time >= stateEndsAt)
-                    BeginNextBite();
-                break;
-
-            case FishingState.Nibbling:
-                if (Time.time >= stateEndsAt)
-                    BeginWaiting();
-                break;
-
-            case FishingState.Bite:
-                if (Time.time >= stateEndsAt)
-                    FinishFishing("물고기가 도망갔어요.", true);
-                break;
-        }
+        if (Time.time >= expireTime)
+            FinishFishing("물고기를 놓쳤어요.");
     }
 
-    private void LateUpdate()
-    {
-        if (fishingLine == null)
-            return;
-
-        bool visible =
-            IsFishing
-            && rod != null
-            && bobber != null;
-
-        fishingLine.enabled = visible;
-
-        if (!visible)
-            return;
-
-        fishingLine.SetPosition(0, rod.LineStart.position);
-        fishingLine.SetPosition(1, bobber.transform.position);
-    }
-
-    /// <summary>
-    /// PlayerEquip에서 도구 사용 입력을 전달
-    /// </summary>
+    // 기존 PlayerEquip.UseTool()에서 호출
     public void HandleUse()
     {
         if (!isActiveAndEnabled || Time.timeScale <= 0f)
@@ -184,63 +110,74 @@ public class PlayerFishing : MonoBehaviour
 
         if (!IsFishing)
         {
-            TryCast();
+            StartFishing();
             return;
         }
 
-        if (!IsSessionValid() || IsOtherActionBusy())
+        if (!CanContinue() || IsOtherActionBusy())
         {
-            FinishFishing("낚시가 중단됐어요.", false);
+            FinishFishing("낚시를 중단했어요.");
             return;
         }
 
-        // 찌가 날아가는 중에는 연속 입력 무시
-        if (State == FishingState.Casting)
-            return;
-
-        if (State == FishingState.Bite)
+        if (!hasBite)
         {
-            // Update 실행 순서와 관계없이 시간 초과 검사
-            if (Time.time >= stateEndsAt)
-            {
-                FinishFishing("물고기가 도망갔어요.", true);
-                return;
-            }
-
-            CatchFish();
+            FinishFishing("찌를 회수했어요.");
             return;
         }
 
-        // 진짜 입질 전에 누르면 회수 또는 실패
-        string message = targetFish != null
-            ? "너무 일찍 당겼어요!"
-            : "찌를 회수했어요.";
+        if (Time.time >= expireTime)
+        {
+            FinishFishing("물고기를 놓쳤어요.");
+            return;
+        }
 
-        FinishFishing(message, true);
+        CatchFish();
     }
 
-    private void TryCast()
+    private void StartFishing()
     {
         if (Time.time < nextCastTime
             || equip.BUse
             || IsOtherActionBusy())
             return;
 
-        Tool_FishingRod equippedRod =
+        Tool_FishingRod currentRod =
             equip.CurTool as Tool_FishingRod;
 
-        if (equippedRod == null
-            || equippedRod.ToolData == null
+        if (currentRod == null
+            || currentRod.ToolData == null
             || equip.CurInventoryItem == null
             || equip.CurInventoryItem.currentDurability <= 0)
             return;
 
-        if (bobberPrefab == null)
+        if (bobberPrefab == null || fishItem == null)
         {
-            Debug.LogError("찌 프리팹을 연결해주세요.", this);
+            Debug.LogError(
+                "PlayerFishing의 Bobber Prefab과 Fish Item을 연결해주세요.",
+                this);
             return;
         }
 
+        ItemData_SO data = inventory.GetItemData(fishItem.Id);
+
+        if (data == null
+            || data.ItemType == ItemTypeSO.Tool
+            || data.ItemType == ItemTypeSO.None)
+        {
+            Debug.LogError(
+                "물고기를 ItemDatabase의 Items에 등록해주세요.",
+                this);
+            return;
+        }
+
+        if (!inventory.CanAddItem(fishItem.Id, 1))
+        {
+            ShowStatus("인벤토리가 가득 찼어요.");
+            return;
+        }
+
+        // 플레이어 앞쪽 지점에서 아래로 물 검사
         Vector3 origin =
             transform.position
             + transform.forward * castDistance
@@ -258,19 +195,44 @@ public class PlayerFishing : MonoBehaviour
             return;
         }
 
-        rod = equippedRod;
-        targetFish = null;
-
-        castStart = rod.LineStart.position;
+        rod = currentRod;
         waterPoint = hit.point + Vector3.up * surfaceOffset;
 
+        // 간단한 버전: 날아가는 연출 없이 수면에 바로 생성
         bobber = Instantiate(
             bobberPrefab,
-            castStart,
+            waterPoint,
             Quaternion.identity);
 
-        SetState(FishingState.Casting, castDuration);
-        ShowStatus("");
+        float min = Mathf.Max(0.1f, minWaitTime);
+        float max = Mathf.Max(min, maxWaitTime);
+
+        biteTime = Time.time + Random.Range(min, max);
+        hasBite = false;
+        IsFishing = true;
+
+        // 낚시 내부 상태: 대기
+        animator.SetInteger(FishingModeHash, 1);
+
+        // 도구 레이어에서 Player_Fishing으로 진입
+        animator.ResetTrigger(UseToolHash);
+        animator.SetTrigger(UseToolHash);
+
+        ShowStatus("입질을 기다리는 중...");
+    }
+
+    private bool CanContinue()
+    {
+        return equip != null
+            && equip.isActiveAndEnabled
+            && rod != null
+            && rod.isActiveAndEnabled
+            && rod.ToolData != null
+            && equip.CurTool == rod
+            && equip.CurInventoryItem != null
+            && equip.CurInventoryItem.currentDurability > 0
+            && bobber != null
+            && fishItem != null;
     }
 
     private bool IsOtherActionBusy()
@@ -282,261 +244,56 @@ public class PlayerFishing : MonoBehaviour
             && NPCManager.Instance.IsUIBusy;
     }
 
-    private bool IsSessionValid()
-    {
-        if (rod == null
-            || !rod.isActiveAndEnabled
-            || rod.ToolData == null
-            || equip == null
-            || !equip.isActiveAndEnabled
-            || equip.CurTool != rod
-            || equip.CurInventoryItem == null
-            || equip.CurInventoryItem.currentDurability <= 0
-            || bobber == null)
-            return false;
-
-        bool needsFish =
-            State == FishingState.Approaching
-            || State == FishingState.Waiting
-            || State == FishingState.Nibbling
-            || State == FishingState.Bite;
-
-        if (!needsFish)
-            return true;
-
-        return targetFish != null
-            && targetFish.isActiveAndEnabled
-            && targetFish.IsOwnedBy(this);
-    }
-
-    private void UpdateCasting()
-    {
-        float duration = stateEndsAt - stateStartedAt;
-
-        float t = Mathf.Clamp01(
-            (Time.time - stateStartedAt) / duration);
-
-        Vector3 position =
-            Vector3.Lerp(castStart, waterPoint, t);
-
-        // 가운데에서 높아지는 포물선
-        position.y += 4f * arcHeight * t * (1f - t);
-
-        bobber.transform.position = position;
-
-        if (t < 1f)
-            return;
-
-        SetState(FishingState.Searching, 0f);
-        nextSearchTime = Time.time;
-    }
-
-    private void SearchFish()
-    {
-        if (Time.time < nextSearchTime)
-            return;
-
-        nextSearchTime =
-            Time.time + Mathf.Max(0.05f, searchInterval);
-
-        Collider[] hits = Physics.OverlapSphere(
-            waterPoint,
-            searchRadius,
-            fishLayer,
-            QueryTriggerInteraction.Collide);
-
-        FishingFish closestFish = null;
-        float closestDistance = float.MaxValue;
-
-        foreach (Collider hit in hits)
-        {
-            FishingFish fish =
-                hit.GetComponentInParent<FishingFish>();
-
-            if (fish == null || !fish.CanNotice(waterPoint))
-                continue;
-
-            float distance =
-                (fish.transform.position - waterPoint).sqrMagnitude;
-
-            if (distance >= closestDistance)
-                continue;
-
-            closestDistance = distance;
-            closestFish = fish;
-        }
-
-        if (closestFish == null
-            || !closestFish.TryReserve(this))
-            return;
-
-        targetFish = closestFish;
-
-        SetState(
-            FishingState.Approaching,
-            Mathf.Max(1f, approachTimeout));
-    }
-
-    private void UpdateApproaching()
-    {
-        if (targetFish.Approach(waterPoint))
-        {
-            fakeBitesRemaining = Random.Range(
-                0,
-                Mathf.Clamp(maxFakeBites, 0, 4) + 1);
-
-            BeginWaiting();
-            return;
-        }
-
-        if (Time.time >= stateEndsAt)
-            FinishFishing("찌를 회수했어요.", false);
-    }
-
-    private void BeginWaiting()
-    {
-        float min = Mathf.Max(0.1f, minWaitTime);
-        float max = Mathf.Max(min, maxWaitTime);
-
-        SetState(
-            FishingState.Waiting,
-            Random.Range(min, max));
-
-        ShowStatus("");
-    }
-
-    private void BeginNextBite()
-    {
-        if (fakeBitesRemaining > 0)
-        {
-            fakeBitesRemaining--;
-
-            SetState(FishingState.Nibbling, nibbleDuration);
-            PlaySound(nibbleSound);
-            return;
-        }
-
-        SetState(FishingState.Bite, reactionTime);
-
-        PlaySound(biteSound);
-        SpawnSplash();
-
-        ShowStatus("!");
-    }
-
-    private void UpdateBobber()
-    {
-        float height =
-            Mathf.Sin(Time.time * floatSpeed) * floatAmplitude;
-
-        if (State == FishingState.Nibbling)
-        {
-            float duration = stateEndsAt - stateStartedAt;
-
-            float t = Mathf.Clamp01(
-                (Time.time - stateStartedAt) / duration);
-
-            // 가짜 입질: 살짝 잠겼다가 올라옴
-            height -= Mathf.Sin(t * Mathf.PI) * nibbleDepth;
-        }
-        else if (State == FishingState.Bite)
-        {
-            // 진짜 입질: 깊게 잠긴 상태 유지
-            height = -biteDepth;
-        }
-
-        bobber.transform.position =
-            waterPoint + Vector3.up * height;
-    }
-
     private void CatchFish()
     {
-        ItemData_SO fishData = targetFish.ItemData;
-
-        ItemData_SO registeredData = fishData != null
-            ? inventory.GetItemData(fishData.Id)
-            : null;
-
-        if (registeredData == null
-            || registeredData.ItemType == ItemTypeSO.Tool
-            || registeredData.ItemType == ItemTypeSO.None)
-        {
-            Debug.LogError(
-                "물고기 ItemData와 ItemDatabase 등록을 확인해주세요.",
-                targetFish);
-
-            FinishFishing("물고기 정보를 확인할 수 없어요.", false);
-            return;
-        }
-
-        if (!inventory.AddItem(registeredData.Id, 1))
-        {
-            FinishFishing(
-                "가방이 가득 차서 물고기를 놓아줬어요.",
-                false);
-            return;
-        }
-
-        string fishName = registeredData.ItemName;
         int reduce = Mathf.Max(0, rod.ToolData.DurabilityReduce);
+        string fishName = fishItem.ItemName;
 
-        targetFish.Caught(this);
-        targetFish = null;
+        if (!inventory.AddItem(fishItem.Id, 1))
+        {
+            FinishFishing("인벤토리가 가득 찼어요.");
+            return;
+        }
 
-        PlaySound(catchSound);
+        // 파손 이벤트가 발생하기 전에 낚시 상태 정리
+        FinishFishing($"{fishName} 획득!");
 
-        // 내구도 감소로 파손 이벤트가 발생하기 전에 상태 정리
-        FinishFishing($"{fishName}을(를) 잡았어요!", false);
+        SetFishingAnimation(2);
 
         equip.ReduceEquippedDurability(reduce);
     }
 
-    /// <summary>
-    /// 취소 버튼 등에 연결
-    /// </summary>
+    private void CheckEquipment()
+    {
+        if (IsFishing && equip.CurTool != rod)
+            AbortFishing();
+    }
+
     public void CancelFishing()
     {
         if (IsFishing)
-            FinishFishing("찌를 회수했어요.", true);
+            FinishFishing("찌를 회수했어요.");
     }
 
-    /// <summary>
-    /// 컴포넌트 비활성화 등의 강제 중단
-    /// </summary>
     public void AbortFishing()
     {
-        FinishFishing("", false);
-    }
-
-    private void HandleEquipChanged()
-    {
-        if (IsFishing && equip.CurTool != rod)
-            FinishFishing("낚시가 중단됐어요.", false);
-    }
-
-    private void FinishFishing(string message, bool scareFish)
-    {
         if (IsFishing)
-        {
-            float cooldown =
-                rod != null && rod.ToolData != null
-                    ? rod.ToolData.Cooldown
-                    : 0f;
+            FinishFishing("");
+    }
 
-            nextCastTime =
-                Time.time + Mathf.Max(0.2f, cooldown);
-        }
+    private void FinishFishing(string message)
+    {
+        float cooldown =
+            rod != null && rod.ToolData != null
+                ? rod.ToolData.Cooldown
+                : 0f;
 
-        if (targetFish != null)
-        {
-            if (scareFish)
-                targetFish.Escape(this, waterPoint);
-            else
-                targetFish.Release(this);
-        }
+        nextCastTime = Time.time + Mathf.Max(0.2f, cooldown);
 
-        targetFish = null;
-        State = FishingState.Idle;
+        IsFishing = false;
+        hasBite = false;
+
+        SetFishingAnimation(0);
 
         if (bobber != null)
             Destroy(bobber);
@@ -544,41 +301,47 @@ public class PlayerFishing : MonoBehaviour
         bobber = null;
         rod = null;
 
-        if (fishingLine != null)
-            fishingLine.enabled = false;
-
         ShowStatus(message);
     }
 
-    private void SetState(FishingState state, float duration)
+    private void SetFishingAnimation(int mode)
     {
-        State = state;
-        stateStartedAt = Time.time;
-        stateEndsAt = Time.time + Mathf.Max(0.01f, duration);
-    }
-
-    private void PlaySound(AudioClip clip)
-    {
-        if (audioSource != null && clip != null)
-            audioSource.PlayOneShot(clip);
-    }
-
-    private void SpawnSplash()
-    {
-        if (splashPrefab == null)
-            return;
-
-        GameObject splash = Instantiate(
-            splashPrefab,
-            waterPoint,
-            Quaternion.identity);
-
-        Destroy(splash, 2f);
+        if (animator != null)
+            animator.SetInteger(FishingModeHash, mode);
     }
 
     private void ShowStatus(string message)
     {
         if (statusText != null)
             statusText.text = message;
+
+        if (!string.IsNullOrEmpty(message))
+            Debug.Log(message, this);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 origin =
+            transform.position
+            + transform.forward * castDistance
+            + Vector3.up * rayHeight;
+
+        bool hitWater = Physics.Raycast(
+            origin,
+            Vector3.down,
+            out RaycastHit hit,
+            rayDistance,
+            waterLayer,
+            QueryTriggerInteraction.Collide);
+
+        // 물 감지 성공: 초록 / 실패: 빨강
+        Gizmos.color = hitWater ? Color.green : Color.red;
+
+        Vector3 endPoint = hitWater
+            ? hit.point
+            : origin + Vector3.down * rayDistance;
+
+        Gizmos.DrawLine(origin, endPoint);
+        Gizmos.DrawWireSphere(endPoint, 0.1f);
     }
 }

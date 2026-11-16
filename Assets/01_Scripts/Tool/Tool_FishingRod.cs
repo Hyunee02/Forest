@@ -7,9 +7,6 @@ public class Tool_FishingRod : ToolBase
 
     public override ToolType ToolType => ToolType.FishingRod;
 
-    public Transform LineStart =>
-        lineStart != null ? lineStart : transform;
-
     protected override void OnTriggerEnter(Collider other)
     {
     }

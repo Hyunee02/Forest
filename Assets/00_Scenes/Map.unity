@@ -638218,7 +638218,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1302549774}
   m_Layer: 0
-  m_Name: Trees
+  m_Name: Trees_Normal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1071411,7 +1071411,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d47d07d710443c478b82021f46e41d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  temporaryTestMode: 1
   createTestDataIfMissing: 1
   testCharacterId: test_player
   testMoney: 10000

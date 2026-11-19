@@ -45,6 +45,9 @@ public class Tree : MapObject, IHitTarget
     [SerializeField] private GameObject fallFruit;
     [SerializeField] private GameObject winterFruit;
 
+    [Header("<< Fruit SpawnPoints >>")]
+    [SerializeField] private Transform fruitSpawnPoints;
+
     [Header("<< Normal 나무 성장 크기 >>")]
     [SerializeField] private Vector3 normalSeedScale = new Vector3(0.15f, 0.15f, 0.15f);
     [SerializeField] private Vector3 normalSaplingScale = new Vector3(0.5f, 0.5f, 0.5f);
@@ -185,14 +188,66 @@ public class Tree : MapObject, IHitTarget
     // damage 사용 X
     public void Hit(int damage)
     {
-        if (bDestoryed || !IsGrown)
+        if (bDestoryed || !IsGrown) return;
+
+        // 과일나무에 과일이 남아 있다면 과일부터 떨어뜨리기
+        if (treeType == TreeType.Fruit &&
+            fruitSpawnPoints != null &&
+            fruitSpawnPoints.childCount > 0)
+        {
+            DropFruits();
             return;
+        }
 
+        // 과일을 모두 수확한 이후에는 나무 재료 드롭
         hitCount++;
-
         DropItem();
 
         if (hitCount >= maxHitCount)
             base.DestroyObject();
+    }
+
+    private void DropFruits()
+    {
+        if (fruitSpawnPoints == null) return;
+
+        for (int i = 0; i < fruitSpawnPoints.childCount; i++)
+        {
+            Transform spawnPoint = fruitSpawnPoints.GetChild(i);
+
+            // 해당 SpawnPoint에 과일이 없으면 건너뛰기
+            if (spawnPoint.childCount == 0)
+                continue;
+
+            // SpawnPoint에 달려 있는 과일
+            Transform fruit = spawnPoint.GetChild(0);
+
+            // 원래 위치 기억
+            Vector3 startPos = fruit.position;
+
+            // 나무에서 과일 분리
+            fruit.SetParent(null, true);
+
+            // 랜덤 방향과 거리 설정
+            float angle = Random.Range(0f, Mathf.PI * 2f);
+            Vector3 direction = new Vector3(
+                Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+
+            float distance = Random.Range(
+                minDropRadius, maxDropradius);
+
+            Vector3 endPos = startPos
+                + direction * distance
+                + Vector3.up * groundOffset;
+
+            // 과일 떨어뜨리기
+            ItemDropMotion motion =
+                fruit.GetComponent<ItemDropMotion>();
+
+            if (motion != null)
+                motion.PlayFruit(endPos, jumpHeight, dropDuration);
+            else
+                fruit.position = endPos;
+        }
     }
 }

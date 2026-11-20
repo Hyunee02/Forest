@@ -190,16 +190,14 @@ public class Tree : MapObject, IHitTarget
     {
         if (bDestoryed || !IsGrown) return;
 
-        // 과일나무에 과일이 남아 있다면 과일부터 떨어뜨리기
-        if (treeType == TreeType.Fruit &&
-            fruitSpawnPoints != null &&
-            fruitSpawnPoints.childCount > 0)
+        // 과일이 남아 있다면 과일부터 떨어뜨리기
+        if (treeType == TreeType.Fruit && HasFruits())
         {
             DropFruits();
             return;
         }
 
-        // 과일을 모두 수확한 이후에는 나무 재료 드롭
+        // 과일을 모두 떨어뜨린 이후에는 나무 재료 드롭
         hitCount++;
         DropItem();
 
@@ -207,6 +205,19 @@ public class Tree : MapObject, IHitTarget
             base.DestroyObject();
     }
 
+    private bool HasFruits()
+    {
+        if (fruitSpawnPoints == null)
+            return false;
+
+        for (int i = 0; i < fruitSpawnPoints.childCount; i++)
+        {
+            if (fruitSpawnPoints.GetChild(i).childCount > 0)
+                return true;
+        }
+
+        return false;
+    }
     private void DropFruits()
     {
         if (fruitSpawnPoints == null) return;

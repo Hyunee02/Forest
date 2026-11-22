@@ -5,6 +5,7 @@ public class ItemDropMotion : MonoBehaviour
 {
     private Coroutine dropCoroutine;
 
+    // 기본 아이템
     public void Play(Vector3 endPos, float jumpHeight, float duration)
     {
         if (dropCoroutine != null)
@@ -53,6 +54,53 @@ public class ItemDropMotion : MonoBehaviour
         }
 
         // 마지막 위치 맞춰주기
+        transform.position = endPos;
+        dropCoroutine = null;
+    }
+
+
+    ///// 과일 추가 (1119)  Y
+    public void PlayFruit(Vector3 endPos, float jumpHeight, float duration)
+    {
+        if (dropCoroutine != null)
+        {
+            StopCoroutine(dropCoroutine);
+            dropCoroutine = null;
+        }
+
+        dropCoroutine = StartCoroutine(FruitDropRoutine(endPos, jumpHeight, duration));
+    }
+
+    private IEnumerator FruitDropRoutine(Vector3 endPos, float jumpHeight, float duration)
+    {
+        Vector3 startPos = transform.position;
+        Quaternion startRotation = transform.rotation;
+
+        Vector3 randomRotation = new Vector3(
+            Random.Range(-180f, 180f),
+            Random.Range(-180f, 180f),
+            Random.Range(-180f, 180f));
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            Vector3 position = Vector3.Lerp(startPos, endPos, t);
+            float arc = 4f * t * (1f - t);
+
+            position.y += arc * jumpHeight;
+
+            transform.position = position;
+            transform.rotation = startRotation *
+                Quaternion.Euler(randomRotation * t);
+
+            yield return null;
+        }
+
         transform.position = endPos;
         dropCoroutine = null;
     }

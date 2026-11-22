@@ -10,24 +10,17 @@ public class CharacterPreview : MonoBehaviour
     {
         Clear();
 
-        if (data == null || data.CharacterPrefab == null)
+        if (data == null || data.PreviewPrefab == null)
             return;
 
-        Transform parent;
+        Transform parent = previewRoot != null ? previewRoot : transform;
 
-        if (previewRoot != null)
-            parent = previewRoot;
-
-        else
-            parent = transform;
-
-        currentView = Instantiate(data.CharacterPrefab, parent);
-
+        currentView = Instantiate(data.PreviewPrefab, parent);
         currentView.transform.localPosition = Vector3.zero;
         currentView.transform.localRotation = Quaternion.identity;
 
-        // 미리보기에서는 모델 이동 X
-        currentView.Animator.applyRootMotion = false;
+        if (currentView.Animator != null)
+            currentView.Animator.applyRootMotion = false;
     }
 
     public void Clear()

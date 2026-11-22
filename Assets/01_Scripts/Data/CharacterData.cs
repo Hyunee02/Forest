@@ -1,16 +1,21 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "CharacterData", menuName = "Game/Character Data")]
 public class CharacterData : ScriptableObject
 {
-    private string id;
-    private string characterName;
+    [SerializeField] private string id;
+    [SerializeField] private string characterName;
+    [SerializeField] private Sprite portrait;
 
-    private Sprite portrait;
-    private CharacterView characterPrefab;
+    [FormerlySerializedAs("characterPrefab")]
+    [SerializeField] private CharacterView previewPrefab;
+
+    [SerializeField] private PlayerSave playerPrefab;
 
     public string ID => id;
     public string CharacterName => characterName;
     public Sprite Portrait => portrait;
-    public CharacterView CharacterPrefab => characterPrefab;
+    public CharacterView PreviewPrefab => previewPrefab;
+    public PlayerSave PlayerPrefab => playerPrefab;
 }

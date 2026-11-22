@@ -6,81 +6,67 @@ using UnityEngine;
 
 public static class GameSaveFile
 {
-    // 저장 파일 경로
     public static string SavePath =>
-        Path.Combine(
-            Application.persistentDataPath,
-            "forest_save.json");
+        Path.Combine(Application.persistentDataPath, "forest_save.json");
 
     public static string BackupPath => SavePath + ".bak";
 
     public static bool Exists =>
         File.Exists(SavePath) || File.Exists(BackupPath);
-    
 
-    /// <summary>
-    /// 게임 저장
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="error"></param>
-    /// <returns></returns>
-    public static bool TrySave(
-        GameSaveData data,
-        out string error)
+    public delegate bool AcceptSave(GameSaveData candidate, out string error);
+
+    public static bool TrySave(GameSaveData data, out string error)
     {
         error = "";
+
+        if (data == null || data.version != GameSaveData.CurrentVersion ||
+            data.profile == null || data.inventory == null)
+        {
+            error = "저장에 필요한 데이터가 준비되지 않았습니다.";
+            return false;
+        }
 
         string tempPath = SavePath + ".tmp";
 
         try
         {
-            // 저장 폴더 생성
-            Directory.CreateDirectory(
-                Application.persistentDataPath);
+            Directory.CreateDirectory(Application.persistentDataPath);
 
-            // JSON 변환
             string json = JsonUtility.ToJson(data, true);
+            File.WriteAllText(tempPath, json, new UTF8Encoding(false));
 
-            // 파일 쓰기
-            File.WriteAllText(
-                tempPath,
-                json,
-                new UTF8Encoding(false));
-
-            // 기존 파일 교체
             if (File.Exists(SavePath))
-            {
-                // 기존 저장을 백업하면서 새 저장으로 교체
-                File.Replace(
-                    tempPath,
-                    SavePath,
-                    BackupPath);
-            }
+                File.Replace(tempPath, SavePath, BackupPath);
             else
-            {
                 File.Move(tempPath, SavePath);
-            }
 
             return true;
         }
         catch (Exception exception)
         {
             Debug.LogException(exception);
-
             error = "저장하지 못했습니다. 저장 공간과 파일 접근 상태를 확인해주세요.";
             return false;
         }
     }
 
-    /// <summary>
-    /// 저장 파일 불러오기
-    /// </summary>
-    /// <param name="inventory"></param>
-    /// <param name="data"></param>
-    /// <param name="message"></param>
-    /// <returns></returns>
     public static bool TryLoad(
         PlayerInventory inventory,
+        out GameSaveData data,
+        out string message)
+    {
+        bool Accept(GameSaveData candidate, out string error)
+        {
+            UpgradeLegacyData(candidate, inventory);
+            return Validate(candidate, inventory, out error);
+        }
+
+        return TryLoad(Accept, out data, out message);
+    }
+
+    public static bool TryLoad(
+        AcceptSave accept,
         out GameSaveData data,
         out string message)
     {
@@ -96,26 +82,16 @@ public static class GameSaveFile
 
             try
             {
-                // JSON을 객체로 다시 변환
                 string json = File.ReadAllText(paths[i]);
-                GameSaveData loaded =
-                    JsonUtility.FromJson<GameSaveData>(json);
+                GameSaveData loaded = JsonUtility.FromJson<GameSaveData>(json);
 
-                // 이전 버전 데이터 변환
-                UpgradeLegacyData(loaded, inventory);
-
-                // 저장 데이터 검증
-                if (!Validate(loaded, inventory, out string error))
+                if (!accept(loaded, out string error))
                 {
-                    Debug.LogWarning(
-                        $"저장 데이터 검사 실패: {paths[i]}\n{error}");
-
+                    Debug.LogWarning($"저장 데이터 검사 실패: {paths[i]}\n{error}");
                     continue;
                 }
 
-                // 불러오기 성공
                 data = loaded;
-
                 message = i == 0
                     ? "불러왔습니다."
                     : "기본 저장을 읽지 못해 직전 백업을 불러왔습니다.";
@@ -132,37 +108,32 @@ public static class GameSaveFile
         return false;
     }
 
-    /// <summary>
-    /// 이전 저장 데이터 변환
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="inventory"></param>
     public static void UpgradeLegacyData(
         GameSaveData data,
         PlayerInventory inventory)
     {
-        if (data == null || data.version != 1)
+        if (inventory == null || data == null || data.version != 1)
             return;
 
-        // 기존 버전에는 인벤토리·날짜·거래 기록이 없었음
         data.version = GameSaveData.CurrentVersion;
-        data.day = 1;
-        data.tradeDay = 1;
-        data.dailyTrades = new List<ShopDailyRecord>();
 
-        data.inventory = new List<InventoryItem>();
+        if (data.day == 0)
+            data.day = 1;
 
-        for (int i = 0; i < inventory.SlotCount; i++)
-            data.inventory.Add(new InventoryItem());
+        if (data.tradeDay == 0)
+            data.tradeDay = data.day;
+
+        data.dailyTrades ??= new List<ShopDailyRecord>();
+
+        if (data.inventory == null || data.inventory.Count == 0)
+        {
+            data.inventory = new List<InventoryItem>(inventory.SlotCount);
+
+            for (int i = 0; i < inventory.SlotCount; i++)
+                data.inventory.Add(new InventoryItem());
+        }
     }
 
-    /// <summary>
-    /// 전체 저장 데이터 검증
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="inventory"></param>
-    /// <param name="error"></param>
-    /// <returns></returns>
     public static bool Validate(
         GameSaveData data,
         PlayerInventory inventory,
@@ -170,7 +141,7 @@ public static class GameSaveFile
     {
         error = "";
 
-        if (data == null ||
+        if (inventory == null || data == null ||
             data.version != GameSaveData.CurrentVersion ||
             data.profile == null ||
             data.money < 0 ||
@@ -182,12 +153,8 @@ public static class GameSaveFile
             return false;
         }
 
-        if (!inventory.ValidateSaveItems(
-                data.inventory,
-                out error))
-        {
+        if (!inventory.ValidateSaveItems(data.inventory, out error))
             return false;
-        }
 
         HashSet<(string, string)> keys = new();
 

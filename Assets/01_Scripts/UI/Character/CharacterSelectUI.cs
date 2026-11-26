@@ -1,140 +1,225 @@
 using System;
+using System.Collections;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class CharacterSelectUI : MonoBehaviour
 {
     [Serializable]
-    private class CharacterSlot
+    private class CharacterOption
     {
-        public Button button;
-        public Image portrait;
+        public CharacterPreview preview;
+        public Button selectButton;
         public GameObject selectedMark;
     }
 
+    [Header("3D 무대")]
+    [SerializeField] private GameObject residentStage;
+    [SerializeField] private GameObject selectionStage;
+
+    [Header("주민 대화창")]
+    [SerializeField] private GameObject dialoguePanel;
+    [SerializeField] private TMP_Text dialogueText;
+
+    [TextArea(2, 4)]
+    [SerializeField]
+    private string[] welcomeMessages =
+    {
+        "어서 와! 배 타고 오느라 고생 많았지?",
+        "나는 오늘 항구에서 새 주민을 맞이하고 있어.",
+        "마을에 들어가기 전에 주민 명부부터 같이 적어볼까?"
+    };
+
+    [SerializeField, Min(0.1f)] private float messageSeconds = 2.5f;
+
+    [Header("이름 입력")]
+    [SerializeField] private GameObject namePanel;
+    [SerializeField] private TMP_InputField nameInput;
+    [SerializeField] private Button nameNextButton;
+
+    [Header("생년월일 입력")]
+    [SerializeField] private BirthdayInputUI birthdayPanel;
+    [SerializeField] private Button birthdayNextButton;
+
+    [Header("캐릭터 선택")]
     [SerializeField] private CharacterDatabase database;
-    [SerializeField] private CharacterPreview preview;
-    [SerializeField] private CharacterSlot[] slots;
-    [SerializeField] private TMP_Text statusText;
+    [SerializeField] private GameObject selectionPanel;
+    [SerializeField] private CharacterOption leftOption;
+    [SerializeField] private CharacterOption rightOption;
     [SerializeField] private Button confirmButton;
+    [SerializeField] private TMP_Text selectionText;
 
-    public CharacterCreateDraft Draft { get; } = new CharacterCreateDraft();
-    public bool IsConfirmed { get; private set; }
+    [Header("씬")]
+    [SerializeField] private string playerSceneName = "Player";
 
-    private UnityAction[] clicks;
-    private int selected = -1;
+    private readonly CharacterCreateDraft draft = new CharacterCreateDraft();
+
+    private int selectedIndex = -1;
+    private bool loading;
 
     private void Start()
     {
-        if (confirmButton != null)
-            confirmButton.interactable = false;
+        residentStage.SetActive(true);
+        selectionStage.SetActive(false);
 
-        if (!ValidateSetup(out string error))
+        dialoguePanel.SetActive(true);
+        namePanel.SetActive(false);
+        birthdayPanel.gameObject.SetActive(false);
+        selectionPanel.SetActive(false);
+
+        if (!ValidateCharacters(out string error))
         {
-            if (statusText != null)
-                statusText.text = error;
-
+            dialogueText.text = error;
             Debug.LogError(error, this);
             return;
         }
 
-        clicks = new UnityAction[slots.Length];
+        leftOption.selectedMark.SetActive(false);
+        rightOption.selectedMark.SetActive(false);
+        confirmButton.interactable = false;
 
-        for (int i = 0; i < slots.Length; i++)
-        {
-            int index = i;
+        nameNextButton.onClick.AddListener(ConfirmName);
+        birthdayNextButton.onClick.AddListener(ConfirmBirthday);
+        leftOption.selectButton.onClick.AddListener(SelectLeft);
+        rightOption.selectButton.onClick.AddListener(SelectRight);
+        confirmButton.onClick.AddListener(EnterGame);
 
-            slots[i].portrait.sprite = database.Characters[i].Portrait;
-            slots[i].portrait.preserveAspect = true;
-            slots[i].selectedMark.SetActive(false);
-
-            clicks[i] = () => Select(index);
-            slots[i].button.onClick.AddListener(clicks[i]);
-        }
-
-        confirmButton.onClick.AddListener(Confirm);
-        statusText.text = "함께할 캐릭터를 골라주세요.";
+        StartCoroutine(PlayWelcome());
     }
 
-    private bool ValidateSetup(out string error)
+    private bool ValidateCharacters(out string error)
     {
-        error = "캐릭터 선택 화면의 연결을 확인해주세요.";
-
-        if (preview == null || statusText == null ||
-            confirmButton == null || database == null)
+        if (database == null)
         {
+            error = "Character Database를 연결해주세요.";
             return false;
         }
 
         if (!database.ValidateDatabase(out error))
             return false;
 
-        error = "캐릭터 수와 슬롯 수를 맞춰주세요.";
-
-        if (slots == null || slots.Length != database.Characters.Count)
-            return false;
-
-        for (int i = 0; i < slots.Length; i++)
+        if (database.Characters.Count != 2)
         {
-            CharacterSlot slot = slots[i];
-            error = $"{i + 1}번째 슬롯과 캐릭터 초상화를 연결해주세요.";
-
-            if (slot == null || slot.button == null ||
-                slot.portrait == null || slot.selectedMark == null ||
-                database.Characters[i].Portrait == null)
-            {
-                return false;
-            }
+            error = "캐릭터 선택 화면에 사용할 캐릭터를 두 명 등록해주세요.";
+            return false;
         }
 
         error = null;
         return true;
     }
 
-    private void Select(int index)
+    private IEnumerator PlayWelcome()
     {
-        if (selected == index)
-            return;
-
-        selected = index;
-        IsConfirmed = false;
-        Draft.characterId = null;
-
-        for (int i = 0; i < slots.Length; i++)
-            slots[i].selectedMark.SetActive(i == index);
-
-        CharacterData data = database.Characters[index];
-
-        preview.Show(data);
-        confirmButton.interactable = true;
-        statusText.text = $"{data.CharacterName} 캐릭터로 결정할까요?";
-    }
-
-    private void Confirm()
-    {
-        if (selected < 0)
-            return;
-
-        Draft.characterId = database.Characters[selected].ID;
-        IsConfirmed = true;
-        confirmButton.interactable = false;
-        statusText.text = "캐릭터를 선택했어요.";
-    }
-
-    private void OnDestroy()
-    {
-        if (clicks == null)
-            return;
-
-        for (int i = 0; i < clicks.Length; i++)
+        foreach (string message in welcomeMessages)
         {
-            if (slots[i].button != null)
-                slots[i].button.onClick.RemoveListener(clicks[i]);
+            if (string.IsNullOrWhiteSpace(message))
+                continue;
+
+            dialogueText.text = message;
+            yield return new WaitForSecondsRealtime(messageSeconds);
         }
 
-        if (confirmButton != null)
-            confirmButton.onClick.RemoveListener(Confirm);
+        dialogueText.text = "마을에서 뭐라고 불러주면 될까?";
+        namePanel.SetActive(true);
+        nameInput.Select();
+        nameInput.ActivateInputField();
+    }
+
+    private void ConfirmName()
+    {
+        string value = nameInput.text.Trim();
+
+        if (value.Length == 0)
+        {
+            dialogueText.text = "이름을 먼저 알려줘!";
+            nameInput.ActivateInputField();
+            return;
+        }
+
+        if (new StringInfo(value).LengthInTextElements > 10)
+        {
+            dialogueText.text = "이름은 열 글자까지 적을 수 있어.";
+            nameInput.ActivateInputField();
+            return;
+        }
+
+        draft.playerName = value;
+        namePanel.SetActive(false);
+
+        dialogueText.text = $"{draft.playerName}, 만나서 반가워! 생일은 언제야?";
+        birthdayPanel.gameObject.SetActive(true);
+    }
+
+    private void ConfirmBirthday()
+    {
+        if (!birthdayPanel.TryGetBirthday(out DateTime birthday, out string error))
+        {
+            dialogueText.text = error;
+            return;
+        }
+
+        draft.birthYear = birthday.Year;
+        draft.birthMonth = birthday.Month;
+        draft.birthDay = birthday.Day;
+
+        birthdayPanel.gameObject.SetActive(false);
+        dialoguePanel.SetActive(false);
+        residentStage.SetActive(false);
+
+        selectionStage.SetActive(true);
+        selectionPanel.SetActive(true);
+
+        leftOption.preview.Show(database.Characters[0]);
+        rightOption.preview.Show(database.Characters[1]);
+
+        selectionText.text = "함께할 캐릭터를 골라주세요.";
+    }
+
+    private void SelectLeft()
+    {
+        SelectCharacter(0);
+    }
+
+    private void SelectRight()
+    {
+        SelectCharacter(1);
+    }
+
+    private void SelectCharacter(int index)
+    {
+        if (loading)
+            return;
+
+        selectedIndex = index;
+
+        leftOption.selectedMark.SetActive(index == 0);
+        rightOption.selectedMark.SetActive(index == 1);
+        confirmButton.interactable = true;
+
+        CharacterData selected = database.Characters[index];
+        selectionText.text = $"{selected.CharacterName} 캐릭터로 시작할까요?";
+    }
+
+    private void EnterGame()
+    {
+        if (loading || selectedIndex < 0)
+            return;
+
+        if (!Application.CanStreamedLevelBeLoaded(playerSceneName))
+        {
+            selectionText.text = $"씬 목록에서 '{playerSceneName}'을 확인해주세요.";
+            return;
+        }
+
+        loading = true;
+        confirmButton.interactable = false;
+
+        draft.characterId = database.Characters[selectedIndex].ID;
+        GameSession.SetProfile(draft);
+
+        SceneManager.LoadSceneAsync(playerSceneName, LoadSceneMode.Single);
     }
 }

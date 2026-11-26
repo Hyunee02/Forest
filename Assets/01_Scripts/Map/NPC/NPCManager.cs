@@ -163,6 +163,7 @@ public class NPCManager : MonoBehaviour
 
     public void OnDialogueChoice(int index)
     {
+
         if (currentNPC == null)
             return;
 
@@ -287,6 +288,9 @@ public class NPCManager : MonoBehaviour
                         return;
                     }
 
+                    if (!TryFindSellUI())
+                        return;
+
                     if (!sellUI.CanOpen)
                         return;
 
@@ -354,6 +358,21 @@ public class NPCManager : MonoBehaviour
 
     #endregion
 
+    private bool TryFindSellUI()
+    {
+        if (sellUI == null)
+        {
+            sellUI = FindFirstObjectByType<InventorySellUI>(
+                FindObjectsInactive.Include);
+        }
 
+        if (sellUI == null)
+        {
+            Debug.LogError("InventorySellUI를 찾을 수 없습니다.", this);
+            return false;
+        }
+
+        return true;
+    }
 
 }

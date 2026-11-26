@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -19,6 +20,10 @@ public class InventoryUI : MonoBehaviour
     private PlayerInventory inventory;
     private PlayerEquip equip;
     private PlayerBindInput input;
+    private PlayerShop shop;
+
+    [Header("¼ÒÁö±Ý")]
+    [SerializeField] private TMP_Text moneyText;
 
     private readonly List<InventorySlot> slots = new List<InventorySlot>();
 
@@ -47,6 +52,7 @@ public class InventoryUI : MonoBehaviour
         inventory = player.GetComponent<PlayerInventory>();
         equip = player.GetComponent<PlayerEquip>();
         input = player.GetComponent<PlayerBindInput>();
+        shop = player.GetComponent<PlayerShop>();
 
         if (inventory == null
             || inventoryPanel == null
@@ -294,6 +300,9 @@ public class InventoryUI : MonoBehaviour
     /// </summary>
     public void RefreshAll()
     {
+        if (moneyText != null && shop != null)
+            moneyText.text = $"{shop.Money:N0} G";
+
         CancelDrag();
         CreateMissingSlots();
 

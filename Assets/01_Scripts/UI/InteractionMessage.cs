@@ -20,7 +20,7 @@ public class InteractionMessage : MonoBehaviour
 
     private void Awake()
     {
-        messageText = GetComponentInChildren<TMP_Text>();
+        messageText = GetComponentInChildren<TMP_Text>(true);
         offset = new Vector3(0f, offsetY, 0f);
         mainCam = Camera.main;
 

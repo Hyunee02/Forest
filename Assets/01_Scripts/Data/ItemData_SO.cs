@@ -40,7 +40,7 @@ public class ItemData_SO : ScriptableObject
 
     public string ItemName => itemName;
     public int BuyPrice => buyPrice;
-    public int SellPrice => Mathf.FloorToInt(buyPrice * 0.3f);
+    public int SellPrice => sellPrice;
 
     public string Description => description;
 
@@ -54,11 +54,6 @@ public class ItemData_SO : ScriptableObject
         if (!canBuy)
         {
             buyPrice = 0;
-        }
-
-        if (canBuy)
-        {
-            sellPrice = Mathf.FloorToInt(buyPrice * 0.3f);
         }
     }
 }

@@ -16,7 +16,6 @@ public class SellSlot : MonoBehaviour
     [SerializeField] private Color originalIconColor;
 
     [Header("판매 수량")]
-    [SerializeField] private TMP_Text saleCountText;
     [SerializeField] private Button minusButton;
     [SerializeField] private Button plusButton;
 
@@ -66,35 +65,29 @@ public class SellSlot : MonoBehaviour
     }
 
     public void Bind(
-        ItemData_SO data,
-        Sprite sprite,
-        int ownedCount,
-        int selectedAmount,
-        bool showPrice,
-        Action clickAction,
-        Action<int> changeAmountAction)
+    ItemData_SO data,
+    Sprite sprite,
+    int ownedCount,
+    int selectedAmount,
+    bool showPrice,
+    Action clickAction,
+    Action<int> changeAmountAction)
     {
         onClick = clickAction;
         onChangeAmount = changeAmountAction;
 
+        bool isSelectedList = showPrice;
         bool canSell = data.canSell && data.SellPrice >= 0;
 
-        // 판매 불가 아이템은 흐리게 표시하고 입력 차단
         canvasGroup.alpha = canSell ? 1f : 0.4f;
         canvasGroup.interactable = canSell;
-
-        button.interactable = canSell && clickAction != null;
-
-        if (icon != null)
-        {
-            // 재사용되는 슬롯이므로 판매 가능할 때 원래 색상 복원
-            icon.color = canSell ? originalIconColor : Color.gray;
-        }
+        button.interactable = canSell && onClick != null;
 
         if (icon != null)
         {
             icon.sprite = sprite;
             icon.enabled = sprite != null;
+            icon.color = canSell ? originalIconColor : Color.gray;
             icon.preserveAspect = true;
             icon.raycastTarget = false;
         }
@@ -104,49 +97,32 @@ public class SellSlot : MonoBehaviour
 
         if (countText != null)
         {
-            // 왼쪽: 보유 수량 / 오른쪽: 판매 선택 수량
-            int displayCount = showPrice
-                ? selectedAmount
-                : ownedCount;
-
-            countText.text = $"× {displayCount:N0}";
-        }
-
-        if (saleCountText != null)
-        {
-            saleCountText.text =
-                $"{selectedAmount:N0}/{ownedCount:N0}";
+            countText.gameObject.SetActive(true);
+            countText.text = $"{selectedAmount:N0}/{ownedCount:N0}";
         }
 
         if (priceText != null)
         {
-            priceText.gameObject.SetActive(showPrice);
-
-            long total = (long)data.SellPrice * selectedAmount;
-            priceText.text = $"{total:N0} G";
+            priceText.gameObject.SetActive(true);
+            priceText.text = $"{data.SellPrice:N0} G";
         }
 
         if (selectedMark != null)
-        {
-            // 왼쪽 슬롯에서만 선택 표시
-            selectedMark.SetActive(
-                !showPrice && selectedAmount > 0);
-        }
+            selectedMark.SetActive(!isSelectedList && selectedAmount > 0);
 
-        bool canChange =
-            canSell &&
-            onChangeAmount != null;
+        // 연결한 버튼만 사용하고, 오른쪽에서는 항상 숨긴다.
+        bool showButtons = !isSelectedList && onChangeAmount != null;
 
         if (minusButton != null)
         {
-            minusButton.interactable =
-                canChange && selectedAmount > 0;
+            minusButton.gameObject.SetActive(showButtons);
+            minusButton.interactable = canSell && selectedAmount > 0;
         }
 
         if (plusButton != null)
         {
-            plusButton.interactable =
-                canChange && selectedAmount < ownedCount;
+            plusButton.gameObject.SetActive(showButtons);
+            plusButton.interactable = canSell && selectedAmount < ownedCount;
         }
     }
 

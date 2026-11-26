@@ -5,6 +5,15 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerInventory))]
 public class PlayerFishing : MonoBehaviour
 {
+    [System.Serializable]
+    private class FishEntry
+    {
+        public ItemData_SO item;
+
+        [Range(0, 100)]
+        public int weight = 1;
+    }
+
     [Header("물 판정")]
     [SerializeField] private LayerMask waterLayer;
     [SerializeField] private float castDistance = 3f;
@@ -16,13 +25,17 @@ public class PlayerFishing : MonoBehaviour
     [SerializeField] private float surfaceOffset = 0.05f;
     [SerializeField] private float biteDepth = 0.2f;
 
-    [Header("획득할 물고기")]
-    [SerializeField] private ItemData_SO fishItem;
+    [Header("낚시 보상과 등장 가중치")]
+    [SerializeField] private FishEntry[] fishTable = new FishEntry[0];
+
+    // 이번에 던진 찌로 잡을 물고기
+    private ItemData_SO fishItem;
 
     [Header("입질")]
     [SerializeField] private float minWaitTime = 2f;
     [SerializeField] private float maxWaitTime = 5f;
     [SerializeField] private float reactionTime = 1.5f;
+    private bool isReeling;
 
     [Header("애니메이션")]
     [SerializeField] private Animator animator;
@@ -72,7 +85,7 @@ public class PlayerFishing : MonoBehaviour
 
     private void Update()
     {
-        if (!IsFishing)
+        if (!IsFishing || isReeling)
             return;
 
         if (!CanContinue() || IsOtherActionBusy())
@@ -105,7 +118,7 @@ public class PlayerFishing : MonoBehaviour
     // 기존 PlayerEquip.UseTool()에서 호출
     public void HandleUse()
     {
-        if (!isActiveAndEnabled || Time.timeScale <= 0f)
+        if (!isActiveAndEnabled || Time.timeScale <= 0f || isReeling)
             return;
 
         if (!IsFishing)
@@ -120,11 +133,9 @@ public class PlayerFishing : MonoBehaviour
             return;
         }
 
+        // 입질 전 클릭은 무시하고 현재 찌와 입질 대기 시간을 유지한다.
         if (!hasBite)
-        {
-            FinishFishing("찌를 회수했어요.");
             return;
-        }
 
         if (Time.time >= expireTime)
         {
@@ -151,29 +162,9 @@ public class PlayerFishing : MonoBehaviour
             || equip.CurInventoryItem.currentDurability <= 0)
             return;
 
-        if (bobberPrefab == null || fishItem == null)
+        if (bobberPrefab == null)
         {
-            Debug.LogError(
-                "PlayerFishing의 Bobber Prefab과 Fish Item을 연결해주세요.",
-                this);
-            return;
-        }
-
-        ItemData_SO data = inventory.GetItemData(fishItem.Id);
-
-        if (data == null
-            || data.ItemType == ItemTypeSO.Tool
-            || data.ItemType == ItemTypeSO.None)
-        {
-            Debug.LogError(
-                "물고기를 ItemDatabase의 Items에 등록해주세요.",
-                this);
-            return;
-        }
-
-        if (!inventory.CanAddItem(fishItem.Id, 1))
-        {
-            ShowStatus("인벤토리가 가득 찼어요.");
+            Debug.LogError("PlayerFishing의 Bobber Prefab을 연결해주세요.", this);
             return;
         }
 
@@ -194,6 +185,17 @@ public class PlayerFishing : MonoBehaviour
             ShowStatus("앞쪽에 물이 없어요.");
             return;
         }
+
+        if (!TryRollFish(out ItemData_SO rolledFish))
+            return;
+
+        if (!inventory.CanAddItem(rolledFish.Id, 1))
+        {
+            ShowStatus("인벤토리에 잡은 물고기를 담을 공간이 없어요.");
+            return;
+        }
+
+        fishItem = rolledFish;
 
         rod = currentRod;
         waterPoint = hit.point + Vector3.up * surfaceOffset;
@@ -255,23 +257,38 @@ public class PlayerFishing : MonoBehaviour
             return;
         }
 
-        // 파손 이벤트가 발생하기 전에 낚시 상태 정리
-        FinishFishing($"{fishName} 획득!");
+        // IsFishing은 릴 애니메이션이 끝날 때까지 true로 유지한다.
+        isReeling = true;
+        hasBite = false;
 
+        if (bobber != null)
+            Destroy(bobber);
+
+        bobber = null;
+
+        ShowStatus($"{fishName} 획득!");
         SetFishingAnimation(2);
 
         equip.ReduceEquippedDurability(reduce);
     }
 
+    public void CompleteReel()
+    {
+        if (!isReeling)
+            return;
+
+        FinishFishing("");
+    }
+
     private void CheckEquipment()
     {
-        if (IsFishing && equip.CurTool != rod)
+        if (IsFishing && !isReeling && equip.CurTool != rod)
             AbortFishing();
     }
 
     public void CancelFishing()
     {
-        if (IsFishing)
+        if (IsFishing && !isReeling)
             FinishFishing("찌를 회수했어요.");
     }
 
@@ -291,6 +308,7 @@ public class PlayerFishing : MonoBehaviour
         nextCastTime = Time.time + Mathf.Max(0.2f, cooldown);
 
         IsFishing = false;
+        isReeling = false;
         hasBite = false;
 
         SetFishingAnimation(0);
@@ -300,6 +318,7 @@ public class PlayerFishing : MonoBehaviour
 
         bobber = null;
         rod = null;
+        fishItem = null;
 
         ShowStatus(message);
     }
@@ -317,6 +336,66 @@ public class PlayerFishing : MonoBehaviour
 
         if (!string.IsNullOrEmpty(message))
             Debug.Log(message, this);
+    }
+
+    private bool TryRollFish(out ItemData_SO result)
+    {
+        result = null;
+        int totalWeight = 0;
+
+        if (fishTable == null || fishTable.Length == 0)
+        {
+            Debug.LogError("PlayerFishing의 Fish Table에 물고기를 등록해주세요.", this);
+            return false;
+        }
+
+        for (int i = 0; i < fishTable.Length; i++)
+        {
+            FishEntry entry = fishTable[i];
+
+            if (entry == null || entry.weight <= 0)
+                continue;
+
+            ItemData_SO item = entry.item;
+
+            if (item == null ||
+                string.IsNullOrWhiteSpace(item.Id) ||
+                inventory.GetItemData(item.Id) != item ||
+                item.ItemType == ItemTypeSO.Tool ||
+                item.ItemType == ItemTypeSO.None)
+            {
+                Debug.LogError(
+                    $"Fish Table의 Element {i}에 ItemDatabase에 등록된 물고기를 연결해주세요.",
+                    this);
+                return false;
+            }
+
+            totalWeight += entry.weight;
+        }
+
+        if (totalWeight == 0)
+        {
+            Debug.LogError("Fish Table에 가중치가 1 이상인 물고기가 필요해요.", this);
+            return false;
+        }
+
+        int roll = Random.Range(0, totalWeight);
+
+        foreach (FishEntry entry in fishTable)
+        {
+            if (entry == null || entry.weight <= 0)
+                continue;
+
+            if (roll < entry.weight)
+            {
+                result = entry.item;
+                return true;
+            }
+
+            roll -= entry.weight;
+        }
+
+        return false;
     }
 
     private void OnDrawGizmosSelected()

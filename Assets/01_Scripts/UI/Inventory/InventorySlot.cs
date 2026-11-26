@@ -80,8 +80,7 @@ public class InventorySlot :
 
         if (countText != null)
         {
-            countText.text = item.count > 1
-                ? item.count.ToString() : "";
+            countText.text = showCount ? item.count.ToString() : "";
         }
     }
 

@@ -11,11 +11,12 @@ public class CharacterData : ScriptableObject
     [FormerlySerializedAs("characterPrefab")]
     [SerializeField] private CharacterView previewPrefab;
 
-    [SerializeField] private PlayerSave playerPrefab;
+    [SerializeField] private GameObject playerPrefab;
 
     public string ID => id;
     public string CharacterName => characterName;
     public Sprite Portrait => portrait;
+
     public CharacterView PreviewPrefab => previewPrefab;
-    public PlayerSave PlayerPrefab => playerPrefab;
+    public GameObject PlayerPrefab => playerPrefab;
 }

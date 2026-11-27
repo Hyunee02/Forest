@@ -22,4 +22,4 @@ MonoBehaviour:
   description: "\uB3C4\uB07C"
   icon: {fileID: 21300000, guid: a0f39c2e1799873418b622d69ca0458e, type: 3}
   maxStack: 1
-  prefab: {fileID: 0}
+  prefab: {fileID: 6937318623383115404, guid: 81d432261ca89ec4f8ccad6a66fbb8d1, type: 3}

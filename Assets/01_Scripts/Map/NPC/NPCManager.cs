@@ -279,15 +279,6 @@ public class NPCManager : MonoBehaviour
                 }
                 else if (index == 1)
                 {
-                    if (sellUI == null || currentNPC.ShopData == null)
-                    {
-                        Debug.LogError(
-                            "InventorySellUI 또는 NPC ShopData 연결을 확인해주세요.",
-                            this);
-
-                        return;
-                    }
-
                     if (!TryFindSellUI())
                         return;
 

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bcf99da55071a04eb5d8b67d8ade7f3, type: 3}
-  m_Name: Test_Player(W)
+  m_Name: Data_Player(W)
   m_EditorClassIdentifier: 
   id: 01
   characterName: "\uC5EC\uC790"
   portrait: {fileID: 21300000, guid: 82eee618d2bd78b489dea3e17d5652a9, type: 3}
   previewPrefab: {fileID: -672415292272280111, guid: 2ee1884579364d54d923b5a34824a06a, type: 3}
-  playerPrefab: {fileID: 8957737314919535728, guid: 2ee1884579364d54d923b5a34824a06a, type: 3}
+  playerPrefab: {fileID: 8957737314919535728, guid: 10d1a02618a6bcc47a567a3b9dd3ab83, type: 3}

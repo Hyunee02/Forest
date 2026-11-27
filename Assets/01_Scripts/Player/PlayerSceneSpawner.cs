@@ -32,12 +32,39 @@ public class PlayerSceneSpawner : MonoBehaviour
             return;
         }
 
-        Instantiate(
+        GameObject player = Instantiate(
             character.PlayerPrefab,
             spawnPoint.position,
             spawnPoint.rotation);
 
+        // 에디터에서 Player 씬만 실행한 경우 테스트 캐릭터로 플레이한다.
+        // 이 경우 실제 저장 파일을 읽거나 쓰지 않는다.
+        if (GameSession.Profile != null)
+        {
+            if (!player.TryGetComponent(out PlayerSave save))
+            {
+                FailSpawn(player, "Player Prefab 루트에 PlayerSave를 추가해주세요.");
+                return;
+            }
+
+            if (!save.TryPrepare(
+                GameSession.Profile,
+                GameSession.CurrentData,
+                out string error))
+            {
+                FailSpawn(player, error);
+                return;
+            }
+        }
+
         playerReady = true;
+    }
+
+    private void FailSpawn(GameObject player, string message)
+    {
+        Debug.LogError(message, this);
+        player.SetActive(false);
+        Destroy(player);
     }
 
     private CharacterData GetCharacterToSpawn()
@@ -56,7 +83,6 @@ public class PlayerSceneSpawner : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-        // Character 씬을 거치지 않고 Player 씬에서 Play를 누른 경우
         return testCharacter;
 #else
         return null;

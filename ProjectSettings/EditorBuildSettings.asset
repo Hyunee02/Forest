@@ -6,8 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/00_Scenes/Title.unity
+    guid: 974401619dc03a74cbced4525fd52686
+  - enabled: 1
+    path: Assets/00_Scenes/Character.unity
+    guid: 0b3a0a3ad8709d14d80d175c2a4bc25e
+  - enabled: 1
     path: Assets/00_Scenes/Map.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/00_Scenes/Player.unity
+    guid: 910b73d4f6452e7458056ea5ae81e32d
   - enabled: 1
     path: Assets/00_Scenes/Bank.unity
     guid: fb0197e5e2738124d8cca3b8c812a35b
@@ -18,10 +27,10 @@ EditorBuildSettings:
     path: Assets/00_Scenes/Tent.unity
     guid: d19066c18653908468c45ce626034ca7
   - enabled: 1
-    path: Assets/00_Scenes/NPC2House.unity
+    path: Assets/00_Scenes/NPC1House.unity
     guid: 15f8030193714e848bdc7cfad6cc6d18
   - enabled: 1
-    path: Assets/00_Scenes/NPC1House.unity
+    path: Assets/00_Scenes/NPC2House.unity
     guid: 39133ff83efeae849af8424b463e2a8b
   - enabled: 1
     path: Assets/00_Scenes/Dungeon.unity

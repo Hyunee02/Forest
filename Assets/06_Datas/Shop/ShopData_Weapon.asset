@@ -15,6 +15,5 @@ MonoBehaviour:
   shopId: Shop_Weapon
   shopName: "\uBB34\uAE30 \uC0C1\uC810"
   buyItems:
-  - itemData: {fileID: 0}
-    dailyLimit: 0
-  sellItems: []
+  - itemData: {fileID: 11400000, guid: de25e70976989464582ad348862f56e3, type: 2}
+    dailyLimit: 3

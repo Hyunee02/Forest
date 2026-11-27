@@ -10,7 +10,6 @@ public class PlayerShop : MonoBehaviour
     private PlayerInventory inventory;
     private PlayerEquip equip;
 
-    // 같은 아이템이라도 상점이 다르면 구매 한도를 따로 계산한다.
     private readonly Dictionary<(string shopId, string itemId), int>
         boughtAmounts = new();
 
@@ -20,14 +19,22 @@ public class PlayerShop : MonoBehaviour
     public bool IsReady => inventory != null;
     public bool IsUsingTool => equip != null && equip.BUse;
     public int Money => money;
+    public bool IsTrading => bTrading;
 
     // 기존 ShopUI가 날짜 변경을 확인할 때 사용한다.
     public int Day => 1;
+
+    public event System.Action TradeCompleted;
 
     private void Awake()
     {
         inventory = GetComponent<PlayerInventory>();
         equip = GetComponent<PlayerEquip>();
+    }
+
+    public void RestoreMoney(int amount)
+    {
+        money = amount;
     }
 
     public long GetOwnedCount(string itemId)
@@ -124,7 +131,7 @@ public class PlayerShop : MonoBehaviour
             return false;
         }
 
-        // 거래 도중 UI가 갱신돼도 구매 목록을 유지한다.
+        // 인벤토리 변경으로 UI가 갱신돼도 이번 구매 목록을 유지한다.
         Dictionary<string, int> transaction = new();
 
         long totalPrice = 0;
@@ -189,25 +196,25 @@ public class PlayerShop : MonoBehaviour
 
         try
         {
-            // 인벤토리 변경 이벤트가 발생할 때 새 골드와 한도가 보이게 한다.
             money -= (int)totalPrice;
             ChangeBoughtAmounts(market, transaction, 1);
 
             if (!inventory.TryAddItemsBatch(transaction, out message))
             {
-                // 가방 공간 부족 등으로 지급에 실패하면 거래 전으로 되돌린다.
                 money += (int)totalPrice;
                 ChangeBoughtAmounts(market, transaction, -1);
                 return false;
             }
 
             message = $"{totalCount:N0}개를 {totalPrice:N0} G에 구매했습니다.";
-            return true;
         }
         finally
         {
             bTrading = false;
         }
+
+        TradeCompleted?.Invoke();
+        return true;
     }
 
     private void ChangeBoughtAmounts(
@@ -219,7 +226,6 @@ public class PlayerShop : MonoBehaviour
         {
             ShopItemEntry entry = market.GetBuyEntry(purchase.Key);
 
-            // 무제한 상품은 구매 수량을 기록할 필요가 없다.
             if (entry.dailyLimit < 0)
                 continue;
 
@@ -242,7 +248,6 @@ public class PlayerShop : MonoBehaviour
         if (!CanTrade(out message))
             return false;
 
-        // 실제 슬롯, 보유 수량, 사용 중 여부, canSell을 검사한다.
         if (!inventory.ValidateSaleSelections(selections))
         {
             message = "판매할 아이템과 수량을 다시 선택해주세요.";
@@ -293,11 +298,13 @@ public class PlayerShop : MonoBehaviour
             }
 
             message = $"{totalPrice:N0} G에 판매했습니다.";
-            return true;
         }
         finally
         {
             bTrading = false;
         }
+
+        TradeCompleted?.Invoke();
+        return true;
     }
 }

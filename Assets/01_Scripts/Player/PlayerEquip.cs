@@ -32,6 +32,7 @@ public class PlayerEquip : MonoBehaviour
 
     public ToolBase CurTool => curTool;
     public ToolData CurToolData => curToolData;
+    public InventoryUI InventoryUI => inventoryUI;
     public InventoryItem CurInventoryItem => curInventoryItem;
 
     public bool BTool => curTool != null;

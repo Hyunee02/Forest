@@ -69,6 +69,11 @@ public class ShopUI : MonoBehaviour
         Close();
     }
 
+    private void Start()
+    {
+        BindPlayer();
+    }
+
     private void Update()
     {
         if (BOpen &&
@@ -103,31 +108,29 @@ public class ShopUI : MonoBehaviour
 
     private bool BindPlayer()
     {
-        if (shop != null && move != null)
-            return true;
-
-        GameObject player =
-            GameObject.FindGameObjectWithTag("Player");
-
-        if (player == null)
-        {
-            Debug.LogError(
-                "[ShopUI] Player를 찾을 수 없습니다.",
-                this);
-
-            return false;
-        }
-
-        shop = player.GetComponent<PlayerShop>();
-        move = player.GetComponent<PlayerMove>();
-
         if (shop == null || move == null)
         {
-            Debug.LogError(
-                "[ShopUI] PlayerShop 또는 PlayerMove가 없습니다.",
-                this);
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
 
-            return false;
+            if (player == null)
+            {
+                Debug.LogError("[ShopUI] Player 태그를 가진 플레이어를 찾을 수 없습니다.", this);
+                return false;
+            }
+
+            shop = player.GetComponent<PlayerShop>();
+            move = player.GetComponent<PlayerMove>();
+
+            if (shop == null || move == null)
+            {
+                Debug.LogError("[ShopUI] 플레이어에 PlayerShop 또는 PlayerMove가 없습니다.", player);
+                return false;
+            }
+        }
+
+        if (inventoryUI == null && shop.TryGetComponent(out PlayerEquip equip))
+        {
+            inventoryUI = equip.InventoryUI;
         }
 
         return true;

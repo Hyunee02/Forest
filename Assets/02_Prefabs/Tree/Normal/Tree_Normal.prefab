@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 859491559034887249}
   - component: {fileID: 5652114620111665300}
+  - component: {fileID: 6895438480718827088}
   m_Layer: 0
   m_Name: Tree_Normal
   m_TagString: Untagged
@@ -47,6 +48,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7de949bebf9ab74b91dea1b0546b522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  width: 1
+  height: 1
+  movable: 1
+  dropItemPrefab: {fileID: -1249666928302548399, guid: 1472bd0cf859f5a44a3b9bd093e48d9f, type: 3}
+  minDropRadius: 1.2
+  maxDropradius: 2
+  dropHeight: 0.5
+  groundOffset: 0.1
+  jumpHeight: 0.8
+  dropDuration: 0.5
+  maxHitCount: 3
   treeType: 0
   treeState: 2
   season: 0
@@ -56,6 +68,7 @@ MonoBehaviour:
   springSummerFruit: {fileID: 0}
   fallFruit: {fileID: 0}
   winterFruit: {fileID: 0}
+  fruitSpawnPoints: {fileID: 0}
   normalSeedScale: {x: 0.15, y: 0.15, z: 0.15}
   normalSaplingScale: {x: 0.5, y: 0.5, z: 0.5}
   normalGrownScale: {x: 0.8, y: 0.8, z: 0.8}
@@ -64,6 +77,19 @@ MonoBehaviour:
   fruitGrownScale: {x: 0.6, y: 0.6, z: 0.6}
   plantedDay: 0
   isWateredToday: 0
+--- !u!114 &6895438480718827088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8082599390057181901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3e61e697f6dee5489f7ea673df32743, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resourceData: {fileID: 11400000, guid: ecff895a700bd3a458e0c855cc2f706c, type: 2}
 --- !u!1001 &1636402333224334137
 PrefabInstance:
   m_ObjectHideFlags: 0
